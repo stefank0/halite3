@@ -70,9 +70,9 @@ class Scheduler:
 
     def halite_matrix(self):
         """ Create a 1D ndarray with halite"""
-        halite_matrix = np.array(range(1000))
-        # halite_matrix = cost_matrix.copy()[0][:]
-        for j in np.indices(halite_matrix.shape)[0]:
+        halite_matrix = np.array(range(self.m))
+        for j in halite_matrix:
+        # for j in np.indices(halite_matrix.shape)[0]:
             halite_matrix[j] = index_to_cell(j).halite_amount
         return halite_matrix
 

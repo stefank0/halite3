@@ -8,7 +8,7 @@ import hlt
 from hlt import constants, Direction, Position
 
 from scheduling import Schedule
-from scheduling_dest import Scheduler
+from scheduler import Scheduler
 
 # Idee: definieer hoeveel stappen halite waard is, om te bepalen of er een dropoff moet komen en zo ja waar. Als
 # besloten waar, dan moet deze al beschikbaar zijn als toekomstige dropoff, zodat ships daar alvast naartoe kunnen
@@ -54,6 +54,7 @@ def create_schedule():
         if ship.halite_amount < 0.25 * constants.MAX_HALITE:
             returning_to_shipyard.discard(ship.id)
     scheduler = Scheduler(game_map, ships=me.get_ships(), turnnumber=game.turn_number)
+
     scheduler.to_destination()
     return scheduler.schedule
     # Move ships.
