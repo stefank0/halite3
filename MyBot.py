@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 
-import logging, hlt, time
-from hlt import constants, Direction, Position
+import logging
+import time
 from statistics import median
+
+import hlt
+from hlt import constants, Direction, Position
+
 from scheduling import Schedule
-from scheduling_dest import ScheduleDest
-#
+from scheduling_dest import Scheduler
+
 # Idee: definieer hoeveel stappen halite waard is, om te bepalen of er een dropoff moet komen en zo ja waar. Als
 # besloten waar, dan moet deze al beschikbaar zijn als toekomstige dropoff, zodat ships daar alvast naartoe kunnen
 # bewegen (de eerste die er is, maakt de dropoff aan).
-#
+
 
 returning_to_shipyard = set()
 
@@ -49,26 +53,22 @@ def create_schedule():
     for ship in me.get_ships():
         if ship.halite_amount < 0.25 * constants.MAX_HALITE:
             returning_to_shipyard.discard(ship.id)
-
-    # Find destinations
-    if len(me.get_ships()) > 0:
-        schedule_dest = ScheduleDest(game_map, ships=me.get_ships())
-        logging.info(schedule_dest.create_cost_matrix())
-        # schedule.assign(ships, destinations)
-
+    scheduler = Scheduler(game_map, ships=me.get_ships(), turnnumber=game.turn_number)
+    scheduler.to_destination()
+    return scheduler.schedule
     # Move ships.
-    schedule = Schedule(game_map)
-    for ship in me.get_ships():
-        local_halite = game_map[ship].halite_amount
-        if returning(ship):
-            returning_to_shipyard.add(ship.id)
-            destination = me.shipyard.position
-        elif mining(ship, local_halite):
-            destination = ship.position
-        else:
-            destination = find_new_halite(ship)
-        schedule.assign(ship, destination)
-    return schedule
+    # schedule = Schedule(game_map)
+    # for ship in me.get_ships():
+    #     local_halite = game_map[ship].halite_amount
+    #     if returning(ship):
+    #         returning_to_shipyard.add(ship.id)
+    #         destination = me.shipyard.position
+    #     elif mining(ship, local_halite):
+    #         destination = ship.position
+    #     else:
+    #         destination = find_new_halite(ship)
+    #     schedule.assign(ship, destination)
+    # return schedule
 
 
 def add_move_commands(command_queue):
@@ -146,6 +146,8 @@ game_map = game.game_map
 # Play the game.
 while True:
     game.update_frame()
+    if game.turn_number > 100:
+        raise InterruptedError
     mark_safe()
     command_queue = generate_commands()
     game.end_turn(command_queue)
