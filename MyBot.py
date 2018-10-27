@@ -15,61 +15,10 @@ from scheduler import Scheduler
 # bewegen (de eerste die er is, maakt de dropoff aan).
 
 
-returning_to_shipyard = set()
-
-
-def get_checked_positions(distance, ship):
-    positions = []
-    for i in range(-distance, distance + 1):
-        for j in range(-distance, distance + 1):
-            if abs(i) + abs(j) > distance:
-                continue
-            position = ship.position + Position(i, j)
-            positions.append(position)
-    return positions
-
-
-def find_new_halite(ship):
-    halite_amount = 0
-    distance = 0
-    while halite_amount < 0.05 * constants.MAX_HALITE and distance < 10:
-        distance += 1
-        checked_positions = get_checked_positions(distance, ship)
-        destination = max(checked_positions, key=lambda position: game_map[position].halite_amount)
-        halite_amount = game_map[destination].halite_amount
-    return destination
-
-
-def returning(ship):
-    return (ship.halite_amount > 0.75 * constants.MAX_HALITE) or (ship.id in returning_to_shipyard)
-
-
-def mining(ship, local_halite):
-    return (local_halite > 0.05 * constants.MAX_HALITE) or (0.2 * local_halite > ship.halite_amount)
-
-
 def create_schedule():
-    # Preprocessing.
-    for ship in me.get_ships():
-        if ship.halite_amount < 0.25 * constants.MAX_HALITE:
-            returning_to_shipyard.discard(ship.id)
-    scheduler = Scheduler(game_map, ships=me.get_ships(), turnnumber=game.turn_number)
-
+    scheduler = Scheduler(game_map, me, ships=me.get_ships(), turnnumber=game.turn_number)
     scheduler.to_destination()
     return scheduler.schedule
-    # Move ships.
-    # schedule = Schedule(game_map)
-    # for ship in me.get_ships():
-    #     local_halite = game_map[ship].halite_amount
-    #     if returning(ship):
-    #         returning_to_shipyard.add(ship.id)
-    #         destination = me.shipyard.position
-    #     elif mining(ship, local_halite):
-    #         destination = ship.position
-    #     else:
-    #         destination = find_new_halite(ship)
-    #     schedule.assign(ship, destination)
-    # return schedule
 
 
 def add_move_commands(command_queue):
@@ -147,8 +96,6 @@ game_map = game.game_map
 # Play the game.
 while True:
     game.update_frame()
-    if game.turn_number > 100:
-        raise InterruptedError
     mark_safe()
     command_queue = generate_commands()
     game.end_turn(command_queue)
