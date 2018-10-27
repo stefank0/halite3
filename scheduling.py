@@ -1,6 +1,7 @@
 from hlt import Direction, Position
 from scipy.optimize import linear_sum_assignment
 import numpy as np
+import logging, math
 
 
 # Oplossing bij einde spel, wanneer ze elkaar mogen raken op shipyard/dropoffs:
@@ -56,6 +57,12 @@ def cell_to_index(cell):
     return x + game_map.width * y
 
 
+def can_move(ship):
+    """Return True if a ship is able to move."""
+    necessary_halite = math.ceil(0.1 * game_map[ship].halite_amount)
+    return necessary_halite <= ship.halite_amount
+
+
 class Assignment:
     """An assignment of a ship to a destination."""
 
@@ -109,24 +116,30 @@ class Schedule:
         m = game_map.width * game_map.height  # Number of cells/targets.
         return np.full((n, m), 9999)
 
-    def reduce_stay_still(self, cost_matrix):
-        """Not moving is a reasonable move for all ships."""
+    def reduce_feasible(self, cost_matrix):
+        """Reduce the cost of all feasible moves for all ships."""
         for i, assignment in enumerate(self.assignments):
             current_cell = game_map[assignment.ship]
             j = cell_to_index(current_cell)
-            cost_matrix[i][j] = 1
+            cost_matrix[i][j] = 0
+            if can_move(assignment.ship):
+                neighbours = current_cell.position.get_surrounding_cardinals()
+                for neighbour in neighbours:
+                    j = cell_to_index(game_map[neighbour])
+                    cost_matrix[i][j] = 2
 
     def reduce_targets(self, cost_matrix):
         """The lowest costs are moves in the direction of the destination."""
         for i, assignment in enumerate(self.assignments):
-            for target in assignment.targets():
-                j = cell_to_index(target)
-                cost_matrix[i][j] = 0
+            if can_move(assignment.ship):
+                for target in assignment.targets():
+                    j = cell_to_index(target)
+                    cost_matrix[i][j] = -1
 
     def create_cost_matrix(self):
         """"Create a cost matrix for linear_sum_assignment()."""
         cost_matrix = self.initial_cost_matrix()
-        self.reduce_stay_still(cost_matrix)
+        self.reduce_feasible(cost_matrix)
         self.reduce_targets(cost_matrix)
         return cost_matrix
 
