@@ -2,14 +2,10 @@ from hlt import Direction, Position
 from scipy.optimize import linear_sum_assignment
 import numpy as np
 
-#
+
 # Oplossing bij einde spel, wanneer ze elkaar mogen raken op shipyard/dropoffs:
 # - Extra artificial targets maken, zodat shipyards vaker gekozen kunnen worden.
 # - Of de schepen grenzend aan een shipyard ertussenuit pikken en deze direct accepteren.
-#
-#
-#
-
 
 def calc_distances(origin, destination):
     """Calculates distances in all directions. Incorporates toroid metric."""
@@ -21,7 +17,8 @@ def calc_distances(origin, destination):
     d_north = height - dy if dy >= 0 else -dy
     d_east = dx if dx >= 0 else width + dx
     d_west = width - dx if dx >= 0 else -dx
-    return (d_north, d_south, d_east, d_west)
+    return d_north, d_south, d_east, d_west
+
 
 def effective_directions(origin, destination):
     """Get a list of effective directions to get closer to the destination."""
@@ -39,9 +36,11 @@ def effective_directions(origin, destination):
         directions.append(Direction.Still)
     return directions
 
+
 def target(origin, direction):
     """Calculate the target cell if the ship moves in the given direction."""
     return game_map[origin.directional_offset(direction)]
+
 
 def index_to_cell(index):
     """Map a 1D index to a 2D MapCell."""
@@ -49,11 +48,12 @@ def index_to_cell(index):
     y = index // game_map.width
     return game_map[Position(x, y)]
 
+
 def cell_to_index(cell):
     """Map a 2D MapCell to a 1D index."""
     x = cell.position.x
     y = cell.position.y
-    return x + game_map.width*y
+    return x + game_map.width * y
 
 
 class Assignment:
@@ -105,8 +105,8 @@ class Schedule:
             in a single turn. However, because these have high costs, they will
             never be chosen by the algorithm.
         """
-        n = len(self.assignments)           # Number of assignments/ships.
-        m = game_map.width*game_map.height  # Number of cells/targets.
+        n = len(self.assignments)  # Number of assignments/ships.
+        m = game_map.width * game_map.height  # Number of cells/targets.
         return np.full((n, m), 9999)
 
     def reduce_stay_still(self, cost_matrix):
