@@ -1,6 +1,28 @@
 from hlt import Direction, Position
 from scipy.optimize import linear_sum_assignment
+from scipy.sparse.csgraph import shortest_path
 import numpy as np
+import logging, math
+
+
+def best_path():
+    """Calculate a perturbed distance from all cells to all cells.
+
+    The edge cost 1.0 + cell.halite_amount / 1000.0 is chosen such that the
+    shortest path is mainly based on the number of steps necessary, but also
+    slightly incorporates the halite costs of moving. Therefore, the most
+    efficient path is chosen when there are several shortest distance paths.
+    """
+    m = game_map.width * game_map.height  # Number of cells.
+    edge_costs = np.zeros((m,m))  # Cost 0 means no edge.
+    for i in range(m):
+        cell = index_to_cell(i)
+        edge_cost = 1.0 + cell.halite_amount / 1000.0
+        for position in cell.position.get_surrounding_cardinals():
+            j = cell_to_index(game_map[position])
+            edge_costs[i][j] = edge_cost
+    dist_matrix, predecessors = shortest_path(edge_costs, return_predecessors=True)
+    return (dist_matrix, predecessors)
 
 
 # Oplossing bij einde spel, wanneer ze elkaar mogen raken op shipyard/dropoffs:
@@ -20,8 +42,8 @@ def calc_distances(origin, destination):
     return d_north, d_south, d_east, d_west
 
 
-def effective_directions(origin, destination):
-    """Get a list of effective directions to get closer to the destination."""
+def viable_directions(origin, destination):
+    """Get a list of viable directions to get closer to the destination."""
     directions = []
     (d_north, d_south, d_east, d_west) = calc_distances(origin, destination)
     if 0 < d_south <= d_north:
@@ -56,6 +78,12 @@ def cell_to_index(cell):
     return x + game_map.width * y
 
 
+def can_move(ship):
+    """Return True if a ship is able to move."""
+    necessary_halite = math.ceil(0.1 * game_map[ship].halite_amount)
+    return necessary_halite <= ship.halite_amount
+
+
 class Assignment:
     """An assignment of a ship to a destination."""
 
@@ -66,7 +94,7 @@ class Assignment:
     def targets(self):
         """Get a list of proper target cells for the next move."""
         origin = self.ship.position
-        directions = effective_directions(origin, self.destination)
+        directions = viable_directions(origin, self.destination)
         return [target(origin, direction) for direction in directions]
 
     def to_command(self, target_cell):
@@ -89,6 +117,7 @@ class Schedule:
         global game_map
         game_map = _game_map
         self.assignments = []
+        self.dist_matrix, self.predecessors = best_path()
 
     def assign(self, ship, destination):
         """Assign a ship to a destination."""
@@ -109,24 +138,30 @@ class Schedule:
         m = game_map.width * game_map.height  # Number of cells/targets.
         return np.full((n, m), 9999)
 
-    def reduce_stay_still(self, cost_matrix):
-        """Not moving is a reasonable move for all ships."""
+    def reduce_feasible(self, cost_matrix):
+        """Reduce the cost of all feasible moves for all ships."""
         for i, assignment in enumerate(self.assignments):
             current_cell = game_map[assignment.ship]
             j = cell_to_index(current_cell)
-            cost_matrix[i][j] = 1
+            cost_matrix[i][j] = 0
+            if can_move(assignment.ship):
+                neighbours = current_cell.position.get_surrounding_cardinals()
+                for neighbour in neighbours:
+                    j = cell_to_index(game_map[neighbour])
+                    cost_matrix[i][j] = 2
 
     def reduce_targets(self, cost_matrix):
         """The lowest costs are moves in the direction of the destination."""
         for i, assignment in enumerate(self.assignments):
-            for target in assignment.targets():
-                j = cell_to_index(target)
-                cost_matrix[i][j] = 0
+            if can_move(assignment.ship):
+                for target in assignment.targets():
+                    j = cell_to_index(target)
+                    cost_matrix[i][j] = -1
 
     def create_cost_matrix(self):
         """"Create a cost matrix for linear_sum_assignment()."""
         cost_matrix = self.initial_cost_matrix()
-        self.reduce_stay_still(cost_matrix)
+        self.reduce_feasible(cost_matrix)
         self.reduce_targets(cost_matrix)
         return cost_matrix
 
