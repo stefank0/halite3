@@ -4,7 +4,7 @@ import logging, hlt, time
 from hlt import constants, Direction, Position
 from statistics import median
 from scheduling import Schedule
-
+from scheduling_dest import ScheduleDest
 #
 # Idee: definieer hoeveel stappen halite waard is, om te bepalen of er een dropoff moet komen en zo ja waar. Als
 # besloten waar, dan moet deze al beschikbaar zijn als toekomstige dropoff, zodat ships daar alvast naartoe kunnen
@@ -49,6 +49,12 @@ def create_schedule():
     for ship in me.get_ships():
         if ship.halite_amount < 0.25 * constants.MAX_HALITE:
             returning_to_shipyard.discard(ship.id)
+
+    # Find destinations
+    if len(me.get_ships()) > 0:
+        schedule_dest = ScheduleDest(game_map, ships=me.get_ships())
+        logging.info(schedule_dest.create_cost_matrix())
+        # schedule.assign(ships, destinations)
 
     # Move ships.
     schedule = Schedule(game_map)
