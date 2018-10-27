@@ -1,7 +1,28 @@
 from hlt import Direction, Position
 from scipy.optimize import linear_sum_assignment
+from scipy.sparse.csgraph import shortest_path
 import numpy as np
 import logging, math
+
+
+def best_path():
+    """Calculate a perturbed distance from all cells to all cells.
+
+    The edge cost 1.0 + cell.halite_amount / 1000.0 is chosen such that the
+    shortest path is mainly based on the number of steps necessary, but also
+    slightly incorporates the halite costs of moving. Therefore, the most
+    efficient path is chosen when there are several shortest distance paths.
+    """
+    m = game_map.width * game_map.height  # Number of cells.
+    edge_costs = np.zeros((m,m))  # Cost 0 means no edge.
+    for i in range(m):
+        cell = index_to_cell(i)
+        edge_cost = 1.0 + cell.halite_amount / 1000.0
+        for position in cell.position.get_surrounding_cardinals():
+            j = cell_to_index(game_map[position])
+            edge_costs[i][j] = edge_cost
+    dist_matrix, predecessors = shortest_path(edge_costs, return_predecessors=True)
+    return (dist_matrix, predecessors)
 
 
 # Oplossing bij einde spel, wanneer ze elkaar mogen raken op shipyard/dropoffs:
@@ -21,8 +42,8 @@ def calc_distances(origin, destination):
     return d_north, d_south, d_east, d_west
 
 
-def effective_directions(origin, destination):
-    """Get a list of effective directions to get closer to the destination."""
+def viable_directions(origin, destination):
+    """Get a list of viable directions to get closer to the destination."""
     directions = []
     (d_north, d_south, d_east, d_west) = calc_distances(origin, destination)
     if 0 < d_south <= d_north:
@@ -73,7 +94,7 @@ class Assignment:
     def targets(self):
         """Get a list of proper target cells for the next move."""
         origin = self.ship.position
-        directions = effective_directions(origin, self.destination)
+        directions = viable_directions(origin, self.destination)
         return [target(origin, direction) for direction in directions]
 
     def to_command(self, target_cell):
@@ -96,6 +117,7 @@ class Schedule:
         global game_map
         game_map = _game_map
         self.assignments = []
+        self.dist_matrix, self.predecessors = best_path()
 
     def assign(self, ship, destination):
         """Assign a ship to a destination."""
