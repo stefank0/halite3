@@ -207,7 +207,7 @@ class Schedule:
             origin_index = cell_to_index(game_map[ship])
             target_index = cell_to_index(game_map[assignment.destination])
             cost = self.get_distance(origin_index, target_index)
-            cost_matrix[k][origin_index] = cost
+            cost_matrix[k][origin_index] = cost - 0.1
             if can_move(ship):
                 for neighbour_index in neighbours(origin_index):
                     cost = self.get_distance(neighbour_index, target_index)
