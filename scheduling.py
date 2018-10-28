@@ -172,6 +172,14 @@ class Schedule:
         dist_matrix = dijkstra(self.graph, indices=indices)
         return dist_matrix, indices
 
+    def get_distances(self, origin_index):
+        """Get an array of perturbed distances from some origin cell."""
+        return self.dist_matrix[self.indices.index(origin_index)]
+
+    def get_distance(self, origin_index, target_index):
+        """Get the perturbed distance from some cell to another."""
+        return self.get_distances(origin_index)[target_index]
+
     def assign(self, ship, destination):
         """Assign a ship to a destination."""
         assignment = Assignment(ship, destination)
@@ -189,33 +197,26 @@ class Schedule:
         """
         n = len(self.assignments)  # Number of assignments/ships.
         m = game_map.width * game_map.height  # Number of cells/targets.
-        return np.full((n, m), 9999)
+        return np.full((n, m), 99999999999.9)
 
     def reduce_feasible(self, cost_matrix):
         """Reduce the cost of all feasible moves for all ships."""
-        for i, assignment in enumerate(self.assignments):
-            current_cell = game_map[assignment.ship]
-            j = cell_to_index(current_cell)
-            cost_matrix[i][j] = 0
-            if can_move(assignment.ship):
-                neighbours = current_cell.position.get_surrounding_cardinals()
-                for neighbour in neighbours:
-                    j = cell_to_index(game_map[neighbour])
-                    cost_matrix[i][j] = 2
-
-    def reduce_targets(self, cost_matrix):
-        """The lowest costs are moves in the direction of the destination."""
-        for i, assignment in enumerate(self.assignments):
-            if can_move(assignment.ship):
-                for target in assignment.targets():
-                    j = cell_to_index(target)
-                    cost_matrix[i][j] = -1
+        for k, assignment in enumerate(self.assignments):
+            ship = assignment.ship
+            destination = assignment.destination
+            origin_index = cell_to_index(game_map[ship])
+            target_index = cell_to_index(game_map[assignment.destination])
+            cost = self.get_distance(origin_index, target_index)
+            cost_matrix[k][origin_index] = cost
+            if can_move(ship):
+                for neighbour_index in neighbours(origin_index):
+                    cost = self.get_distance(neighbour_index, target_index)
+                    cost_matrix[k][neighbour_index] = cost
 
     def create_cost_matrix(self):
         """"Create a cost matrix for linear_sum_assignment()."""
         cost_matrix = self.initial_cost_matrix()
         self.reduce_feasible(cost_matrix)
-        self.reduce_targets(cost_matrix)
         return cost_matrix
 
     def to_commands(self):
@@ -223,8 +224,8 @@ class Schedule:
         commands = []
         cost_matrix = self.create_cost_matrix()
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
-        for i, j in zip(row_ind, col_ind):
-            assignment = self.assignments[i]
-            target = index_to_cell(j)
+        for k, i in zip(row_ind, col_ind):
+            assignment = self.assignments[k]
+            target = index_to_cell(i)
             commands.append(assignment.to_command(target))
         return commands
