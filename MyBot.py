@@ -51,7 +51,7 @@ def create_schedule():
             returning_to_shipyard.discard(ship.id)
 
     # Move ships.
-    schedule = Schedule(game_map)
+    schedule = Schedule(game_map, me)
     for ship in me.get_ships():
         local_halite = game_map[ship].halite_amount
         if returning(ship):
