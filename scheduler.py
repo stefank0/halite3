@@ -39,9 +39,9 @@ class Scheduler:
     """Keeps track of Assignments and translates them into a command list."""
 
     def __init__(self, _game_map, _me, turnnumber):
-        self.schedule = Schedule(_game_map)
         self.game_map = _game_map
         self.me = _me
+        self.schedule = Schedule(self.game_map, self.me)
         self.ships = self.me.get_ships()
         self.turnnumber = turnnumber
         self.nships = len(self.ships)
