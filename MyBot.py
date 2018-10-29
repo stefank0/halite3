@@ -5,18 +5,13 @@ import time
 from statistics import median
 
 import hlt
-from hlt import constants, Direction, Position
+from hlt import constants, Position
 
-from scheduling import Schedule
 from scheduler import Scheduler
-
-# Idee: definieer hoeveel stappen halite waard is, om te bepalen of er een dropoff moet komen en zo ja waar. Als
-# besloten waar, dan moet deze al beschikbaar zijn als toekomstige dropoff, zodat ships daar alvast naartoe kunnen
-# bewegen (de eerste die er is, maakt de dropoff aan).
 
 
 def create_schedule():
-    scheduler = Scheduler(game_map, me, ships=me.get_ships(), turnnumber=game.turn_number)
+    scheduler = Scheduler(game_map, me, turnnumber=game.turn_number)
     scheduler.to_destination()
     return scheduler.schedule
 
