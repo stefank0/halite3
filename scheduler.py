@@ -61,7 +61,9 @@ class Scheduler:
         cost_matrix = np.full((self.nships, self.nmap), 9999)
         halite_matrix = self.halite_matrix()
         for i in range(len(self.ships)):
-            dist_arr = self.schedule.dist_matrix[cell_to_index(self.ships[i])]
+            logging.info('distmatrix {}'.format(self.schedule.dist_matrix.shape))
+            logging.info('distmatrix {}'.format(self.schedule.dist_matrix))
+            dist_arr = self.schedule.dist_matrix[i]
             cost_matrix[i][:] = (
                     np.max(np.sqrt(halite_matrix)) - np.sqrt(halite_matrix) +
                     dist_arr
