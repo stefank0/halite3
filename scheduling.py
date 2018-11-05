@@ -1,4 +1,4 @@
-from hlt import Direction, Position
+from hlt import Direction, Position, constants
 from scipy.optimize import linear_sum_assignment
 from scipy.sparse.csgraph import dijkstra, shortest_path
 from scipy.sparse import csr_matrix
@@ -6,9 +6,7 @@ import numpy as np
 import logging, math, time
 
 
-# Oplossing bij einde spel, wanneer ze elkaar mogen raken op shipyard/dropoffs:
-# - Extra artificial targets maken, zodat shipyards vaker gekozen kunnen worden.
-# - Of de schepen grenzend aan een shipyard ertussenuit pikken en deze direct accepteren.
+# Analyzer component die de distances berekent en de ships die terug moeten keren.
 
 
 def calc_distances(origin, destination):
@@ -110,10 +108,11 @@ class Schedule:
 
     edge_data = None
 
-    def __init__(self, _game_map, _me):
-        global game_map, me
-        game_map = _game_map
-        me = _me
+    def __init__(self, _game):
+        global game, game_map, me
+        game = _game
+        game_map = game.game_map
+        me = game.me
         self.assignments = []
         self.halite = self.available_halite()
         self.graph = self.create_graph()
@@ -205,7 +204,7 @@ class Schedule:
             ship = assignment.ship
             destination = assignment.destination
             origin_index = cell_to_index(game_map[ship])
-            target_index = cell_to_index(game_map[assignment.destination])
+            target_index = cell_to_index(game_map[destination])
             cost = self.get_distance(origin_index, target_index)
             cost_matrix[k][origin_index] = cost - 0.1
             if can_move(ship):
@@ -222,6 +221,8 @@ class Schedule:
     def to_commands(self):
         """Translate the assignments of ships to commands."""
         commands = []
+        if self.allow_dropoff_collisions():
+            self.resolve_dropoff_collisions(commands)
         cost_matrix = self.create_cost_matrix()
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
         for k, i in zip(row_ind, col_ind):
@@ -229,3 +230,26 @@ class Schedule:
             target = index_to_cell(i)
             commands.append(assignment.to_command(target))
         return commands
+
+    def near_dropoff(self, ship):
+        """Return True if the ship can reach a dropoff/shipyard this turn."""
+        ship_index = cell_to_index(game_map[ship])
+        shipyard_index = cell_to_index(game_map[me.shipyard])
+        return ship_index in neighbours(shipyard_index)
+
+    def resolve_dropoff_collisions(self, commands):
+        """Handle endgame collisions at dropoff/shipyard."""
+        remaining_assignments = []
+        shipyard_cell = game_map[me.shipyard]
+        for assignment in self.assignments:
+            if self.near_dropoff(assignment.ship):
+                commands.append(assignment.to_command(shipyard_cell))
+            else:
+                remaining_assignments.append(assignment)
+        self.assignments = remaining_assignments
+
+    def allow_dropoff_collisions(self):
+        """Return True if we allow endgame dropoff collisions at a shipyard."""
+        turns_left = constants.MAX_TURNS - game.turn_number
+        ships_left = len(me.get_ships())
+        return turns_left <= math.ceil(ships_left / 4.0)

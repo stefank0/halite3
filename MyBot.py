@@ -3,7 +3,7 @@
 import logging, hlt, time
 from hlt import constants, Direction, Position
 from statistics import median
-from scheduling import Schedule
+from scheduling import Schedule, cell_to_index
 
 #
 # Idee: definieer hoeveel stappen halite waard is, om te bepalen of er een dropoff moet komen en zo ja waar. Als
@@ -37,21 +37,30 @@ def find_new_halite(ship):
 
 
 def returning(ship):
-    return (ship.halite_amount > 0.75 * constants.MAX_HALITE) or (ship.id in returning_to_shipyard)
+    return (ship.halite_amount > 0.9 * constants.MAX_HALITE) or (ship.id in returning_to_shipyard)
 
 
 def mining(ship, local_halite):
     return (local_halite > 0.05 * constants.MAX_HALITE) or (0.2 * local_halite > ship.halite_amount)
 
 
+def can_just_make_it(ship, schedule):
+    turns_left = constants.MAX_TURNS - game.turn_number
+    distance = schedule.get_distance(cell_to_index(game_map[ship]), cell_to_index(game_map[me.shipyard]))
+    return turns_left - 6 <= distance
+
 def create_schedule():
+    schedule = Schedule(game)
     # Preprocessing.
     for ship in me.get_ships():
         if ship.halite_amount < 0.25 * constants.MAX_HALITE:
             returning_to_shipyard.discard(ship.id)
 
+    for ship in me.get_ships():
+        if can_just_make_it(ship, schedule):
+            returning_to_shipyard.add(ship.id)
+
     # Move ships.
-    schedule = Schedule(game_map, me)
     for ship in me.get_ships():
         local_halite = game_map[ship].halite_amount
         if returning(ship):
@@ -67,14 +76,8 @@ def create_schedule():
 
 def add_move_commands(command_queue):
     """Add movement commands to the command queue."""
-    start = time.time()
     schedule = create_schedule()
-    end = time.time()
-    logging.info(end - start)
-    start = time.time()
     command_queue.extend(schedule.to_commands())
-    end = time.time()
-    logging.info(end - start)
 
 
 def other_players():
