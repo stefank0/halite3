@@ -61,28 +61,26 @@ class Scheduler:
         cost_matrix = np.full((self.nships, self.nmap), 9999)
         halite_matrix = self.halite_matrix()
         for i in range(len(self.ships)):
-            logging.info('distmatrix {}'.format(self.schedule.dist_matrix.shape))
-            logging.info('distmatrix {}'.format(self.schedule.dist_matrix))
             dist_arr = self.schedule.dist_matrix[i]
+            ship_matrix = self.ship_matrix([self.ships[i]])
             cost_matrix[i][:] = (
-                    np.max(np.sqrt(halite_matrix)) - np.sqrt(halite_matrix) +
-                    dist_arr
+                (np.max(np.sqrt(halite_matrix)) - np.sqrt(halite_matrix) +
+                dist_arr) *
+                ship_matrix
             )
-            if i == 0 and self.turnnumber in [2, 4, 6, 8]:
+            if i == 0 and self.turnnumber in range(1, 100, 10):
                 plot(costs={
                     'cost_matrix': cost_matrix[0][:].reshape(32, 32),
                     'halite_matrix': halite_matrix.reshape(32, 32),
                     'halite_matrix_cost': (np.max(np.sqrt(halite_matrix)) - np.sqrt(halite_matrix)).reshape(32, 32),
                     'dist_array_cost': dist_arr.reshape(32, 32),
+                    'ship_matrix': ship_matrix.reshape(32, 32)
                 }, fn=r'replays\img\ship_{}_turn_{}'.format(self.ships[0].id, self.turnnumber))
         return cost_matrix
 
     def halite_matrix(self):
         """ Create a 1D ndarray with halite"""
-        halite_matrix = np.array(range(self.nmap))
-        for j in halite_matrix:
-            halite_matrix[j] = index_to_cell(j).halite_amount
-        return halite_matrix
+        return np.array([index_to_cell(j).halite_amount for j in range(self.nmap)])
 
     def to_destination(self):
         """Find the fit for the cost matrix"""
@@ -100,5 +98,12 @@ class Scheduler:
                 destination = self.me.shipyard.position
             else:
                 destination = index_to_cell(j).position
+            logging.info('{}, {}'.format(ship, destination))
             self.schedule.assign(ship, destination)
         return self.schedule
+
+    def ship_matrix(self, ships):
+        ship_matrix = np.ones(self.nmap)
+        for ship in ships:
+            ship_matrix[cell_to_index(ship)] = .5
+        return ship_matrix
