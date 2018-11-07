@@ -13,12 +13,6 @@ class Assignment:
         self.ship = ship
         self.destination = destination
 
-    def targets(self):
-        """Get a list of proper target cells for the next move."""
-        origin = self.ship.position
-        directions = viable_directions(origin, self.destination)
-        return [target(origin, direction) for direction in directions]
-
     def to_command(self, target_cell):
         """Return command to move its ship to a target cell."""
         target_cell.mark_unsafe(self.ship)
