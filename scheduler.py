@@ -2,7 +2,7 @@ import logging
 
 from hlt import constants
 from scipy.optimize import linear_sum_assignment
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 import numpy as np
 from utility import calc_distances, index_to_cell, cell_to_index
 from schedule import Schedule
