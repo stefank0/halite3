@@ -3,6 +3,7 @@ from scipy.sparse.csgraph import dijkstra
 from scipy.sparse import csr_matrix
 import numpy as np
 import logging, math, time
+from collections import Counter
 
 
 def calc_distances(origin, destination):
@@ -65,12 +66,31 @@ def neighbours(index):
     h = game_map.height
     w = game_map.width
     x = index % w
-    y = (index // w)
+    y = index // w
     index_north = x + (w * ((y - 1) % h))
     index_south = x + (w * ((y + 1) % h))
     index_east = ((x + 1) % w) + (w * y)
     index_west = ((x - 1) % w) + (w * y)
     return index_north, index_south, index_east, index_west
+
+
+def bonus_neighbours(index):
+    """Return a generator for the indices of the bonus neighbours."""
+    h = game_map.height
+    w = game_map.width
+    x = index % w
+    y = index // w
+    return (
+        ((x + dx) % w) + (w * ((y + dy) % h))
+            for dx in range(-4, 5)
+                for dy in range(-4 + abs(dx), 5 - abs(dx))
+    )
+
+
+def ship_bonus_neighbours(ship):
+    """Bonus neighbours for a ship."""
+    ship_index = cell_to_index(game_map[ship])
+    return bonus_neighbours(ship_index)
 
 
 def can_move(ship):
@@ -92,6 +112,7 @@ class MapData:
         self.halite = self.available_halite()
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
+        self.in_bonus_range = self.enemies_in_bonus_range()
 
     def available_halite(self):
         """Get an array of available halite on the map."""
@@ -164,3 +185,17 @@ class MapData:
         distance = self.get_distance(ship_index, shipyard_index)
         turns_left = constants.MAX_TURNS - game.turn_number
         return turns_left - math.ceil(distance)
+
+    def enemies_in_bonus_range(self):
+        """Calculate the number of enemies within bonus range for all cells."""
+        m = game_map.height * game_map.width
+        in_bonus_range = np.zeros(m)
+        temp = Counter(
+            index
+                for player in game.players.values() if not player is me
+                    for ship in player.get_ships()
+                        for index in ship_bonus_neighbours(ship)
+        )
+        for key, value in temp.items():
+            in_bonus_range[key] = value
+        return in_bonus_range
