@@ -4,7 +4,8 @@ from hlt import constants
 from scipy.optimize import linear_sum_assignment
 from matplotlib import pyplot as plt
 import numpy as np
-from scheduling import calc_distances, index_to_cell, cell_to_index, Schedule
+from utility import calc_distances, index_to_cell, cell_to_index
+from schedule import Schedule
 
 returning_to_shipyard = set()
 
@@ -36,18 +37,23 @@ def plot(costs, fn):
 
 
 class Scheduler:
-    """Keeps track of Assignments and translates them into a command list."""
+    """Creates a Schedule."""
 
-    def __init__(self, _game_map, _me, turnnumber):
-        self.game_map = _game_map
-        self.me = _me
-        self.schedule = Schedule(self.game_map, self.me)
+    def __init__(self, _game, map_data):
+        self.game_map = _game.game_map
+        self.me = _game.me
+        self.turn_number = _game.turn_number
+        self.map_data = map_data
+        self.schedule = Schedule(_game, map_data)
         self.ships = self.me.get_ships()
-        self.turnnumber = turnnumber
         self.nships = len(self.ships)
         self.nmap = self.game_map.width * self.game_map.height
 
-    def create_cost_matrix(self):
+    def get_schedule(self):
+        self.to_destination()
+        return self.schedule
+
+    def create_cost_matrix(self, remaining_ships):
         """Create a cost matrix for linear_sum_assignment() to determine the destination for each ship based on
         a combination of multiple costs matrices
         Note:
@@ -58,46 +64,54 @@ class Scheduler:
             never be chosen by the algorithm.
         """
 
-        cost_matrix = np.full((self.nships, self.nmap), 9999)
-        halite_matrix = self.halite_matrix()
-        for i in range(len(self.ships)):
-            dist_arr = self.schedule.dist_matrix[i]
-            ship_matrix = self.ship_matrix([self.ships[i]])
-            cost_matrix[i][:] = (
-                (np.max(np.sqrt(halite_matrix)) - np.sqrt(halite_matrix) +
-                dist_arr) *
-                ship_matrix
-            )
-            if i == 0 and self.turnnumber in range(1, 100, 10):
+        cost_matrix = np.full((len(remaining_ships), self.nmap), 9999)
+        halite_array = self.map_data.halite
+        max_halite = np.max(halite_array)
+        for i, ship in enumerate(remaining_ships):
+            ship_cell_index = cell_to_index(self.game_map[ship])
+            distance_array = self.map_data.get_distances(ship_cell_index)
+            cost_matrix[i][:] = -1.0 * halite_array / (distance_array + 0.01)
+            """
+            if i == 0 and self.turn_number in range(1, 100, 10):
                 plot(costs={
                     'cost_matrix': cost_matrix[0][:].reshape(32, 32),
                     'halite_matrix': halite_matrix.reshape(32, 32),
                     'halite_matrix_cost': (np.max(np.sqrt(halite_matrix)) - np.sqrt(halite_matrix)).reshape(32, 32),
                     'dist_array_cost': dist_arr.reshape(32, 32),
                     'ship_matrix': ship_matrix.reshape(32, 32)
-                }, fn=r'replays\img\ship_{}_turn_{}'.format(self.ships[0].id, self.turnnumber))
-        return cost_matrix
+                }, fn=r'replays\img\ship_{}_turn_{}'.format(self.ships[0].id, self.turn_number))
+            """
+            local_halite = halite_array[ship_cell_index]
+            if mining(ship, local_halite):
+                cost_matrix[i][ship_cell_index] = -9999.9
+            else:
+                cost_matrix[i][ship_cell_index] = 9999.9
 
-    def halite_matrix(self):
-        """ Create a 1D ndarray with halite"""
-        return np.array([index_to_cell(j).halite_amount for j in range(self.nmap)])
+        return cost_matrix
 
     def to_destination(self):
         """Find the fit for the cost matrix"""
-        cost_matrix = self.create_cost_matrix()
-        row_ind, col_ind = linear_sum_assignment(cost_matrix)
-
         for ship in self.ships:
             if ship.halite_amount < 0.25 * constants.MAX_HALITE:
                 returning_to_shipyard.discard(ship.id)
+            if self.map_data.free_turns(ship) < 5:
+                returning_to_shipyard.add(ship.id)
 
-        for i, j in zip(row_ind, col_ind):
-            ship = self.ships[i]
+        remaining_ships = []
+        for ship in self.ships:
             if returning(ship):
                 returning_to_shipyard.add(ship.id)
                 destination = self.me.shipyard.position
+                self.schedule.assign(ship, destination)
             else:
-                destination = index_to_cell(j).position
+                remaining_ships.append(ship)
+
+        cost_matrix = self.create_cost_matrix(remaining_ships)
+        row_ind, col_ind = linear_sum_assignment(cost_matrix)
+
+        for i, j in zip(row_ind, col_ind):
+            ship = remaining_ships[i]
+            destination = index_to_cell(j).position
             logging.info('{}, {}'.format(ship, destination))
             self.schedule.assign(ship, destination)
         return self.schedule
