@@ -6,12 +6,14 @@ from statistics import median
 import hlt
 from hlt import constants, Position
 from scheduler import Scheduler
+from utility import MapData
 
 
 def create_schedule():
-    scheduler = Scheduler(game_map, me, turnnumber=game.turn_number)
-    scheduler.to_destination()
-    return scheduler.schedule
+    """Creates a schedule based on the current game map."""
+    map_data = MapData(game)
+    scheduler = Scheduler(game, map_data)
+    return scheduler.get_schedule()
 
 
 def add_move_commands(command_queue):
