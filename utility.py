@@ -106,7 +106,7 @@ class MapData:
         m = game_map.height * game_map.width
         col = np.array([j for i in range(m) for j in neighbours(i)])
         row = np.repeat(np.arange(m), 4)
-        Schedule.edge_data = (row, col)
+        MapData.edge_data = (row, col)
 
     def create_graph(self):
         """Create a matrix representing the game map graph.
@@ -118,10 +118,10 @@ class MapData:
             moving. Therefore, the most efficient path is chosen when there
             are several shortest distance paths.
         """
-        if Schedule.edge_data is None:
+        if MapData.edge_data is None:
             self.initialize_edge_data()
         edge_costs = np.repeat(1.0 + self.halite / 1000.0, 4)
-        edge_data = Schedule.edge_data
+        edge_data = MapData.edge_data
         m = game_map.height * game_map.width
         return csr_matrix((edge_costs, edge_data), shape=(m, m))
 

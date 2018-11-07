@@ -2,6 +2,7 @@ from hlt import Direction, constants
 from scipy.optimize import linear_sum_assignment
 import numpy as np
 import logging, math, time
+from utility import target, index_to_cell, cell_to_index, can_move, neighbours
 
 
 class Assignment:
@@ -33,6 +34,7 @@ class Schedule:
         game_map = game.game_map
         me = game.me
         self.assignments = []
+        self.map_data = map_data
 
     def assign(self, ship, destination):
         """Assign a ship to a destination."""
@@ -60,11 +62,11 @@ class Schedule:
             destination = assignment.destination
             origin_index = cell_to_index(game_map[ship])
             target_index = cell_to_index(game_map[destination])
-            cost = self.get_distance(origin_index, target_index)
+            cost = self.map_data.get_distance(origin_index, target_index)
             cost_matrix[k][origin_index] = cost - 0.1
             if can_move(ship):
                 for neighbour_index in neighbours(origin_index):
-                    cost = self.get_distance(neighbour_index, target_index)
+                    cost = self.map_data.get_distance(neighbour_index, target_index)
                     cost_matrix[k][neighbour_index] = cost
 
     def create_cost_matrix(self):

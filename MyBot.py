@@ -3,7 +3,8 @@
 import logging, hlt, time
 from hlt import constants, Direction, Position
 from statistics import median
-from scheduling import Schedule, cell_to_index
+from schedule import Schedule
+from utility import cell_to_index, MapData
 
 #
 # Idee: definieer hoeveel stappen halite waard is, om te bepalen of er een dropoff moet komen en zo ja waar. Als
@@ -44,20 +45,21 @@ def mining(ship, local_halite):
     return (local_halite > 0.05 * constants.MAX_HALITE) or (0.2 * local_halite > ship.halite_amount)
 
 
-def can_just_make_it(ship, schedule):
+def can_just_make_it(ship, map_data):
     turns_left = constants.MAX_TURNS - game.turn_number
-    distance = schedule.get_distance(cell_to_index(game_map[ship]), cell_to_index(game_map[me.shipyard]))
+    distance = map_data.get_distance(cell_to_index(game_map[ship]), cell_to_index(game_map[me.shipyard]))
     return turns_left - 6 <= distance
 
 def create_schedule():
-    schedule = Schedule(game)
+    map_data = MapData(game)
+    schedule = Schedule(game, map_data)
     # Preprocessing.
     for ship in me.get_ships():
         if ship.halite_amount < 0.25 * constants.MAX_HALITE:
             returning_to_shipyard.discard(ship.id)
 
     for ship in me.get_ships():
-        if can_just_make_it(ship, schedule):
+        if can_just_make_it(ship, map_data):
             returning_to_shipyard.add(ship.id)
 
     # Move ships.
