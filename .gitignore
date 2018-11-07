@@ -11,4 +11,5 @@ __pycache__/
 *.iws
 .idea/*
 archive/*
+replays/*
 env-halite/*
