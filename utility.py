@@ -1,6 +1,5 @@
-from hlt import Direction, Position, constants
-from scipy.optimize import linear_sum_assignment
-from scipy.sparse.csgraph import dijkstra, shortest_path
+from hlt import Direction, Position
+from scipy.sparse.csgraph import dijkstra
 from scipy.sparse import csr_matrix
 import numpy as np
 import logging, math, time
