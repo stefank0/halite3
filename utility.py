@@ -1,11 +1,8 @@
-from hlt import Direction, Position
+from hlt import Direction, Position, constants
 from scipy.sparse.csgraph import dijkstra
 from scipy.sparse import csr_matrix
 import numpy as np
 import logging, math, time
-
-
-# Analyzer component die de distances berekent en de ships die terug moeten keren.
 
 
 def calc_distances(origin, destination):
@@ -112,15 +109,18 @@ class MapData:
         """Create a matrix representing the game map graph.
 
         Note:
-            The edge cost 1.0 + cell.halite_amount / 1000.0 is chosen such
+            The edge cost 1.0 + cell.halite_amount / 750.0 is chosen such
             that the shortest path is mainly based on the number of steps
             necessary, but also slightly incorporates the halite costs of
             moving. Therefore, the most efficient path is chosen when there
             are several shortest distance paths.
+            More solid justification: if mining yields 75 halite on average,
+            one mining turn corresponds to moving over 75/(10%) = 750 halite.
+            Therefore, moving over 1 halite corresponds to 1/750 of a turn.
         """
         if MapData.edge_data is None:
             self.initialize_edge_data()
-        edge_costs = np.repeat(1.0 + self.halite / 1000.0, 4)
+        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4)
         edge_data = MapData.edge_data
         m = game_map.height * game_map.width
         return csr_matrix((edge_costs, edge_data), shape=(m, m))
@@ -156,3 +156,11 @@ class MapData:
     def get_distance(self, origin_index, target_index):
         """Get the perturbed distance from some cell to another."""
         return self.get_distances(origin_index)[target_index]
+
+    def free_turns(self, ship):
+        """Get the number of turns that the ship can move freely."""
+        ship_index = cell_to_index(game_map[ship])
+        shipyard_index = cell_to_index(game_map[me.shipyard])
+        distance = self.get_distance(ship_index, shipyard_index)
+        turns_left = constants.MAX_TURNS - game.turn_number
+        return turns_left - math.ceil(distance)

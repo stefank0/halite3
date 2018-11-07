@@ -46,9 +46,8 @@ def mining(ship, local_halite):
 
 
 def can_just_make_it(ship, map_data):
-    turns_left = constants.MAX_TURNS - game.turn_number
-    distance = map_data.get_distance(cell_to_index(game_map[ship]), cell_to_index(game_map[me.shipyard]))
-    return turns_left - 6 <= distance
+    return map_data.free_turns(ship) < 5
+
 
 def create_schedule():
     map_data = MapData(game)
