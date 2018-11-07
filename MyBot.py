@@ -3,10 +3,8 @@
 import logging
 import time
 from statistics import median
-
 import hlt
 from hlt import constants, Position
-
 from scheduler import Scheduler
 
 
@@ -18,14 +16,8 @@ def create_schedule():
 
 def add_move_commands(command_queue):
     """Add movement commands to the command queue."""
-    start = time.time()
     schedule = create_schedule()
-    end = time.time()
-    logging.info(end - start)
-    start = time.time()
     command_queue.extend(schedule.to_commands())
-    end = time.time()
-    logging.info(end - start)
 
 
 def other_players():

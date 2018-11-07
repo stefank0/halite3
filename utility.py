@@ -1,14 +1,9 @@
-from hlt import Direction, Position
-from scipy.optimize import linear_sum_assignment
-from scipy.sparse.csgraph import dijkstra, shortest_path
+from hlt import Direction, Position, constants
+from scipy.sparse.csgraph import dijkstra
 from scipy.sparse import csr_matrix
 import numpy as np
 import logging, math, time
-
-
-# Oplossing bij einde spel, wanneer ze elkaar mogen raken op shipyard/dropoffs:
-# - Extra artificial targets maken, zodat shipyards vaker gekozen kunnen worden.
-# - Of de schepen grenzend aan een shipyard ertussenuit pikken en deze direct accepteren.
+from collections import Counter
 
 
 def calc_distances(origin, destination):
@@ -46,6 +41,12 @@ def target(origin, direction):
     return game_map[origin.directional_offset(direction)]
 
 
+def targets(origin, destination):
+    """Get a list of proper target cells for the next move."""
+    directions = viable_directions(origin, destination)
+    return [target(origin, direction) for direction in directions]
+
+
 def index_to_cell(index):
     """Map a 1D index to a 2D MapCell."""
     x = index % game_map.width
@@ -65,12 +66,31 @@ def neighbours(index):
     h = game_map.height
     w = game_map.width
     x = index % w
-    y = (index // w)
+    y = index // w
     index_north = x + (w * ((y - 1) % h))
     index_south = x + (w * ((y + 1) % h))
     index_east = ((x + 1) % w) + (w * y)
     index_west = ((x - 1) % w) + (w * y)
     return index_north, index_south, index_east, index_west
+
+
+def bonus_neighbours(index):
+    """Return a generator for the indices of the bonus neighbours."""
+    h = game_map.height
+    w = game_map.width
+    x = index % w
+    y = index // w
+    return (
+        ((x + dx) % w) + (w * ((y + dy) % h))
+            for dx in range(-4, 5)
+                for dy in range(-4 + abs(dx), 5 - abs(dx))
+    )
+
+
+def ship_bonus_neighbours(ship):
+    """Bonus neighbours for a ship."""
+    ship_index = cell_to_index(game_map[ship])
+    return bonus_neighbours(ship_index)
 
 
 def can_move(ship):
@@ -79,45 +99,20 @@ def can_move(ship):
     return necessary_halite <= ship.halite_amount
 
 
-class Assignment:
-    """An assignment of a ship to a destination."""
-
-    def __init__(self, ship, destination):
-        self.ship = ship
-        self.destination = destination
-
-    def targets(self):
-        """Get a list of proper target cells for the next move."""
-        origin = self.ship.position
-        directions = viable_directions(origin, self.destination)
-        return [target(origin, direction) for direction in directions]
-
-    def to_command(self, target_cell):
-        """Return command to move its ship to a target cell."""
-        target_cell.mark_unsafe(self.ship)
-
-        if target_cell == game_map[self.ship]:
-            return self.ship.stay_still()
-
-        origin = self.ship.position
-        for direction in Direction.get_all_cardinals():
-            if target_cell == target(origin, direction):
-                return self.ship.move(direction)
-
-
-class Schedule:
-    """Keeps track of Assignments and translates them into a command list."""
+class MapData:
+    """Analyzes the gamemap and provides useful data/statistics."""
 
     edge_data = None
 
-    def __init__(self, _game_map, _me):
-        global game_map, me
-        game_map = _game_map
-        me = _me
-        self.assignments = []
+    def __init__(self, _game):
+        global game, game_map, me
+        game = _game
+        game_map = game.game_map
+        me = game.me
         self.halite = self.available_halite()
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
+        self.in_bonus_range = self.enemies_in_bonus_range()
 
     def available_halite(self):
         """Get an array of available halite on the map."""
@@ -129,22 +124,25 @@ class Schedule:
         m = game_map.height * game_map.width
         col = np.array([j for i in range(m) for j in neighbours(i)])
         row = np.repeat(np.arange(m), 4)
-        Schedule.edge_data = (row, col)
+        MapData.edge_data = (row, col)
 
     def create_graph(self):
         """Create a matrix representing the game map graph.
 
         Note:
-            The edge cost 1.0 + cell.halite_amount / 1000.0 is chosen such
+            The edge cost 1.0 + cell.halite_amount / 750.0 is chosen such
             that the shortest path is mainly based on the number of steps
             necessary, but also slightly incorporates the halite costs of
             moving. Therefore, the most efficient path is chosen when there
             are several shortest distance paths.
+            More solid justification: if mining yields 75 halite on average,
+            one mining turn corresponds to moving over 75/(10%) = 750 halite.
+            Therefore, moving over 1 halite corresponds to 1/750 of a turn.
         """
-        if Schedule.edge_data is None:
+        if MapData.edge_data is None:
             self.initialize_edge_data()
-        edge_costs = np.repeat(1.0 + self.halite / 1000.0, 4)
-        edge_data = Schedule.edge_data
+        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4)
+        edge_data = MapData.edge_data
         m = game_map.height * game_map.width
         return csr_matrix((edge_costs, edge_data), shape=(m, m))
 
@@ -180,52 +178,24 @@ class Schedule:
         """Get the perturbed distance from some cell to another."""
         return self.get_distances(origin_index)[target_index]
 
-    def assign(self, ship, destination):
-        """Assign a ship to a destination."""
-        assignment = Assignment(ship, destination)
-        self.assignments.append(assignment)
+    def free_turns(self, ship):
+        """Get the number of turns that the ship can move freely."""
+        ship_index = cell_to_index(game_map[ship])
+        shipyard_index = cell_to_index(game_map[me.shipyard])
+        distance = self.get_distance(ship_index, shipyard_index)
+        turns_left = constants.MAX_TURNS - game.turn_number
+        return turns_left - math.ceil(distance)
 
-    def initial_cost_matrix(self):
-        """Initialize the cost matrix with high costs for every move.
-
-        Note:
-            The rows/columns of the cost matrix represent ships/targets. An
-            element in the cost matrix represents the cost of moving a ship
-            to a target. Some elements represent moves that are not possible
-            in a single turn. However, because these have high costs, they will
-            never be chosen by the algorithm.
-        """
-        n = len(self.assignments)  # Number of assignments/ships.
-        m = game_map.width * game_map.height  # Number of cells/targets.
-        return np.full((n, m), 99999999999.9)
-
-    def reduce_feasible(self, cost_matrix):
-        """Reduce the cost of all feasible moves for all ships."""
-        for k, assignment in enumerate(self.assignments):
-            ship = assignment.ship
-            destination = assignment.destination
-            origin_index = cell_to_index(game_map[ship])
-            target_index = cell_to_index(game_map[assignment.destination])
-            cost = self.get_distance(origin_index, target_index)
-            cost_matrix[k][origin_index] = cost
-            if can_move(ship):
-                for neighbour_index in neighbours(origin_index):
-                    cost = self.get_distance(neighbour_index, target_index)
-                    cost_matrix[k][neighbour_index] = cost
-
-    def create_cost_matrix(self):
-        """"Create a cost matrix for linear_sum_assignment()."""
-        cost_matrix = self.initial_cost_matrix()
-        self.reduce_feasible(cost_matrix)
-        return cost_matrix
-
-    def to_commands(self):
-        """Translate the assignments of ships to commands."""
-        commands = []
-        cost_matrix = self.create_cost_matrix()
-        row_ind, col_ind = linear_sum_assignment(cost_matrix)
-        for k, i in zip(row_ind, col_ind):
-            assignment = self.assignments[k]
-            target = index_to_cell(i)
-            commands.append(assignment.to_command(target))
-        return commands
+    def enemies_in_bonus_range(self):
+        """Calculate the number of enemies within bonus range for all cells."""
+        m = game_map.height * game_map.width
+        in_bonus_range = np.zeros(m)
+        temp = Counter(
+            index
+                for player in game.players.values() if not player is me
+                    for ship in player.get_ships()
+                        for index in ship_bonus_neighbours(ship)
+        )
+        for key, value in temp.items():
+            in_bonus_range[key] = value
+        return in_bonus_range
