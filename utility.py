@@ -75,15 +75,20 @@ def neighbours(index):
 
 
 def bonus_neighbours(index):
-    """Return a generator for the indices of the bonus neighbours."""
+    """Return a generator for the indices of the bonus neighbours.
+
+    Note:
+        A range of 3 is taken, so that the enemy ship cannot get out of range
+        in the same turn and to make it more robust in general.
+    """
     h = game_map.height
     w = game_map.width
     x = index % w
     y = index // w
     return (
         ((x + dx) % w) + (w * ((y + dy) % h))
-            for dx in range(-4, 5)
-                for dy in range(-4 + abs(dx), 5 - abs(dx))
+            for dx in range(-3, 4)
+                for dy in range(-3 + abs(dx), 4 - abs(dx))
     )
 
 
@@ -91,6 +96,26 @@ def ship_bonus_neighbours(ship):
     """Bonus neighbours for a ship."""
     ship_index = cell_to_index(game_map[ship])
     return bonus_neighbours(ship_index)
+
+
+def threat(ship):
+    """Get the indices threatened by an enemy ship.
+
+    Note:
+        The current location of the ship counts extra, because a ship is
+        likely to stay still. Possible improvement: guess if the ship is going
+        to move based on the halite of its current position and its cargo.
+        At the moment, the ships current position is more threatening if it is
+        not carrying much halite.
+    """
+    ship_index = cell_to_index(game_map[ship])
+    if ship.halite_amount < 0.5 * constants.MAX_HALITE:
+        factor = 12
+    elif ship.halite_amount < 0.8 * constants.MAX_HALITE:
+        factor = 6
+    else:
+        factor = 1
+    return tuple(ship_index for i in range(factor)) + neighbours(ship_index)
 
 
 def can_move(ship):
@@ -113,6 +138,7 @@ class MapData:
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
+        self.enemy_threat = self.calculate_enemy_threat()
 
     def available_halite(self):
         """Get an array of available halite on the map."""
@@ -167,7 +193,8 @@ class MapData:
             - reduce graph size, only include the relevant part of the map.
         """
         indices = self.shortest_path_indices()
-        dist_matrix = dijkstra(self.graph, indices=indices)
+        dist_matrix = dijkstra(self.graph, indices=indices, limit=30.0)
+        dist_matrix[dist_matrix == np.inf] = 99999.9
         return dist_matrix, indices
 
     def get_distances(self, origin_index):
@@ -186,16 +213,24 @@ class MapData:
         turns_left = constants.MAX_TURNS - game.turn_number
         return turns_left - math.ceil(distance)
 
-    def enemies_in_bonus_range(self):
-        """Calculate the number of enemies within bonus range for all cells."""
+    def _index_count(self, index_func):
+        """Loops over enemy ships and counts indices return by index_func."""
         m = game_map.height * game_map.width
-        in_bonus_range = np.zeros(m)
+        index_count = np.zeros(m)
         temp = Counter(
             index
                 for player in game.players.values() if not player is me
                     for ship in player.get_ships()
-                        for index in ship_bonus_neighbours(ship)
+                        for index in index_func(ship)
         )
         for key, value in temp.items():
-            in_bonus_range[key] = value
-        return in_bonus_range
+            index_count[key] = value
+        return index_count
+
+    def enemies_in_bonus_range(self):
+        """Calculate the number of enemies within bonus range for all cells."""
+        return self._index_count(ship_bonus_neighbours)
+
+    def calculate_enemy_threat(self):
+        """Calculate enemy threat for all cells."""
+        return self._index_count(threat)
