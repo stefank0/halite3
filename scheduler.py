@@ -51,9 +51,9 @@ class Scheduler:
         ship_cell_index = cell_to_index(self.game_map[ship])
         shipyard_index = cell_to_index(self.game_map[self.me.shipyard])
         if self.map_data.get_distance(ship_cell_index, shipyard_index) < 7:
-            return (ship.halite_amount > 0.75 * constants.MAX_HALITE)
+            return ship.halite_amount > 0.75 * constants.MAX_HALITE
         else:
-            return (ship.halite_amount > 0.95 * constants.MAX_HALITE)
+            return ship.halite_amount > 0.95 * constants.MAX_HALITE
 
     def create_cost_matrix(self, remaining_ships):
         """Create a cost matrix for linear_sum_assignment() to determine the destination for each ship based on
@@ -71,12 +71,13 @@ class Scheduler:
         max_halite = np.max(halite_array)
         threat_factor = 3.0 / (self.map_data.enemy_threat + 3.0)
         bonus_factor = 1.0 + 1.5 * (self.map_data.in_bonus_range > 1)
-        c =  -1.0 * halite_array * threat_factor * bonus_factor
+        c = -1.0 * halite_array * threat_factor * bonus_factor
 
         for i, ship in enumerate(remaining_ships):
             ship_cell_index = cell_to_index(self.game_map[ship])
             distance_array = self.map_data.get_distances(ship_cell_index)
-            # Maximize the halite gathered per turn (considering only the first mining action)(factor 0.25 not necessary, because it is there for all costs)(amount of turns: steps + 1 for mining)
+            # Maximize the halite gathered per turn (considering only the first mining action)(factor 0.25 not
+            # necessary, because it is there for all costs)(amount of turns: steps + 1 for mining)
             cost_matrix[i][:] = c / (distance_array + 1.0)
             """
             if i == 0 and self.turn_number in range(1, 100, 10):
@@ -99,10 +100,14 @@ class Scheduler:
         ship_cell_index = cell_to_index(ship_cell)
         shipyard_index = cell_to_index(self.game_map[self.me.shipyard])
         # Create olifantenpaadjes:
-        if 200 < self.turn_number < 300 and ship_cell.halite_amount > 40 and constants.MAX_HALITE - ship.halite_amount > 30 and self.map_data.get_distance(ship_cell_index, shipyard_index) < 7:
+        if (
+            200 < self.turn_number < 300 and
+            ship_cell.halite_amount > 40 and
+            constants.MAX_HALITE - ship.halite_amount > 30 and
+            self.map_data.get_distance(ship_cell_index, shipyard_index) < 7
+        ):
             destination = ship.position
         self.schedule.assign(ship, destination)
-
 
     def to_destination(self):
         """Find the fit for the cost matrix"""
@@ -125,7 +130,6 @@ class Scheduler:
         for i, j in zip(row_ind, col_ind):
             ship = remaining_ships[i]
             destination = index_to_cell(j).position
-            #logging.info('{}, {}'.format(ship, destination))
             self.schedule.assign(ship, destination)
         return self.schedule
 

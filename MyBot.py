@@ -24,7 +24,7 @@ def add_move_commands(command_queue):
 
 def other_players():
     """Get a list of the other players."""
-    return [player for player in game.players.values() if not player is me]
+    return [player for player in game.players.values() if player is not me]
 
 
 def number_of_ships(player):
