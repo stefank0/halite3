@@ -10,14 +10,6 @@ from schedule import Schedule
 returning_to_shipyard = set()
 
 
-def returning(ship):
-    return (ship.halite_amount > 0.75 * constants.MAX_HALITE) or (ship.id in returning_to_shipyard)
-
-
-def mining(ship, local_halite):
-    return (local_halite > 0.05 * constants.MAX_HALITE) or (0.2 * local_halite > ship.halite_amount)
-
-
 def calc_shortest_dist(origin, destination):
     d_north, d_south, d_east, d_west = calc_distances(origin, destination)
     return min(d_north, d_south) + min(d_east, d_west)
@@ -53,6 +45,16 @@ class Scheduler:
         self.to_destination()
         return self.schedule
 
+    def returning(self, ship):
+        if ship.id in returning_to_shipyard:
+            return True
+        ship_cell_index = cell_to_index(self.game_map[ship])
+        shipyard_index = cell_to_index(self.game_map[self.me.shipyard])
+        if self.map_data.get_distance(ship_cell_index, shipyard_index) < 7:
+            return (ship.halite_amount > 0.75 * constants.MAX_HALITE)
+        else:
+            return (ship.halite_amount > 0.95 * constants.MAX_HALITE)
+
     def create_cost_matrix(self, remaining_ships):
         """Create a cost matrix for linear_sum_assignment() to determine the destination for each ship based on
         a combination of multiple costs matrices
@@ -70,7 +72,8 @@ class Scheduler:
         for i, ship in enumerate(remaining_ships):
             ship_cell_index = cell_to_index(self.game_map[ship])
             distance_array = self.map_data.get_distances(ship_cell_index)
-            cost_matrix[i][:] = -1.0 * halite_array / (distance_array + 0.01)
+            # Maximize the halite gathered per turn (considering only the first mining action)(factor 0.25 not necessary, because it is there for all costs)(amount of turns: steps + 1 for mining)
+            cost_matrix[i][:] = -1.0 * halite_array / (distance_array + 1.0)
             """
             if i == 0 and self.turn_number in range(1, 100, 10):
                 plot(costs={
@@ -81,11 +84,6 @@ class Scheduler:
                     'ship_matrix': ship_matrix.reshape(32, 32)
                 }, fn=r'replays\img\ship_{}_turn_{}'.format(self.ships[0].id, self.turn_number))
             """
-            local_halite = halite_array[ship_cell_index]
-            if mining(ship, local_halite):
-                cost_matrix[i][ship_cell_index] = -9999.9
-            else:
-                cost_matrix[i][ship_cell_index] = 9999.9
 
         return cost_matrix
 
@@ -94,12 +92,12 @@ class Scheduler:
         for ship in self.ships:
             if ship.halite_amount < 0.25 * constants.MAX_HALITE:
                 returning_to_shipyard.discard(ship.id)
-            if self.map_data.free_turns(ship) < 5:
+            if self.map_data.free_turns(ship) < 7:
                 returning_to_shipyard.add(ship.id)
 
         remaining_ships = []
         for ship in self.ships:
-            if returning(ship):
+            if self.returning(ship):
                 returning_to_shipyard.add(ship.id)
                 destination = self.me.shipyard.position
                 self.schedule.assign(ship, destination)
