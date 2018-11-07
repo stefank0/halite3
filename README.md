@@ -12,6 +12,10 @@
 ## CLI
 The Halite executable comes with a command line interface (CLI). Run `$ ./halite --help` to see a full listing of available flags.
 
+
+## Local viewer
+* Fluorine can be used to view replays locally https://github.com/fohristiwhirl/fluorine/releases
+
 ## Submitting your bot
 * Zip your MyBot.{extension} file and /hlt directory together.
 * Submit your zipped file here: https://beta.halite.io/play-programming-challenge
