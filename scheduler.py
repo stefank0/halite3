@@ -127,8 +127,6 @@ class Scheduler:
         if self.dropoff_time():
             ship = self.dropoff_ship(remaining_ships)
             self.schedule.dropoff(ship)
-            logging.info(ship)
-            logging.info(remaining_ships)
             remaining_ships.remove(ship)
 
         cost_matrix = self.create_cost_matrix(remaining_ships)
@@ -151,11 +149,13 @@ class Scheduler:
         if (
             self.turn_number > 200 and
             self.me.halite_amount > constants.DROPOFF_COST and
-            len(self.me.get_dropoffs()) < 3
+            len(self.me.get_dropoffs()) < 2
         ):
             return True
         return False
 
     def dropoff_ship(self, ships):
         """Determine ship that creates dropoff"""
-        return ships[0]
+        halites = np.array([ship.halite_amount + self.game_map[ship].halite_amount for ship in ships])
+        logging.info(halites)
+        return ships[halites.argmax()]
