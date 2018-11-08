@@ -124,6 +124,13 @@ class Scheduler:
             else:
                 remaining_ships.append(ship)
 
+        if self.dropoff_time():
+            ship = self.dropoff_ship(remaining_ships)
+            self.schedule.dropoff(ship)
+            logging.info(ship)
+            logging.info(remaining_ships)
+            remaining_ships.remove(ship)
+
         cost_matrix = self.create_cost_matrix(remaining_ships)
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
 
@@ -138,3 +145,17 @@ class Scheduler:
         for ship in ships:
             ship_matrix[cell_to_index(ship)] = .5
         return ship_matrix
+
+    def dropoff_time(self):
+        """Determine if it is time to create dropoff"""
+        if (
+            self.turn_number > 200 and
+            self.me.halite_amount > constants.DROPOFF_COST and
+            len(self.me.get_dropoffs()) < 3
+        ):
+            return True
+        return False
+
+    def dropoff_ship(self, ships):
+        """Determine ship that creates dropoff"""
+        return ships[0]

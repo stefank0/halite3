@@ -25,6 +25,17 @@ class Assignment:
                 return self.ship.move(direction)
 
 
+class AssignmentDropoff(Assignment):
+    """An assignment of a ship to make a dropoff."""
+
+    def __init__(self, ship):
+        Assignment.__init__(self, ship, ship.position)
+
+    def to_command(self, target_cell):
+        target_cell.mark_unsafe(self.ship)
+        return self.ship.make_dropoff()
+
+
 class Schedule:
     """Keeps track of Assignments and translates them into a command list."""
 
@@ -39,6 +50,10 @@ class Schedule:
     def assign(self, ship, destination):
         """Assign a ship to a destination."""
         assignment = Assignment(ship, destination)
+        self.assignments.append(assignment)
+
+    def dropoff(self, ship):
+        assignment = AssignmentDropoff(ship)
         self.assignments.append(assignment)
 
     def initial_cost_matrix(self):
