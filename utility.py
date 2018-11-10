@@ -119,7 +119,7 @@ def threat(ship):
         not carrying much halite.
     """
     ship_index = cell_to_index(game_map[ship])
-    factor = math.ceil(4.0 * (1.0 - cargo_space(ship)**2))
+    factor = math.ceil(4.0 * (1.0 - packing_fraction(ship)**2))
     return tuple(ship_index for i in range(factor)) + neighbours(ship_index)
 
 
@@ -129,10 +129,9 @@ def can_move(ship):
     return necessary_halite <= ship.halite_amount
 
 
-def cargo_space(ship):
-    """Get the percentage of free space in a ship."""
-    max_halite = constants.MAX_HALITE
-    return (max_halite - ship.halite_amount) / max_halite
+def packing_fraction(ship):
+    """Get the packing/fill fraction of the ship."""
+    return ship.halite_amount / constants.MAX_HALITE
 
 
 class MapData:
@@ -236,7 +235,7 @@ class MapData:
         """Estimate the probability that a ship will mine the next turn."""
         ship_index = cell_to_index(game_map[ship])
         simple_cost = self.halite / (simple_distances(ship_index) + 1.0)
-        cargo_factor = min(1.0, 4.0 * cargo_space(ship))
+        cargo_factor = min(1.0, 10.0 * (1.0 - packing_fraction(ship)))
         return cargo_factor * simple_cost[ship_index] / simple_cost.max
 
     def _index_count(self, index_func):
