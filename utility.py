@@ -231,6 +231,13 @@ class MapData:
         turns_left = constants.MAX_TURNS - game.turn_number
         return turns_left - math.ceil(distance)
 
+    def mining_probability(self, ship):
+        """Estimate the probability that a ship will mine the next turn."""
+        ship_index = cell_to_index(game_map[ship])
+        simple_distance = simple_distances(ship_index)
+        simple_cost = self.halite / (simple_distance + 1.0)
+        return simple_cost[ship_index] / simple_cost.max
+
     def _index_count(self, index_func):
         """Loops over enemy ships and counts indices return by index_func."""
         m = game_map.height * game_map.width
