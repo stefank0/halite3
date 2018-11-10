@@ -28,7 +28,7 @@ def simple_distance(index_a, index_b):
     return min(dx, width - dx) + min(dy, height - dy)
 
 
-def simple_distances(index)
+def simple_distances(index):
     """Get an array of the actual step distances to all cells."""
     m = game_map.height * game_map.width
     return np.array([simple_distance(index, i) for i in range(m)])
@@ -119,12 +119,7 @@ def threat(ship):
         not carrying much halite.
     """
     ship_index = cell_to_index(game_map[ship])
-    if ship.halite_amount < 0.5 * constants.MAX_HALITE:
-        factor = 12
-    elif ship.halite_amount < 0.8 * constants.MAX_HALITE:
-        factor = 6
-    else:
-        factor = 1
+    factor = math.ceil(4.0 * (1.0 - cargo_space(ship)**2))
     return tuple(ship_index for i in range(factor)) + neighbours(ship_index)
 
 
@@ -132,6 +127,12 @@ def can_move(ship):
     """Return True if a ship is able to move."""
     necessary_halite = math.ceil(0.1 * game_map[ship].halite_amount)
     return necessary_halite <= ship.halite_amount
+
+
+def cargo_space(ship):
+    """Get the percentage of free space in a ship."""
+    max_halite = constants.MAX_HALITE
+    return (max_halite - ship.halite_amount) / max_halite
 
 
 class MapData:
@@ -149,7 +150,7 @@ class MapData:
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
-        self.enemy_threat = self.calculate_enemy_threat()
+        self.global_threat = self.calculate_global_threat()
 
     def get_available_halite(self):
         """Get an array of available halite on the map."""
@@ -231,17 +232,11 @@ class MapData:
         turns_left = constants.MAX_TURNS - game.turn_number
         return turns_left - math.ceil(distance)
 
-    def _cargo_factor(self, ship):
-        """Get a factor for mining_probability() related to cargo space."""
-        max_halite = constants.MAX_HALITE
-        cargo_space = (max_halite - ship.halite_amount) / max_halite
-        return min(1.0, 4.0 * cargo_space)
-
     def mining_probability(self, ship):
         """Estimate the probability that a ship will mine the next turn."""
         ship_index = cell_to_index(game_map[ship])
         simple_cost = self.halite / (simple_distances(ship_index) + 1.0)
-        cargo_factor = self._cargo_factor(ship)
+        cargo_factor = min(1.0, 4.0 * cargo_space(ship))
         return cargo_factor * simple_cost[ship_index] / simple_cost.max
 
     def _index_count(self, index_func):
@@ -262,6 +257,11 @@ class MapData:
         """Calculate the number of enemies within bonus range for all cells."""
         return self._index_count(ship_bonus_neighbours)
 
-    def calculate_enemy_threat(self):
-        """Calculate enemy threat for all cells."""
-        return self._index_count(threat)
+    def calculate_global_threat(self):
+        """Calculate enemy threat factor for all cells."""
+        return 3.0 / (self._index_count(threat) + 3.0)
+
+    def local_threat(self, ship):
+        """Calculate enemy threat factor near a ship."""
+        m = game_map.height * game_map.width
+        return np.ones(m) #Kijk 2 plekjes verder
