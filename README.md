@@ -10,14 +10,8 @@
         * turn number (not preferred) --> test case (mid game)
         * average distance between ships and closest dropoff points too big        
 * location is right 
-    * high density halite (me.ship + game cell)
-    * http://pro.arcgis.com/en/pro-app/tool-reference/spatial-analyst/focal-statistics.htm
-    * neighbourhood dependent on map size?
     * distance between other drop off points (> x cells)
     * closer to the enemy to 'steal' more halite with higher changes on bonus
-* consequences:
-    * extend assignment (not only move to destination)
-    * allocate ship to least costs to dropoff (player.get_dropoffs())
 
 ### 1.2. TODO - optimize vars
 * rethink independent variables and minimize amount 

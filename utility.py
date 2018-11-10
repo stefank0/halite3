@@ -251,3 +251,10 @@ class MapData:
     def calculate_enemy_threat(self):
         """Calculate enemy threat for all cells."""
         return self._index_count(threat)
+
+    def distance_dropoffs(self, ships):
+        dists = []
+        for ship in ships:
+            dropoff = self.get_closest(ship, self.dropoffs)
+            dists.append(self.get_distance(cell_to_index(ship), cell_to_index(dropoff)))
+        return np.array(dists)
