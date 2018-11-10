@@ -65,17 +65,17 @@ class Scheduler:
 
         cost_matrix = np.full((len(remaining_ships), self.nmap), 9999)
         halite_array = self.map_data.halite
-        halite_density = self.map_data.halite_density
-        threat_factor = 3.0 / (self.map_data.enemy_threat + 3.0)
-        bonus_factor = 1.0 + 1.5 * (self.map_data.in_bonus_range > 1)
-        c = -1.0 * halite_array * threat_factor * bonus_factor
+        global_threat_factor = self.map_data.global_threat
+        bonus_factor = 1 + 3 * (self.map_data.in_bonus_range > 1)
+        c = -1.0 * halite_array * global_threat_factor * bonus_factor
 
         for i, ship in enumerate(remaining_ships):
-            ship_cell_index = cell_to_index(ship)
+            ship_cell_index = cell_to_index(self.game_map[ship])
+            local_threat_factor = self.map_data.local_threat(ship)
             distance_array = self.map_data.get_distances(ship_cell_index)
             # Maximize the halite gathered per turn (considering only the first mining action)(factor 0.25 not
             # necessary, because it is there for all costs)(amount of turns: steps + 1 for mining)
-            cost_matrix[i][:] = c / (distance_array + 1.0)
+            cost_matrix[i][:] = c / (distance_array + 1.0) * local_threat_factor
         return cost_matrix
 
     def assign_return(self, ship):
