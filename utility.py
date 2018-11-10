@@ -243,10 +243,8 @@ class MapData:
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""
         ship_index = cell_to_index(game_map[ship])
-
         dropoff = self.get_closest(ship, self.dropoffs)
-        dropoff_index = cell_to_index(game_map[dropoff])
-        # shipyard_index = cell_to_index(game_map[me.shipyard])
+        dropoff_index = cell_to_index(dropoff)
         distance = self.get_distance(ship_index, dropoff_index)
         turns_left = constants.MAX_TURNS - game.turn_number
         return turns_left - math.ceil(distance)
