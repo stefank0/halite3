@@ -231,14 +231,21 @@ class MapData:
         turns_left = constants.MAX_TURNS - game.turn_number
         return turns_left - math.ceil(distance)
 
-    def mining_probability(self, ship):
-        """Estimate the probability that a ship will mine the next turn."""
+    def _cargo_factor(self, ship):
+        """Get a factor for mining_probability() related to cargo space."""
         max_halite = constants.MAX_HALITE
         cargo_space = (max_halite - ship.halite_amount) / max_halite
-        cargo_factor = min(1.0, 4.0 * cargo_space)
+        return min(1.0, 4.0 * cargo_space)
+
+    def _simple_cost(self, ship_index):
+        """Estimate a cost function based on simple distances."""
+        return self.halite / (simple_distances(ship_index) + 1.0)
+
+    def mining_probability(self, ship):
+        """Estimate the probability that a ship will mine the next turn."""
         ship_index = cell_to_index(game_map[ship])
-        simple_distance = simple_distances(ship_index)
-        simple_cost = self.halite / (simple_distance + 1.0)
+        simple_cost = self._simple_cost(ship_index)
+        cargo_factor = self._cargo_factor(ship)
         return cargo_factor * simple_cost[ship_index] / simple_cost.max
 
     def _index_count(self, index_func):
