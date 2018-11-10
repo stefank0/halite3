@@ -75,20 +75,15 @@ def neighbours(index):
 
 
 def bonus_neighbours(index):
-    """Return a generator for the indices of the bonus neighbours.
-
-    Note:
-        A range of 3 is taken, so that the enemy ship cannot get out of range
-        in the same turn and to make it more robust in general.
-    """
+    """Return a generator for the indices of the bonus neighbours."""
     h = game_map.height
     w = game_map.width
     x = index % w
     y = index // w
     return (
         ((x + dx) % w) + (w * ((y + dy) % h))
-        for dx in range(-3, 4)
-        for dy in range(-3 + abs(dx), 4 - abs(dx))
+        for dx in range(-4, 5)
+        for dy in range(-4 + abs(dx), 5 - abs(dx))
     )
 
 
@@ -134,16 +129,22 @@ class MapData:
         game = _game
         game_map = game.game_map
         me = game.me
-        self.halite = self.available_halite()
+        self.halite = self.get_available_halite()
+        self.occupied = self.get_occupation()
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
         self.enemy_threat = self.calculate_enemy_threat()
 
-    def available_halite(self):
+    def get_available_halite(self):
         """Get an array of available halite on the map."""
         m = game_map.height * game_map.width
         return np.array([index_to_cell(i).halite_amount for i in range(m)])
+
+    def get_occupation(self):
+        """Get an array describing occupied cells on the map."""
+        m = game_map.height * game_map.width
+        return np.array([index_to_cell(i).is_occupied for i in range(m)])
 
     def initialize_edge_data(self):
         """Store edge_data for create_graph() on the class for performance."""
@@ -164,10 +165,12 @@ class MapData:
             More solid justification: if mining yields 75 halite on average,
             one mining turn corresponds to moving over 75/(10%) = 750 halite.
             Therefore, moving over 1 halite corresponds to 1/750 of a turn.
+            The term self.occupied is added, so that the shortest path also
+            takes traffic delays into consideration.
         """
         if MapData.edge_data is None:
             self.initialize_edge_data()
-        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4)
+        edge_costs = np.repeat(1.0 + self.halite / 750.0 + self.occupied, 4)
         edge_data = MapData.edge_data
         m = game_map.height * game_map.width
         return csr_matrix((edge_costs, edge_data), shape=(m, m))

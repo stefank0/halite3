@@ -59,19 +59,18 @@ def add_spawn_command(command_queue):
         command_queue.append(me.shipyard.spawn())
 
 
+def unmark_shipyard():
+    """Unmark shipyard, so that can_spawn() works properly."""
+    game_map[me.shipyard].ship = None
+
+
 def generate_commands():
     """Generate a list of commands based on the current game state."""
+    unmark_shipyard()
     command_queue = []
     add_move_commands(command_queue)
     add_spawn_command(command_queue)
     return command_queue
-
-
-def mark_safe():
-    """Undo marking that was done in game.update_frame()."""
-    for y in range(game_map.height):
-        for x in range(game_map.width):
-            game_map[Position(x, y)].ship = None
 
 
 # Initialize the game.
@@ -85,6 +84,5 @@ game_map = game.game_map
 # Play the game.
 while True:
     game.update_frame()
-    mark_safe()
     command_queue = generate_commands()
     game.end_turn(command_queue)
