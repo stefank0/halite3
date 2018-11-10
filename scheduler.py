@@ -7,12 +7,7 @@ import numpy as np
 from utility import calc_distances, index_to_cell, cell_to_index
 from schedule import Schedule
 
-returning_to_shipyard = set()
-
-
-def calc_shortest_dist(origin, destination):
-    d_north, d_south, d_east, d_west = calc_distances(origin, destination)
-    return min(d_north, d_south) + min(d_east, d_west)
+returning_to_dropoff = set()
 
 
 def plot(costs, fn):
@@ -40,17 +35,20 @@ class Scheduler:
         self.ships = self.me.get_ships()
         self.nships = len(self.ships)
         self.nmap = self.game_map.width * self.game_map.height
+        # self.dropoffs = [self.me.shipyard] + self.me.get_dropoffs()
 
     def get_schedule(self):
         self.to_destination()
         return self.schedule
 
     def returning(self, ship):
-        if ship.id in returning_to_shipyard:
+        """Determine if ship has to return to a dropoff location"""
+        if ship.id in returning_to_dropoff:
             return True
         ship_cell_index = cell_to_index(self.game_map[ship])
-        shipyard_index = cell_to_index(self.game_map[self.me.shipyard])
-        if self.map_data.get_distance(ship_cell_index, shipyard_index) < 7:
+        dropoff = self.map_data.get_closest(ship, self.map_data.dropoffs)
+        dropoff_index = cell_to_index(self.game_map[dropoff])
+        if self.map_data.get_distance(ship_cell_index, dropoff_index) < 7:
             return ship.halite_amount > 0.75 * constants.MAX_HALITE
         else:
             return ship.halite_amount > 0.95 * constants.MAX_HALITE
@@ -93,19 +91,18 @@ class Scheduler:
         return cost_matrix
 
     def assign_return(self, ship):
-        """Assign this ship to return to shipyard/dropoff."""
-        returning_to_shipyard.add(ship.id)
-        dropoffs = [self.me.shipyard] + self.me.get_dropoffs()
-        destination = self.map_data.get_closest(ship, dropoffs)
+        """Assign this ship to return to closest dropoff."""
+        returning_to_dropoff.add(ship.id)
+        destination = self.map_data.get_closest(ship, self.map_data.dropoffs)
         ship_cell = self.game_map[ship]
         ship_cell_index = cell_to_index(ship_cell)
-        shipyard_index = cell_to_index(self.game_map[self.me.shipyard])
+        dropoff_index = cell_to_index(self.game_map[destination])
         # Create olifantenpaadjes:
         if (
             200 < self.turn_number < 300 and
             ship_cell.halite_amount > 40 and
             constants.MAX_HALITE - ship.halite_amount > 30 and
-            self.map_data.get_distance(ship_cell_index, shipyard_index) < 7
+            self.map_data.get_distance(ship_cell_index, dropoff_index) < 7
         ):
             destination = ship.position
         self.schedule.assign(ship, destination)
@@ -114,9 +111,9 @@ class Scheduler:
         """Find the fit for the cost matrix"""
         for ship in self.ships:
             if ship.halite_amount < 0.25 * constants.MAX_HALITE:
-                returning_to_shipyard.discard(ship.id)
+                returning_to_dropoff.discard(ship.id)
             if self.map_data.free_turns(ship) < 7:
-                returning_to_shipyard.add(ship.id)
+                returning_to_dropoff.add(ship.id)
 
         remaining_ships = []
         for ship in self.ships:
@@ -150,7 +147,7 @@ class Scheduler:
         if (
             self.turn_number > 200 and
             self.me.halite_amount > constants.DROPOFF_COST and
-            len(self.me.get_dropoffs()) < 2
+            len(self.map_data.dropoffs) < 3
         ):
             return True
         return False
@@ -158,5 +155,4 @@ class Scheduler:
     def dropoff_ship(self, ships):
         """Determine ship that creates dropoff"""
         halites = np.array([ship.halite_amount + self.game_map[ship].halite_amount for ship in ships])
-        logging.info(halites)
         return ships[halites.argmax()]

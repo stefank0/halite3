@@ -3,7 +3,7 @@
 ### 1.1. TODO - dropoff points
 * time is right 
     * enough halite
-        * more than 4000 halite
+        * more than 4000 halite - halite ship - halite cell (+ 1000 if ship is made)
         * possibly built-in dependency of not building ships
     * timing in game (estimate return on investment?)
         * average distance between me.ships and dropoff points 

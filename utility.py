@@ -139,6 +139,7 @@ class MapData:
         self.dist_matrix, self.indices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
         self.enemy_threat = self.calculate_enemy_threat()
+        self.dropoffs = [me.shipyard] + me.get_dropoffs()
 
     def available_halite(self):
         """Get an array of available halite on the map."""
@@ -208,15 +209,16 @@ class MapData:
     def get_closest(self, origin, dests):
         origin_index = cell_to_index(game_map[origin])
         dists = [self.get_distance(origin_index, cell_to_index(game_map[dest])) for dest in dests]
-        logging.info(dists)
-        logging.info(dests[dists.index(min(dists))])
         return dests[dists.index(min(dists))]
 
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""
         ship_index = cell_to_index(game_map[ship])
-        shipyard_index = cell_to_index(game_map[me.shipyard])
-        distance = self.get_distance(ship_index, shipyard_index)
+
+        dropoff = self.get_closest(ship, self.dropoffs)
+        dropoff_index = cell_to_index(game_map[dropoff])
+        # shipyard_index = cell_to_index(game_map[me.shipyard])
+        distance = self.get_distance(ship_index, dropoff_index)
         turns_left = constants.MAX_TURNS - game.turn_number
         return turns_left - math.ceil(distance)
 

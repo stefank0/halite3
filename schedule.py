@@ -106,22 +106,26 @@ class Schedule:
     def near_dropoff(self, ship):
         """Return True if the ship can reach a dropoff/shipyard this turn."""
         ship_index = cell_to_index(game_map[ship])
-        shipyard_index = cell_to_index(game_map[me.shipyard])
-        return ship_index in neighbours(shipyard_index)
+        for dropoff in self.map_data.dropoffs:
+            dropoff_index = cell_to_index(dropoff)
+            if ship_index in neighbours(dropoff_index):
+                return True
+        return False
 
     def resolve_dropoff_collisions(self, commands):
-        """Handle endgame collisions at dropoff/shipyard."""
+        """Handle endgame collisions at closest dropoff."""
         remaining_assignments = []
-        shipyard_cell = game_map[me.shipyard]
         for assignment in self.assignments:
+            dropoff = self.map_data.get_closest(assignment.ship, self.map_data.dropoffs)
+            dropoff_cell = game_map[dropoff]
             if self.near_dropoff(assignment.ship):
-                commands.append(assignment.to_command(shipyard_cell))
+                commands.append(assignment.to_command(dropoff_cell))
             else:
                 remaining_assignments.append(assignment)
         self.assignments = remaining_assignments
 
     def allow_dropoff_collisions(self):
-        """Return True if we allow endgame dropoff collisions at a shipyard."""
+        """Return True if we allow endgame dropoff collisions at a closest dropoff."""
         turns_left = constants.MAX_TURNS - game.turn_number
         ships_left = len(me.get_ships())
         return turns_left <= math.ceil(ships_left / 4.0)
