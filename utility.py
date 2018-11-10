@@ -145,7 +145,6 @@ class MapData:
         game_map = game.game_map
         me = game.me
         self.halite = self.get_available_halite()
-        self.occupied = self.get_occupation()
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
@@ -159,7 +158,10 @@ class MapData:
     def get_occupation(self):
         """Get an array describing occupied cells on the map."""
         m = game_map.height * game_map.width
-        return np.array([index_to_cell(i).is_occupied for i in range(m)])
+        return np.array([
+            index_to_cell(j).is_occupied
+            for i in range(m) for j in neighbours(i)
+        ])
 
     def initialize_edge_data(self):
         """Store edge_data for create_graph() on the class for performance."""
@@ -185,7 +187,8 @@ class MapData:
         """
         if MapData.edge_data is None:
             self.initialize_edge_data()
-        edge_costs = np.repeat(1.0 + self.halite / 750.0 + self.occupied, 4)
+        occupied = self.get_occupation()
+        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4) + occupied
         edge_data = MapData.edge_data
         m = game_map.height * game_map.width
         return csr_matrix((edge_costs, edge_data), shape=(m, m))

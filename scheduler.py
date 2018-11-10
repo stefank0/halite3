@@ -70,7 +70,7 @@ class Scheduler:
         halite_array = self.map_data.halite
         global_threat_factor = self.map_data.global_threat
         bonus_factor = 1 + 3 * (self.map_data.in_bonus_range > 1)
-        c = -1.0 * halite_array * threat_factor * bonus_factor
+        c = -1.0 * halite_array * global_threat_factor * bonus_factor
 
         for i, ship in enumerate(remaining_ships):
             ship_cell_index = cell_to_index(self.game_map[ship])
