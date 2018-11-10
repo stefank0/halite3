@@ -87,8 +87,8 @@ def bonus_neighbours(index):
     y = index // w
     return (
         ((x + dx) % w) + (w * ((y + dy) % h))
-            for dx in range(-3, 4)
-                for dy in range(-3 + abs(dx), 4 - abs(dx))
+        for dx in range(-3, 4)
+        for dy in range(-3 + abs(dx), 4 - abs(dx))
     )
 
 
@@ -219,9 +219,9 @@ class MapData:
         index_count = np.zeros(m)
         temp = Counter(
             index
-                for player in game.players.values() if not player is me
-                    for ship in player.get_ships()
-                        for index in index_func(ship)
+            for player in game.players.values() if player is not me
+            for ship in player.get_ships()
+            for index in index_func(ship)
         )
         for key, value in temp.items():
             index_count[key] = value
