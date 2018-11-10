@@ -205,6 +205,13 @@ class MapData:
         """Get the perturbed distance from some cell to another."""
         return self.get_distances(origin_index)[target_index]
 
+    def get_closest(self, origin, dests):
+        origin_index = cell_to_index(game_map[origin])
+        dists = [self.get_distance(origin_index, cell_to_index(game_map[dest])) for dest in dests]
+        logging.info(dists)
+        logging.info(dests[dists.index(min(dists))])
+        return dests[dists.index(min(dists))]
+
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""
         ship_index = cell_to_index(game_map[ship])

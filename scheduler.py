@@ -95,7 +95,8 @@ class Scheduler:
     def assign_return(self, ship):
         """Assign this ship to return to shipyard/dropoff."""
         returning_to_shipyard.add(ship.id)
-        destination = self.me.shipyard.position
+        dropoffs = [self.me.shipyard] + self.me.get_dropoffs()
+        destination = self.map_data.get_closest(ship, dropoffs)
         ship_cell = self.game_map[ship]
         ship_cell_index = cell_to_index(ship_cell)
         shipyard_index = cell_to_index(self.game_map[self.me.shipyard])
