@@ -1,6 +1,7 @@
 from hlt import Direction, Position, constants
 from scipy.sparse.csgraph import dijkstra
 from scipy.sparse import csr_matrix
+from scipy.ndimage import uniform_filter
 import numpy as np
 import logging, math, time
 from collections import Counter
@@ -135,15 +136,23 @@ class MapData:
         game_map = game.game_map
         me = game.me
         self.halite = self.available_halite()
+        self.halite_density = self.density_available_halite()
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
         self.enemy_threat = self.calculate_enemy_threat()
+        self.dropoffs = [me.shipyard] + me.get_dropoffs()
 
     def available_halite(self):
         """Get an array of available halite on the map."""
         m = game_map.height * game_map.width
         return np.array([index_to_cell(i).halite_amount for i in range(m)])
+
+    def density_available_halite(self):
+        """Get density of halite map with radius"""
+        halite = self.halite.reshape(game_map.height, game_map.width)
+        halite_density = uniform_filter(halite, size=9, mode='constant')
+        return halite_density.ravel()
 
     def initialize_edge_data(self):
         """Store edge_data for create_graph() on the class for performance."""
@@ -205,11 +214,19 @@ class MapData:
         """Get the perturbed distance from some cell to another."""
         return self.get_distances(origin_index)[target_index]
 
+    def get_closest(self, origin, dests):
+        origin_index = cell_to_index(game_map[origin])
+        dists = [self.get_distance(origin_index, cell_to_index(game_map[dest])) for dest in dests]
+        return dests[dists.index(min(dists))]
+
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""
         ship_index = cell_to_index(game_map[ship])
-        shipyard_index = cell_to_index(game_map[me.shipyard])
-        distance = self.get_distance(ship_index, shipyard_index)
+
+        dropoff = self.get_closest(ship, self.dropoffs)
+        dropoff_index = cell_to_index(game_map[dropoff])
+        # shipyard_index = cell_to_index(game_map[me.shipyard])
+        distance = self.get_distance(ship_index, dropoff_index)
         turns_left = constants.MAX_TURNS - game.turn_number
         return turns_left - math.ceil(distance)
 
@@ -234,3 +251,10 @@ class MapData:
     def calculate_enemy_threat(self):
         """Calculate enemy threat for all cells."""
         return self._index_count(threat)
+
+    def distance_dropoffs(self, ships):
+        dists = []
+        for ship in ships:
+            dropoff = self.get_closest(ship, self.dropoffs)
+            dists.append(self.get_distance(cell_to_index(ship), cell_to_index(dropoff)))
+        return np.array(dists)
