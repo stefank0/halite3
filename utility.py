@@ -233,10 +233,13 @@ class MapData:
 
     def mining_probability(self, ship):
         """Estimate the probability that a ship will mine the next turn."""
+        max_halite = constants.MAX_HALITE
+        cargo_space = (max_halite - ship.halite_amount) / max_halite
+        cargo_factor = min(1.0, 4.0 * cargo_space)
         ship_index = cell_to_index(game_map[ship])
         simple_distance = simple_distances(ship_index)
         simple_cost = self.halite / (simple_distance + 1.0)
-        return simple_cost[ship_index] / simple_cost.max
+        return cargo_factor * simple_cost[ship_index] / simple_cost.max
 
     def _index_count(self, index_func):
         """Loops over enemy ships and counts indices return by index_func."""
