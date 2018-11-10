@@ -19,6 +19,21 @@ def calc_distances(origin, destination):
     return d_north, d_south, d_east, d_west
 
 
+def simple_distance(index_a, index_b):
+    """"Get the actual step distance from one cell to another."""
+    height = game_map.height
+    width = game_map.width
+    dx = abs((index_b % width) - (index_a % width))
+    dy = abs((index_b // width) - (index_a // width))
+    return min(dx, width - dx) + min(dy, height - dy)
+
+
+def simple_distances(index)
+    """Get an array of the actual step distances to all cells."""
+    m = game_map.height * game_map.width
+    return np.array([simple_distance(index, i) for i in range(m)])
+
+
 def viable_directions(origin, destination):
     """Get a list of viable directions to get closer to the destination."""
     directions = []
