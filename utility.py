@@ -1,6 +1,7 @@
 from hlt import Direction, Position, constants
 from scipy.sparse.csgraph import dijkstra
 from scipy.sparse import csr_matrix
+from scipy.ndimage import uniform_filter
 import numpy as np
 import logging, math, time
 from collections import Counter
@@ -71,9 +72,12 @@ def index_to_cell(index):
 
 def cell_to_index(cell):
     """Map a 2D MapCell to a 1D index."""
-    x = cell.position.x
-    y = cell.position.y
-    return x + game_map.width * y
+    return cell.position.x + game_map.width * cell.position.y
+
+
+def entity_to_index(entity):
+    """Map an Entity to a 1D index belonging to its position."""
+    return entity.position.x + game_map.width * entity.position.y
 
 
 def neighbours(index):
@@ -145,15 +149,23 @@ class MapData:
         game_map = game.game_map
         me = game.me
         self.halite = self.get_available_halite()
+        self.halite_density = self.density_available_halite()
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
+        self.dropoffs = [me.shipyard] + me.get_dropoffs()
         self.global_threat = self.calculate_global_threat()
 
     def get_available_halite(self):
         """Get an array of available halite on the map."""
         m = game_map.height * game_map.width
         return np.array([index_to_cell(i).halite_amount for i in range(m)])
+
+    def density_available_halite(self):
+        """Get density of halite map with radius"""
+        halite = self.halite.reshape(game_map.height, game_map.width)
+        halite_density = uniform_filter(halite, size=9, mode='constant')
+        return halite_density.ravel()
 
     def get_occupation(self):
         """Get an array describing occupied cells on the map."""
@@ -226,11 +238,25 @@ class MapData:
         """Get the perturbed distance from some cell to another."""
         return self.get_distances(origin_index)[target_index]
 
+    def get_entity_distance(self, origin_entity, target_entity):
+        """"Get the perturbed distance from one entity to another."""
+        origin_index = entity_to_index(origin_entity)
+        target_index = entity_to_index(target_entity)
+        return self.get_distance(origin_index, target_index)
+
+    def get_closest(self, origin, destinations):
+        """Get the closest from destinations to origin."""
+        key = lambda destination: self.get_entity_distance(origin, destination)
+        return min(destinations, key=key)
+
+    def get_closest_dropoff(self, origin):
+        """Get the closest dropoff to origin."""
+        return self.get_closest(origin, self.dropoffs)
+
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""
-        ship_index = cell_to_index(game_map[ship])
-        shipyard_index = cell_to_index(game_map[me.shipyard])
-        distance = self.get_distance(ship_index, shipyard_index)
+        dropoff = self.get_closest(ship, self.dropoffs)
+        distance = self.get_entity_distance(ship, dropoff)
         turns_left = constants.MAX_TURNS - game.turn_number
         return turns_left - math.ceil(distance)
 
@@ -258,6 +284,13 @@ class MapData:
     def enemies_in_bonus_range(self):
         """Calculate the number of enemies within bonus range for all cells."""
         return self._index_count(ship_bonus_neighbours)
+
+    def distance_dropoffs(self, ships):
+        """Get a list of distances to the nearest dropoff for all ships."""
+        return np.array([
+            self.get_entity_distance(ship, self.get_closest_dropoff(ship))
+            for ship in ships
+        ])
 
     def calculate_global_threat(self):
         """Calculate enemy threat factor for all cells."""

@@ -46,16 +46,20 @@ def want_to_spawn():
     return is_early_game or (is_mid_game and _ship_number_falling_behind())
 
 
-def can_spawn():
+def can_spawn(command_queue):
     """Return True if it is possible to spawn a new ship."""
-    enough_halite = me.halite_amount >= constants.SHIP_COST
+    construct_dropoff = any(['c' in command for command in command_queue])
+    halite = me.halite_amount
+    if construct_dropoff:
+        halite -= constants.DROPOFF_COST
+    enough_halite = halite >= constants.SHIP_COST
     shipyard_free = not game_map[me.shipyard].is_occupied
     return enough_halite and shipyard_free
 
 
 def add_spawn_command(command_queue):
     """If possible and desirable, add the spawn command."""
-    if can_spawn() and want_to_spawn():
+    if can_spawn(command_queue) and want_to_spawn():
         command_queue.append(me.shipyard.spawn())
 
 
