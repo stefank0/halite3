@@ -134,9 +134,12 @@ def packing_fraction(ship):
     """Get the packing/fill fraction of the ship."""
     return ship.halite_amount / constants.MAX_HALITE
 
-def calc_density(radius, array):
+
+def calc_density(radius, array, count_self=True):
     """Calculate a density map based on a radius (sum of density and array remain the same)"""
-    density = array.copy() / (radius + 1)
+    density = np.zeros(array.shape)
+    if count_self:
+        density = array.copy() / (radius + 1)
     for dist in range(1, radius + 1):
         x = dist
         while x >= 1:
@@ -160,6 +163,7 @@ class MapData:
         me = game.me
         self.halite = self.get_available_halite()
         self.halite_density = self.density_available_halite()
+        self.density_ships = self.get_density_ships()
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
@@ -172,9 +176,24 @@ class MapData:
         return np.array([index_to_cell(i).halite_amount for i in range(m)])
 
     def density_available_halite(self):
-        """Get density of halite map with radius in """
+        """Get density of halite map with radius"""
         halite = self.halite.reshape(game_map.height, game_map.width)
         return calc_density(radius=15, array=halite).ravel()
+
+    def get_density_ships(self):
+        """Get density of friendly - hostile ships"""
+        radius = 9
+        friendly = np.zeros(self.halite.shape)
+        friendly_indices = [cell_to_index(ship) for ship in me.get_ships()]
+        friendly[friendly_indices] = 1
+        friendly_density = calc_density(radius, friendly.reshape(game_map.height, game_map.width), count_self=False)
+        hostile = np.zeros(self.halite.shape)
+        hostile_indices = [cell_to_index(ship)
+                           for player in game.players.values() if player is not me
+                           for ship in player.get_ships()]
+        hostile[hostile_indices] = 1
+        hostile_density = calc_density(radius=radius, array=hostile.reshape(game_map.height, game_map.width))
+        return (friendly_density - hostile_density).ravel()
 
     def get_occupation(self):
         """Get an array describing occupied cells on the map."""

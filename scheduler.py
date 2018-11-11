@@ -141,13 +141,20 @@ class Scheduler:
 
     def dropoff_ship(self, ships):
         """Determine ship that creates dropoff"""
-        # TODO depends on location of distance to enemy dropoffs as well
         ships = np.array(ships)
         halites = np.array([ship.halite_amount + self.game_map[ship].halite_amount for ship in ships])
         costs = constants.DROPOFF_COST - halites
-        densities = np.array([self.map_data.halite_density[cell_to_index(ship)] for ship in ships])
+        halite_densities = np.array([self.map_data.halite_density[cell_to_index(ship)] for ship in ships])
+        ship_densities = np.array([self.map_data.density_ships[cell_to_index(ship)] for ship in ships])
         dists = self.map_data.distance_dropoffs(ships)
-        suitable_ships = ships[(dists > 20) & (densities > 100) & (costs < self.me.halite_amount)]
-        if len(suitable_ships) > 0:
-            return suitable_ships[0]
+        suitability = (
+                halite_densities *
+                (dists > 15) *
+                (costs < self.me.halite_amount) *
+                (halite_densities > 100) *
+                (ship_densities > 0)
+        )
+        best_ship_id = suitability.argsort()[-1]
+        if suitability[best_ship_id]:
+            return ships[best_ship_id]
         return False
