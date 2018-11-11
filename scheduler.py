@@ -133,10 +133,10 @@ class Scheduler:
 
     def dropoff_time(self, ships):
         """Determine if it is time to create dropoff"""
-        # TODO depends on number of ships as well
         dists = self.map_data.distance_dropoffs(ships)
-        if dists.any() and (10 < self.turn_number < 0.8 * constants.MAX_TURNS):
-            return dists.mean() > 10
+        ship_per_dropoff = len(ships) / len(self.map_data.dropoffs)
+        if dists.any() and (10 < self.turn_number < 0.8 * constants.MAX_TURNS) and ship_per_dropoff > 7:
+            return dists.mean() > 5
         return False
 
     def dropoff_ship(self, ships):
