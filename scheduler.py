@@ -4,7 +4,7 @@ from hlt import constants
 from scipy.optimize import linear_sum_assignment
 #from matplotlib import pyplot as plt
 import numpy as np
-from utility import calc_distances, index_to_cell, cell_to_index
+from utility import calc_distances, index_to_cell, cell_to_index, entity_to_index
 from schedule import Schedule
 
 returning_to_dropoff = set()
@@ -44,7 +44,7 @@ class Scheduler:
         """Determine if ship has to return to a dropoff location"""
         if ship.id in returning_to_dropoff:
             return True
-        ship_cell_index = cell_to_index(ship)
+        ship_cell_index = entity_to_index(ship)
         dropoff = self.map_data.get_closest(ship, self.map_data.dropoffs)
         dropoff_index = cell_to_index(self.game_map[dropoff])
         if self.map_data.get_distance(ship_cell_index, dropoff_index) < 7:
@@ -83,8 +83,8 @@ class Scheduler:
         returning_to_dropoff.add(ship.id)
         destination = self.map_data.get_closest(ship, self.map_data.dropoffs)
         ship_cell = self.game_map[ship]
-        ship_cell_index = cell_to_index(ship)
-        dropoff_index = cell_to_index(destination)
+        ship_cell_index = entity_to_index(ship)
+        dropoff_index = entity_to_index(destination)
         # Create olifantenpaadjes:
         if (
             200 < self.turn_number < 300 and

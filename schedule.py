@@ -25,17 +25,6 @@ class Assignment:
                 return self.ship.move(direction)
 
 
-class AssignmentDropoff(Assignment):
-    """An assignment of a ship to make a dropoff."""
-
-    def __init__(self, ship):
-        Assignment.__init__(self, ship, ship.position)
-
-    def to_command(self, target_cell):
-        target_cell.mark_unsafe(self.ship)
-        return self.ship.make_dropoff()
-
-
 class Schedule:
     """Keeps track of Assignments and translates them into a command list."""
 
@@ -45,6 +34,7 @@ class Schedule:
         game_map = game.game_map
         me = game.me
         self.assignments = []
+        self.dropoff_assignments = []
         self.map_data = map_data
 
     def assign(self, ship, destination):
@@ -53,8 +43,7 @@ class Schedule:
         self.assignments.append(assignment)
 
     def dropoff(self, ship):
-        assignment = AssignmentDropoff(ship)
-        self.assignments.append(assignment)
+        self.dropoff_assignments.append(ship)
 
     def initial_cost_matrix(self):
         """Initialize the cost matrix with high costs for every move.
@@ -101,6 +90,8 @@ class Schedule:
             assignment = self.assignments[k]
             target = index_to_cell(i)
             commands.append(assignment.to_command(target))
+        for ship in self.dropoff_assignments:
+            commands.append(ship.make_dropoff())
         return commands
 
     def near_dropoff(self, ship):

@@ -72,9 +72,12 @@ def index_to_cell(index):
 
 def cell_to_index(cell):
     """Map a 2D MapCell to a 1D index."""
-    x = cell.position.x
-    y = cell.position.y
-    return x + game_map.width * y
+    return cell.position.x + game_map.width * cell.position.y
+
+
+def entity_to_index(entity):
+    """Map an Entity to a 1D index belonging to its position."""
+    return entity.position.x + game_map.width * entity.position.y
 
 
 def neighbours(index):
@@ -235,17 +238,25 @@ class MapData:
         """Get the perturbed distance from some cell to another."""
         return self.get_distances(origin_index)[target_index]
 
-    def get_closest(self, origin, dests):
-        origin_index = cell_to_index(game_map[origin])
-        dists = [self.get_distance(origin_index, cell_to_index(game_map[dest])) for dest in dests]
-        return dests[dists.index(min(dists))]
+    def get_entity_distance(self, origin_entity, target_entity):
+        """"Get the perturbed distance from one entity to another."""
+        origin_index = entity_to_index(origin_entity)
+        target_index = entity_to_index(target_entity)
+        return self.get_distance(origin_index, target_index)
+
+    def get_closest(self, origin, destinations):
+        """Get the closest from destinations to origin."""
+        key = lambda destination: self.get_entity_distance(origin, destination)
+        return min(destinations, key=key)
+
+    def get_closest_dropoff(self, origin):
+        """Get the closest dropoff to origin."""
+        return self.get_closest(origin, self.dropoffs)
 
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""
-        ship_index = cell_to_index(game_map[ship])
         dropoff = self.get_closest(ship, self.dropoffs)
-        dropoff_index = cell_to_index(dropoff)
-        distance = self.get_distance(ship_index, dropoff_index)
+        distance = self.get_entity_distance(ship, dropoff)
         turns_left = constants.MAX_TURNS - game.turn_number
         return turns_left - math.ceil(distance)
 
@@ -275,11 +286,11 @@ class MapData:
         return self._index_count(ship_bonus_neighbours)
 
     def distance_dropoffs(self, ships):
-        dists = []
-        for ship in ships:
-            dropoff = self.get_closest(ship, self.dropoffs)
-            dists.append(self.get_distance(cell_to_index(ship), cell_to_index(dropoff)))
-        return np.array(dists)
+        """Get a list of distances to the nearest dropoff for all ships."""
+        return np.array([
+            self.get_entity_distance(ship, self.get_closest_dropoff(ship))
+            for ship in ships
+        ])
 
     def calculate_global_threat(self):
         """Calculate enemy threat factor for all cells."""
