@@ -159,9 +159,19 @@ class MapData:
         return np.array([index_to_cell(i).halite_amount for i in range(m)])
 
     def density_available_halite(self):
-        """Get density of halite map with radius"""
+        """Get density of halite map with radius in """
+        radius = 15
         halite = self.halite.reshape(game_map.height, game_map.width)
-        halite_density = uniform_filter(halite, size=9, mode='constant')
+        halite_density = halite.copy() / (radius + 1)
+        for dist in range(1, radius + 1):
+            x = dist
+            while x >= 1:
+                halite_density += np.roll(np.roll(halite, dist - x, 0), x, 1) / ((radius + 1) * dist * 4)  # southeast
+                halite_density += np.roll(np.roll(halite, dist - x, 1), -x, 0) / ((radius + 1) * dist * 4)  # northeast
+                halite_density += np.roll(np.roll(halite, -dist + x, 0), -x, 1) / ((radius + 1) * dist * 4)  # northwest
+                halite_density += np.roll(np.roll(halite, -dist + x, 1), x, 0) / ((radius + 1) * dist * 4)  # southwest
+                x += -1
+        # halite_density = uniform_filter(halite, size=9, mode='constant')
         return halite_density.ravel()
 
     def get_occupation(self):
@@ -288,4 +298,4 @@ class MapData:
     def local_threat(self, ship):
         """Calculate enemy threat factor near a ship."""
         m = game_map.height * game_map.width
-        return np.ones(m) #Kijk 2 plekjes verder
+        return np.ones(m)  # Kijk 2 plekjes verder
