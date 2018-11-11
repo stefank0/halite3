@@ -46,7 +46,7 @@ class Scheduler:
             return True
         ship_cell_index = cell_to_index(ship)
         dropoff = self.map_data.get_closest(ship, self.map_data.dropoffs)
-        dropoff_index = cell_to_index(self.game_map[dropoff])
+        dropoff_index = cell_to_index(dropoff)
         if self.map_data.get_distance(ship_cell_index, dropoff_index) < 7:
             return ship.halite_amount > 0.75 * constants.MAX_HALITE
         else:
