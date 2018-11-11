@@ -112,6 +112,25 @@ def ship_bonus_neighbours(ship):
     return bonus_neighbours(ship_index)
 
 
+def threatening_ships(ship):
+    """Return a list of nearby enemy ships."""
+    h = game_map.height
+    w = game_map.width
+    x = ship.position.x
+    y = ship.position.y
+    nearby_cells = (
+        game_map._cells[(y + dy) % h][(x + dx) % w]
+        for dx in range(-2, 3)
+        for dy in range(-2 + abs(dx), 3 - abs(dx))
+        if not dx == dy == 0
+    )
+    return [
+        cell.ship
+        for cell in nearby_cells
+        if cell.is_occupied and cell.ship.owner is not me
+    ]
+
+
 def threat(ship):
     """Get the indices threatened by an enemy ship.
 
@@ -149,6 +168,7 @@ class MapData:
         game_map = game.game_map
         me = game.me
         self.halite = self.get_available_halite()
+        self.total_halite = self.get_total_halite()
         self.halite_density = self.density_available_halite()
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
@@ -160,6 +180,17 @@ class MapData:
         """Get an array of available halite on the map."""
         m = game_map.height * game_map.width
         return np.array([index_to_cell(i).halite_amount for i in range(m)])
+
+    def get_total_halite(self):
+        """Get an array of available halite, including enemy cargo."""
+        halite = np.copy(self.halite)
+        for player in game.players.values():
+            if player is not me:
+                for ship in player.get_ships():
+                    ship_index = entity_to_index(ship)
+                    halite[ship_index] += ship.halite_amount
+        return halite
+
 
     def density_available_halite(self):
         """Get density of halite map with radius"""
@@ -297,6 +328,17 @@ class MapData:
         return 3.0 / (self._index_count(threat) + 3.0)
 
     def local_threat(self, ship):
-        """Calculate enemy threat factor near a ship."""
+        """Calculate enemy threat factor near a ship.
+
+        Strategy:
+            Take into account the amount of collisions of the enemy player:
+            - Keep track of enemy ship ID's.
+            - Collisions is equal to difference with len(player.get_ships()).
+            - Flee/attack more aggresively for aggresive players (tit-for-tat).
+        """
         m = game_map.height * game_map.width
-        return np.ones(m) #Kijk 2 plekjes verder
+        threat = np.ones(m)
+        for enemy_ship in threatening_ships(ship):
+            mining_probability = self.mining_probability(enemy_ship)
+            dhalite = ship.halite_amount - enemy_ship.halite_amount
+        return threat
