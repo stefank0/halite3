@@ -4,7 +4,7 @@ from hlt import constants
 from scipy.optimize import linear_sum_assignment
 #from matplotlib import pyplot as plt
 import numpy as np
-from utility import calc_distances, index_to_cell, cell_to_index, entity_to_index
+from utility import calc_distances, to_cell, to_index
 from schedule import Schedule
 
 returning_to_dropoff = set()
@@ -44,9 +44,9 @@ class Scheduler:
         """Determine if ship has to return to a dropoff location"""
         if ship.id in returning_to_dropoff:
             return True
-        ship_cell_index = entity_to_index(ship)
+        ship_cell_index = to_index(ship)
         dropoff = self.map_data.get_closest(ship, self.map_data.dropoffs)
-        dropoff_index = cell_to_index(self.game_map[dropoff])
+        dropoff_index = to_index(dropoff)
         if self.map_data.get_distance(ship_cell_index, dropoff_index) < 7:
             return ship.halite_amount > 0.75 * constants.MAX_HALITE
         else:
@@ -70,7 +70,7 @@ class Scheduler:
         c = -1.0 * halite_array * global_threat_factor * bonus_factor
 
         for i, ship in enumerate(remaining_ships):
-            ship_cell_index = cell_to_index(self.game_map[ship])
+            ship_cell_index = to_index(ship)
             local_threat_factor = self.map_data.local_threat(ship)
             distance_array = self.map_data.get_distances(ship_cell_index)
             # Maximize the halite gathered per turn (considering only the first mining action)(factor 0.25 not
@@ -83,8 +83,8 @@ class Scheduler:
         returning_to_dropoff.add(ship.id)
         destination = self.map_data.get_closest(ship, self.map_data.dropoffs)
         ship_cell = self.game_map[ship]
-        ship_cell_index = entity_to_index(ship)
-        dropoff_index = entity_to_index(destination)
+        ship_cell_index = to_index(ship)
+        dropoff_index = to_index(destination)
         # Create olifantenpaadjes:
         if (
             200 < self.turn_number < 300 and
@@ -121,14 +121,14 @@ class Scheduler:
 
         for i, j in zip(row_ind, col_ind):
             ship = remaining_ships[i]
-            destination = index_to_cell(j).position
+            destination = to_cell(j).position
             self.schedule.assign(ship, destination)
         return self.schedule
 
     def ship_matrix(self, ships):
         ship_matrix = np.ones(self.nmap)
         for ship in ships:
-            ship_matrix[cell_to_index(ship)] = .5
+            ship_matrix[to_index(ship)] = .5
         return ship_matrix
 
     def dropoff_time(self, ships):
@@ -145,7 +145,7 @@ class Scheduler:
         ships = np.array(ships)
         halites = np.array([ship.halite_amount + self.game_map[ship].halite_amount for ship in ships])
         costs = constants.DROPOFF_COST - halites
-        densities = np.array([self.map_data.halite_density[cell_to_index(ship)] for ship in ships])
+        densities = np.array([self.map_data.halite_density[to_index(ship)] for ship in ships])
         dists = self.map_data.distance_dropoffs(ships)
         suitable_ships = ships[(dists > 20) & (densities > 100) & (costs < self.me.halite_amount)]
         if len(suitable_ships) > 0:

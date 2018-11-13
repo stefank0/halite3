@@ -2,7 +2,7 @@ from hlt import Direction, constants
 from scipy.optimize import linear_sum_assignment
 import numpy as np
 import logging, math, time
-from utility import target, index_to_cell, cell_to_index, can_move, neighbours
+from utility import target, to_cell, to_index, can_move, neighbours
 
 
 class Assignment:
@@ -64,8 +64,8 @@ class Schedule:
         for k, assignment in enumerate(self.assignments):
             ship = assignment.ship
             destination = assignment.destination
-            origin_index = cell_to_index(game_map[ship])
-            target_index = cell_to_index(game_map[destination])
+            origin_index = to_index(ship)
+            target_index = to_index(game_map[destination])
             cost = self.map_data.get_distance(origin_index, target_index)
             cost_matrix[k][origin_index] = cost - 0.1
             if can_move(ship):
@@ -88,7 +88,7 @@ class Schedule:
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
         for k, i in zip(row_ind, col_ind):
             assignment = self.assignments[k]
-            target = index_to_cell(i)
+            target = to_cell(i)
             commands.append(assignment.to_command(target))
         for ship in self.dropoff_assignments:
             commands.append(ship.make_dropoff())
@@ -96,9 +96,9 @@ class Schedule:
 
     def near_dropoff(self, ship):
         """Return True if the ship can reach a dropoff/shipyard this turn."""
-        ship_index = cell_to_index(game_map[ship])
+        ship_index = to_index(ship)
         for dropoff in self.map_data.dropoffs:
-            dropoff_index = cell_to_index(dropoff)
+            dropoff_index = to_index(dropoff)
             if ship_index in neighbours(dropoff_index):
                 return True
         return False
