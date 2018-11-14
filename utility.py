@@ -107,7 +107,7 @@ def ship_bonus_neighbours(ship):
     return bonus_neighbours(ship_index)
 
 
-def threatening_ships(ship):
+def nearby_enemy_ships(ship):
     """Return a list of nearby enemy ships."""
     h = game_map.height
     w = game_map.width
@@ -122,7 +122,7 @@ def threatening_ships(ship):
     return [
         cell.ship
         for cell in nearby_cells
-        if cell.is_occupied and cell.ship.owner is not me
+        if cell.is_occupied and cell.ship.owner != me.id
     ]
 
 
@@ -346,8 +346,8 @@ class MapData:
         """Calculate enemy threat factor for all cells."""
         return 3.0 / (self._index_count(threat) + 3.0)
 
-    def local_threat(self, ship):
-        """Calculate enemy threat factor near a ship.
+    def loot(self, ship):
+        """Calculate enemy halite near a ship that can be stolen.
 
         Strategy:
             Take into account the amount of collisions with the enemy player:
@@ -355,8 +355,13 @@ class MapData:
             - Flee/attack more aggresively for aggresive players (tit-for-tat).
         """
         m = game_map.height * game_map.width
-        threat = np.ones(m)
-        for enemy_ship in threatening_ships(ship):
-            mining_probability = self.mining_probability(enemy_ship)
-            dhalite = ship.halite_amount - enemy_ship.halite_amount
-        return threat
+        loot = np.zeros(m)
+        for enemy_ship in nearby_enemy_ships(ship):
+            dhalite = enemy_ship.halite_amount - ship.halite_amount
+            if dhalite > 0:
+                mining_probability = self.mining_probability(enemy_ship)
+                enemy_index = to_index(enemy_ship)
+                loot[enemy_index] += dhalite * mining_probability
+                for index in neighbours(enemy_index):
+                    loot[index] += dhalite * (1 - mining_probability)
+        return loot
