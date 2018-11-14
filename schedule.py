@@ -2,7 +2,7 @@ from hlt import Direction, constants
 from scipy.optimize import linear_sum_assignment
 import numpy as np
 import logging, math, time
-from utility import target, to_cell, to_index, can_move, neighbours
+from utility import target, to_cell, to_index, can_move, neighbours, enemy_cost_func
 
 
 class Assignment:
@@ -66,12 +66,17 @@ class Schedule:
             destination = assignment.destination
             origin_index = to_index(ship)
             target_index = to_index(game_map[destination])
-            cost = self.map_data.get_distance(origin_index, target_index)
-            cost_matrix[k][origin_index] = cost - 0.1
+            origin_enemy_cost = self.map_data.enemy_threat[origin_index]
+            edge_to_self_cost = 1.0 - 2.5 * game_map[ship].halite_amount / 750.0 + enemy_cost_func(ship, origin_enemy_cost)
+            remaining_cost = self.map_data.get_distance(ship, target_index)
+            cost_matrix[k][origin_index] = edge_to_self_cost + remaining_cost
             if can_move(ship):
                 for neighbour_index in neighbours(origin_index):
-                    cost = self.map_data.get_distance(neighbour_index, target_index)
-                    cost_matrix[k][neighbour_index] = cost
+                    first_edge_cost = self.map_data.get_distance(ship, neighbour_index)
+                    remaining_cost = self.map_data.get_distance_from_index(
+                        ship, neighbour_index, target_index
+                    )
+                    cost_matrix[k][neighbour_index] = first_edge_cost + remaining_cost
 
     def create_cost_matrix(self):
         """"Create a cost matrix for linear_sum_assignment()."""
