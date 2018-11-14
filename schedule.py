@@ -66,11 +66,13 @@ class Schedule:
             destination = assignment.destination
             origin_index = to_index(ship)
             target_index = to_index(game_map[destination])
-            cost = self.map_data.get_distance(origin_index, target_index)
+            cost = self.map_data.get_distance(ship, target_index)
             cost_matrix[k][origin_index] = cost - 0.1
             if can_move(ship):
                 for neighbour_index in neighbours(origin_index):
-                    cost = self.map_data.get_distance(neighbour_index, target_index)
+                    cost = self.map_data.get_distance_from_index(
+                        ship, neighbour_index, target_index
+                    )
                     cost_matrix[k][neighbour_index] = cost
 
     def create_cost_matrix(self):

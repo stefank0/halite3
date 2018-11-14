@@ -166,7 +166,7 @@ class MapData:
         self.total_halite = self.get_total_halite()
         self.halite_density = self.density_available_halite()
         self.graph = self.create_graph()
-        self.dist_matrix, self.indices = self.shortest_path()
+        self._dist_matrices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
         self.dropoffs = [me.shipyard] + me.get_dropoffs()
         self.global_threat = self.calculate_global_threat()
@@ -185,7 +185,6 @@ class MapData:
                     ship_index = to_index(ship)
                     halite[ship_index] += ship.halite_amount
         return halite
-
 
     def density_available_halite(self):
         """Get density of halite map with radius"""
@@ -231,53 +230,47 @@ class MapData:
         m = game_map.height * game_map.width
         return csr_matrix((edge_costs, edge_data), shape=(m, m))
 
-    def shortest_path_indices(self):
-        """Determine the indices for which to calculate the shortest path.
-
-        Notes:
-            - We also need the neighbours, because their results are used to
-                generate the cost matrix for linear_sum_assignment().
-            - list(set(a_list)) removes the duplicates from a_list.
-        """
-        indices = [to_index(ship) for ship in me.get_ships()]
-        neighbour_indices = [j for i in indices for j in neighbours(i)]
-        return list(set(indices + neighbour_indices))
-
-    def shortest_path(self):
-        """Calculate a perturbed distance from interesting cells to all cells.
-
-        Possible performance improvements:
-            - dijkstra's limit keyword argument.
-            - reduce indices, for example by removing returning/mining ships.
-            - reduce graph size, only include the relevant part of the map.
-        """
-        indices = self.shortest_path_indices()
+    def _ship_shortest_path(self, ship):
+        """Calculate shortest path from a ship to all cells."""
+        ship_index = to_index(ship)
+        indices = (ship_index, ) + neighbours(ship_index)
         dist_matrix = dijkstra(self.graph, indices=indices, limit=30.0)
         dist_matrix[dist_matrix == np.inf] = 99999.9
         return dist_matrix, indices
 
-    def get_distances(self, origin_index):
-        """Get an array of perturbed distances from some origin cell."""
-        return self.dist_matrix[self.indices.index(origin_index)]
+    def shortest_path(self):
+        """Calculate shortest paths for all ships."""
+        dist_matrices = {}
+        for ship in me.get_ships():
+            dist_matrices[ship.id] = self._ship_shortest_path(ship)
+        return dist_matrices
 
-    def get_distance(self, origin_index, target_index):
-        """Get the perturbed distance from some cell to another."""
-        return self.get_distances(origin_index)[target_index]
+    def get_distance_from_index(self, ship, from_index, to_index):
+        """Get the distance from index (near ship) to index."""
+        dist_matrix, indices = self._dist_matrices[ship.id]
+        return dist_matrix[indices.index(from_index)][to_index]
 
-    def get_entity_distance(self, origin_entity, target_entity):
-        """"Get the perturbed distance from one entity to another."""
-        origin_index = to_index(origin_entity)
-        target_index = to_index(target_entity)
-        return self.get_distance(origin_index, target_index)
+    def get_distances(self, ship):
+        """Get an array of perturbed distances to all cells."""
+        dist_matrix, _indices = self._dist_matrices[ship.id]
+        return dist_matrix[0]
 
-    def get_closest(self, origin, destinations):
-        """Get the closest from destinations to origin."""
-        key = lambda destination: self.get_entity_distance(origin, destination)
+    def get_distance(self, ship, index):
+        """Get the perturbed distance from a ship an index (a cell)."""
+        return self.get_distances(ship)[index]
+
+    def get_entity_distance(self, ship, entity):
+        """"Get the perturbed distance from a ship to an Entity."""
+        return self.get_distance(ship, to_index(entity))
+
+    def get_closest(self, ship, destinations):
+        """Get the destination that is closest to the ship."""
+        key = lambda destination: self.get_entity_distance(ship, destination)
         return min(destinations, key=key)
 
-    def get_closest_dropoff(self, origin):
-        """Get the closest dropoff to origin."""
-        return self.get_closest(origin, self.dropoffs)
+    def get_closest_dropoff(self, ship):
+        """Get the dropoff that is closest to the ship."""
+        return self.get_closest(ship, self.dropoffs)
 
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""
@@ -288,10 +281,14 @@ class MapData:
 
     def mining_probability(self, ship):
         """Estimate the probability that a ship will mine the next turn."""
+        if not can_move(ship):
+            return 1.0
         ship_index = to_index(ship)
         simple_cost = self.halite / (simple_distances(ship_index) + 1.0)
+        mining_cost = simple_cost[ship_index]
+        moving_cost = np.delete(simple_cost, ship_index).max()
         cargo_factor = min(1.0, 10.0 * (1.0 - packing_fraction(ship)))
-        return cargo_factor * simple_cost[ship_index] / simple_cost.max
+        return cargo_factor * mining_cost / (mining_cost + moving_cost)
 
     def _index_count(self, index_func):
         """Loops over enemy ships and counts indices return by index_func."""
@@ -326,9 +323,8 @@ class MapData:
         """Calculate enemy threat factor near a ship.
 
         Strategy:
-            Take into account the amount of collisions of the enemy player:
-            - Keep track of enemy ship ID's.
-            - Collisions is equal to difference with len(player.get_ships()).
+            Take into account the amount of collisions with the enemy player:
+            - Keep track of how and to whom you lost your own ships.
             - Flee/attack more aggresively for aggresive players (tit-for-tat).
         """
         m = game_map.height * game_map.width

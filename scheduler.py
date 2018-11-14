@@ -4,7 +4,7 @@ from hlt import constants
 from scipy.optimize import linear_sum_assignment
 #from matplotlib import pyplot as plt
 import numpy as np
-from utility import calc_distances, to_cell, to_index
+from utility import to_cell, to_index
 from schedule import Schedule
 
 returning_to_dropoff = set()
@@ -44,10 +44,9 @@ class Scheduler:
         """Determine if ship has to return to a dropoff location"""
         if ship.id in returning_to_dropoff:
             return True
-        ship_cell_index = to_index(ship)
         dropoff = self.map_data.get_closest(ship, self.map_data.dropoffs)
         dropoff_index = to_index(dropoff)
-        if self.map_data.get_distance(ship_cell_index, dropoff_index) < 7:
+        if self.map_data.get_distance(ship, dropoff_index) < 7:
             return ship.halite_amount > 0.75 * constants.MAX_HALITE
         else:
             return ship.halite_amount > 0.95 * constants.MAX_HALITE
@@ -70,9 +69,8 @@ class Scheduler:
         c = -1.0 * halite_array * global_threat_factor * bonus_factor
 
         for i, ship in enumerate(remaining_ships):
-            ship_cell_index = to_index(ship)
             local_threat_factor = self.map_data.local_threat(ship)
-            distance_array = self.map_data.get_distances(ship_cell_index)
+            distance_array = self.map_data.get_distances(ship)
             # Maximize the halite gathered per turn (considering only the first mining action)(factor 0.25 not
             # necessary, because it is there for all costs)(amount of turns: steps + 1 for mining)
             cost_matrix[i][:] = c / (distance_array + 1.0) * local_threat_factor
@@ -82,15 +80,13 @@ class Scheduler:
         """Assign this ship to return to closest dropoff."""
         returning_to_dropoff.add(ship.id)
         destination = self.map_data.get_closest(ship, self.map_data.dropoffs)
-        ship_cell = self.game_map[ship]
-        ship_cell_index = to_index(ship)
         dropoff_index = to_index(destination)
         # Create olifantenpaadjes:
         if (
             200 < self.turn_number < 300 and
-            ship_cell.halite_amount > 40 and
+            self.game_map[ship].halite_amount > 40 and
             constants.MAX_HALITE - ship.halite_amount > 30 and
-            self.map_data.get_distance(ship_cell_index, dropoff_index) < 7
+            self.map_data.get_distance(ship, dropoff_index) < 7
         ):
             destination = ship.position
         self.schedule.assign(ship, destination)
