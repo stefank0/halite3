@@ -382,9 +382,9 @@ class MapData:
             if player is not me:
                 for enemy_ship in player.get_ships():
                     ship_index = to_index(enemy_ship)
-                    threat[ship_index] += 2.0 - packing_fraction(enemy_ship)
+                    threat[ship_index] += 1.0 - packing_fraction(enemy_ship)
                     for index in neighbours(ship_index):
-                        threat[index] += 2.0 - packing_fraction(enemy_ship)
+                        threat[index] += 1.0 - packing_fraction(enemy_ship)
         return threat
 
     def enemy_edge_cost(self):
