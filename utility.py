@@ -162,13 +162,16 @@ class MapData:
         game = _game
         game_map = game.game_map
         me = game.me
+        self.dropoffs = [me.shipyard] + me.get_dropoffs()
         self.halite = self.get_available_halite()
         self.total_halite = self.get_total_halite()
         self.halite_density = self.density_available_halite()
+        if MapData.edge_data is None:
+            self.initialize_edge_data()
+        self.dropoff_cost = self.dropoff_distance_edge_cost()
         self.graph = self.create_graph()
         self._dist_matrices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
-        self.dropoffs = [me.shipyard] + me.get_dropoffs()
         self.global_threat = self.calculate_global_threat()
 
     def get_available_halite(self):
@@ -222,10 +225,8 @@ class MapData:
             The term self.occupied is added, so that the shortest path also
             takes traffic delays into consideration.
         """
-        if MapData.edge_data is None:
-            self.initialize_edge_data()
         occupied = self.get_occupation()
-        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4) + occupied
+        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4) + occupied + 0.5 * self.dropoff_cost
         edge_data = MapData.edge_data
         m = game_map.height * game_map.width
         return csr_matrix((edge_costs, edge_data), shape=(m, m))
@@ -314,6 +315,25 @@ class MapData:
             self.get_entity_distance(ship, self.get_closest_dropoff(ship))
             for ship in ships
         ])
+
+    def simple_dropoff_distances(self):
+        """Simple step distances from all cells to the nearest dropoff."""
+        distances_to_all_dropoffs = np.array([
+            simple_distances(to_index(dropoff)) for dropoff in self.dropoffs
+        ])
+        return np.min(distances_to_all_dropoffs, axis=0)
+
+    def dropoff_distance_edge_cost(self):
+        """Edge costs representing increased dropoff distance.
+
+        Costs:
+            Increased distance = 1.0
+            Equal distance = 0.5
+            Decreased distance = 0.0
+        """
+        dropoff_distances = self.simple_dropoff_distances()
+        row, col = MapData.edge_data
+        return 0.5 * (dropoff_distances[col] - dropoff_distances[row] + 1.0)
 
     def calculate_global_threat(self):
         """Calculate enemy threat factor for all cells."""
