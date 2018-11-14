@@ -63,21 +63,16 @@ def targets(origin, destination):
     return [target(origin, direction) for direction in directions]
 
 
-def index_to_cell(index):
+def to_cell(index):
     """Map a 1D index to a 2D MapCell."""
     x = index % game_map.width
     y = index // game_map.width
     return game_map[Position(x, y)]
 
 
-def cell_to_index(cell):
-    """Map a 2D MapCell to a 1D index."""
-    return cell.position.x + game_map.width * cell.position.y
-
-
-def entity_to_index(entity):
-    """Map an Entity to a 1D index belonging to its position."""
-    return entity.position.x + game_map.width * entity.position.y
+def to_index(obj):
+    """Map a 2D MapCell or Entity to a 1D index."""
+    return obj.position.x + game_map.width * obj.position.y
 
 
 def neighbours(index):
@@ -108,8 +103,27 @@ def bonus_neighbours(index):
 
 def ship_bonus_neighbours(ship):
     """Bonus neighbours for a ship."""
-    ship_index = cell_to_index(game_map[ship])
+    ship_index = to_index(ship)
     return bonus_neighbours(ship_index)
+
+
+def threatening_ships(ship):
+    """Return a list of nearby enemy ships."""
+    h = game_map.height
+    w = game_map.width
+    x = ship.position.x
+    y = ship.position.y
+    nearby_cells = (
+        game_map._cells[(y + dy) % h][(x + dx) % w]
+        for dx in range(-2, 3)
+        for dy in range(-2 + abs(dx), 3 - abs(dx))
+        if not dx == dy == 0
+    )
+    return [
+        cell.ship
+        for cell in nearby_cells
+        if cell.is_occupied and cell.ship.owner is not me
+    ]
 
 
 def threat(ship):
@@ -122,7 +136,7 @@ def threat(ship):
         At the moment, the ships current position is more threatening if it is
         not carrying much halite.
     """
-    ship_index = cell_to_index(game_map[ship])
+    ship_index = to_index(ship)
     factor = math.ceil(4.0 * (1.0 - packing_fraction(ship)**2))
     return tuple(ship_index for i in range(factor)) + neighbours(ship_index)
 
@@ -149,6 +163,7 @@ class MapData:
         game_map = game.game_map
         me = game.me
         self.halite = self.get_available_halite()
+        self.total_halite = self.get_total_halite()
         self.halite_density = self.density_available_halite()
         self.graph = self.create_graph()
         self.dist_matrix, self.indices = self.shortest_path()
@@ -159,7 +174,18 @@ class MapData:
     def get_available_halite(self):
         """Get an array of available halite on the map."""
         m = game_map.height * game_map.width
-        return np.array([index_to_cell(i).halite_amount for i in range(m)])
+        return np.array([to_cell(i).halite_amount for i in range(m)])
+
+    def get_total_halite(self):
+        """Get an array of available halite, including enemy cargo."""
+        halite = np.copy(self.halite)
+        for player in game.players.values():
+            if player is not me:
+                for ship in player.get_ships():
+                    ship_index = to_index(ship)
+                    halite[ship_index] += ship.halite_amount
+        return halite
+
 
     def density_available_halite(self):
         """Get density of halite map with radius"""
@@ -171,7 +197,7 @@ class MapData:
         """Get an array describing occupied cells on the map."""
         m = game_map.height * game_map.width
         return np.array([
-            index_to_cell(j).is_occupied
+            to_cell(j).is_occupied
             for i in range(m) for j in neighbours(i)
         ])
 
@@ -213,7 +239,7 @@ class MapData:
                 generate the cost matrix for linear_sum_assignment().
             - list(set(a_list)) removes the duplicates from a_list.
         """
-        indices = [cell_to_index(game_map[ship]) for ship in me.get_ships()]
+        indices = [to_index(ship) for ship in me.get_ships()]
         neighbour_indices = [j for i in indices for j in neighbours(i)]
         return list(set(indices + neighbour_indices))
 
@@ -240,8 +266,8 @@ class MapData:
 
     def get_entity_distance(self, origin_entity, target_entity):
         """"Get the perturbed distance from one entity to another."""
-        origin_index = entity_to_index(origin_entity)
-        target_index = entity_to_index(target_entity)
+        origin_index = to_index(origin_entity)
+        target_index = to_index(target_entity)
         return self.get_distance(origin_index, target_index)
 
     def get_closest(self, origin, destinations):
@@ -262,7 +288,7 @@ class MapData:
 
     def mining_probability(self, ship):
         """Estimate the probability that a ship will mine the next turn."""
-        ship_index = cell_to_index(game_map[ship])
+        ship_index = to_index(ship)
         simple_cost = self.halite / (simple_distances(ship_index) + 1.0)
         cargo_factor = min(1.0, 10.0 * (1.0 - packing_fraction(ship)))
         return cargo_factor * simple_cost[ship_index] / simple_cost.max
@@ -297,6 +323,17 @@ class MapData:
         return 3.0 / (self._index_count(threat) + 3.0)
 
     def local_threat(self, ship):
-        """Calculate enemy threat factor near a ship."""
+        """Calculate enemy threat factor near a ship.
+
+        Strategy:
+            Take into account the amount of collisions of the enemy player:
+            - Keep track of enemy ship ID's.
+            - Collisions is equal to difference with len(player.get_ships()).
+            - Flee/attack more aggresively for aggresive players (tit-for-tat).
+        """
         m = game_map.height * game_map.width
-        return np.ones(m) #Kijk 2 plekjes verder
+        threat = np.ones(m)
+        for enemy_ship in threatening_ships(ship):
+            mining_probability = self.mining_probability(enemy_ship)
+            dhalite = ship.halite_amount - enemy_ship.halite_amount
+        return threat
