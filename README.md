@@ -23,6 +23,8 @@ When cargo of ship == 1000
 https://halite.io/play/?game_id=1669676&replay_class=1&replay_name=replay-20181110-193501%2B0000-1541878392-64-64-1669676
 https://halite.io/play/?game_id=1672809&replay_class=1&replay_name=replay-20181110-205532%2B0000-1541883284-64-64-1672809
 
+### Bug2
+Should be deterministic, but isn't? Playing against self doesn't result in a symmetric game. What is happening?
 
 ## Rationale
 ###

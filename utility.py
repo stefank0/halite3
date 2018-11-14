@@ -126,6 +126,11 @@ def nearby_enemy_ships(ship):
     ]
 
 
+def enemy_cost_func(ship, enemy_cost):
+    """Exists to keep the stay_still() cost in Schedule in sync."""
+    return 20.0 * packing_fraction(ship) * enemy_cost
+
+
 def threat(ship):
     """Get the indices threatened by an enemy ship.
 
@@ -170,6 +175,8 @@ class MapData:
         if MapData.edge_data is None:
             self.initialize_edge_data()
         self.dropoff_cost = self.dropoff_distance_edge_cost()
+        self.enemy_threat = self.get_enemy_threat()
+        self.enemy_cost = self.enemy_edge_cost()
         self._dist_matrices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
         self.global_threat = self.calculate_global_threat()
@@ -231,8 +238,10 @@ class MapData:
             return are added to the costs. However, when the ship is almost
             empty, many mining turns benefit from the move and therefore the
             extra turns are only slightly added to the costs.
+            The term containing self.enemy_cost represents the fact that
+            losing a ship to a collision costs a lot of turns.
         """
-        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4) + self.occupied + packing_fraction(ship) * self.dropoff_cost
+        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4) + self.occupied + packing_fraction(ship) * self.dropoff_cost + enemy_cost_func(ship, self.enemy_cost)
         edge_data = MapData.edge_data
         m = game_map.height * game_map.width
         return csr_matrix((edge_costs, edge_data), shape=(m, m))
@@ -365,3 +374,19 @@ class MapData:
                 for index in neighbours(enemy_index):
                     loot[index] += dhalite * (1 - mining_probability)
         return loot
+
+    def get_enemy_threat(self):
+        m = game_map.height * game_map.width
+        threat = np.zeros(m)
+        for player in game.players.values():
+            if player is not me:
+                for enemy_ship in player.get_ships():
+                    ship_index = to_index(enemy_ship)
+                    threat[ship_index] += 2.0 - packing_fraction(enemy_ship)
+                    for index in neighbours(ship_index):
+                        threat[index] += 2.0 - packing_fraction(enemy_ship)
+        return threat
+
+    def enemy_edge_cost(self):
+        _row, col = MapData.edge_data
+        return self.enemy_threat[col]
