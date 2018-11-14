@@ -164,12 +164,12 @@ class MapData:
         me = game.me
         self.dropoffs = [me.shipyard] + me.get_dropoffs()
         self.halite = self.get_available_halite()
+        self.occupied = self.get_occupation()
         self.total_halite = self.get_total_halite()
         self.halite_density = self.density_available_halite()
         if MapData.edge_data is None:
             self.initialize_edge_data()
         self.dropoff_cost = self.dropoff_distance_edge_cost()
-        self.graph = self.create_graph()
         self._dist_matrices = self.shortest_path()
         self.in_bonus_range = self.enemies_in_bonus_range()
         self.global_threat = self.calculate_global_threat()
@@ -210,7 +210,7 @@ class MapData:
         row = np.repeat(np.arange(m), 4)
         MapData.edge_data = (row, col)
 
-    def create_graph(self):
+    def create_graph(self, ship):
         """Create a matrix representing the game map graph.
 
         Note:
@@ -224,18 +224,25 @@ class MapData:
             Therefore, moving over 1 halite corresponds to 1/750 of a turn.
             The term self.occupied is added, so that the shortest path also
             takes traffic delays into consideration.
+            The term packing_fraction(ship) * self.dropoff_cost represents
+            costs for turns needed to return to a dropoff. If the ship is
+            almost full, only the next mining action benefits from the move
+            that increased the distance. Therefore, the extra turns needed to
+            return are added to the costs. However, when the ship is almost
+            empty, many mining turns benefit from the move and therefore the
+            extra turns are only slightly added to the costs.
         """
-        occupied = self.get_occupation()
-        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4) + occupied + 0.5 * self.dropoff_cost
+        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4) + self.occupied + packing_fraction(ship) * self.dropoff_cost
         edge_data = MapData.edge_data
         m = game_map.height * game_map.width
         return csr_matrix((edge_costs, edge_data), shape=(m, m))
 
     def _ship_shortest_path(self, ship):
         """Calculate shortest path from a ship to all cells."""
+        graph = self.create_graph(ship)
         ship_index = to_index(ship)
         indices = (ship_index, ) + neighbours(ship_index)
-        dist_matrix = dijkstra(self.graph, indices=indices, limit=30.0)
+        dist_matrix = dijkstra(graph, indices=indices, limit=30.0)
         dist_matrix[dist_matrix == np.inf] = 99999.9
         return dist_matrix, indices
 
