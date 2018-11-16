@@ -15,11 +15,11 @@
 ### 1.5. TODO - Improve attack. Make sure that we do not follow an enemy ship to their base (the attack should succeed within a couple of turns: ideally our ship is between the enemy ship and their dropoff)
 ### 1.6. TODO - Improve attack. Make sure there is a friendly ship to take the dropped halite from both collided ships.
 ### 1.7. TODO - Improve attack and enemy_threat, keep track of enemy collisions with our own ships and adjust our behavior depending on enemy behavior (tit-for-tat).
-### 1.8. TODO - Merge branch jonne
-### 1.9. TODO - Reduce computation time (times out at large maps): use a subgraph for the dijkstra algorithm.
+### 1.8. TODO - Reduce computation time (times out at large maps): use a subgraph for the dijkstra algorithm.
+
 ### Bug1
 When cargo of ship == 1000  
-Reproduce: ./halite.exe --width 32 --height 32 -s 1542381581  
+Reproduce: halite.exe --replay-directory ../replays/ -vvv --width 32 --height 32 -s 1542381581 "python ../MyBot.py" "python ../MyBot.py"  
 https://halite.io/play/?game_id=1669676&replay_class=1&replay_name=replay-20181110-193501%2B0000-1541878392-64-64-1669676
 https://halite.io/play/?game_id=1672809&replay_class=1&replay_name=replay-20181110-205532%2B0000-1541883284-64-64-1672809
 
