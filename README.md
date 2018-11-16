@@ -1,17 +1,11 @@
 # Schildpad
 ## 1. TODO
 ### 1.1. TODO - dropoff points
-* time is right 
-    * enough halite
-        * more than 4000 halite - halite ship - halite cell (+ 1000 if ship is made)
-        * possibly built-in dependency of not building ships
-    * timing in game (estimate return on investment?)
-        * average distance between me.ships and dropoff points 
-        * turn number (not preferred) --> test case (mid game)
-        * average distance between ships and closest dropoff points too big        
 * location is right 
-    * distance between other drop off points (> x cells)
+    * distance between enemy drop off points
     * closer to the enemy to 'steal' more halite with higher changes on bonus
+    * other own ships in neighbourhood
+    * ratio between density and number of ships in neighbourhood
 
 ### 1.2. TODO - optimize vars
 * rethink independent variables and minimize amount 
