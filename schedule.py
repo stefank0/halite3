@@ -14,6 +14,8 @@ class Assignment:
 
     def to_command(self, target_cell):
         """Return command to move its ship to a target cell."""
+        #if target_cell == game_map[self.ship] and game_map[self.destination] != game_map[self.ship]:
+        #    logging.info('MOVE? {}) {} -> {} -> {}'.format(self.ship.id, self.ship.position, self.destination, target_cell.position))
         target_cell.mark_unsafe(self.ship)
 
         if target_cell == game_map[self.ship]:
@@ -67,15 +69,17 @@ class Schedule:
             origin_index = to_index(ship)
             target_index = to_index(game_map[destination])
             origin_enemy_cost = self.map_data.enemy_threat[origin_index]
-            edge_to_self_cost = 1.0 - 2.5 * game_map[ship].halite_amount / 750.0 + enemy_cost_func(ship, origin_enemy_cost)
+            edge_to_self_cost = 1.0 + enemy_cost_func(ship, origin_enemy_cost)
             remaining_cost = self.map_data.get_distance(ship, target_index)
             cost_matrix[k][origin_index] = edge_to_self_cost + remaining_cost
+            #logging.info("{}) {} - {}".format(ship.id, edge_to_self_cost, remaining_cost))
             if can_move(ship):
                 for neighbour_index in neighbours(origin_index):
                     first_edge_cost = self.map_data.get_distance(ship, neighbour_index)
                     remaining_cost = self.map_data.get_distance_from_index(
                         ship, neighbour_index, target_index
                     )
+                    #logging.info("{}) {} - {}".format(ship.id, first_edge_cost, remaining_cost))
                     cost_matrix[k][neighbour_index] = first_edge_cost + remaining_cost
 
     def create_cost_matrix(self):

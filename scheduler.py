@@ -4,7 +4,7 @@ from hlt import constants
 from scipy.optimize import linear_sum_assignment
 #from matplotlib import pyplot as plt
 import numpy as np
-from utility import to_cell, to_index
+from utility import to_cell, to_index, can_move
 from schedule import Schedule
 
 returning_to_dropoff = set()
@@ -104,6 +104,8 @@ class Scheduler:
         for ship in self.ships:
             if self.returning(ship):
                 self.assign_return(ship)
+            elif not can_move(ship):
+                self.schedule.assign(ship, ship.position)
             else:
                 remaining_ships.append(ship)
 
