@@ -1,17 +1,11 @@
 # Schildpad
 ## 1. TODO
 ### 1.1. TODO - dropoff points
-* time is right 
-    * enough halite
-        * more than 4000 halite - halite ship - halite cell (+ 1000 if ship is made)
-        * possibly built-in dependency of not building ships
-    * timing in game (estimate return on investment?)
-        * average distance between me.ships and dropoff points 
-        * turn number (not preferred) --> test case (mid game)
-        * average distance between ships and closest dropoff points too big        
 * location is right 
-    * distance between other drop off points (> x cells)
+    * distance between enemy drop off points
     * closer to the enemy to 'steal' more halite with higher changes on bonus
+    * other own ships in neighbourhood
+    * ratio between density and number of ships in neighbourhood
 
 ### 1.2. TODO - optimize vars
 * rethink independent variables and minimize amount 
@@ -21,10 +15,11 @@
 ### 1.5. TODO - Improve attack. Make sure that we do not follow an enemy ship to their base (the attack should succeed within a couple of turns: ideally our ship is between the enemy ship and their dropoff)
 ### 1.6. TODO - Improve attack. Make sure there is a friendly ship to take the dropped halite from both collided ships.
 ### 1.7. TODO - Improve attack and enemy_threat, keep track of enemy collisions with our own ships and adjust our behavior depending on enemy behavior (tit-for-tat).
-### 1.8. TODO - Merge branch jonne
-### 1.9. TODO - Reduce computation time (times out at large maps): use a subgraph for the dijkstra algorithm.
+### 1.8. TODO - Reduce computation time (times out at large maps): use a subgraph for the dijkstra algorithm.
+
 ### Bug1
-When cargo of ship == 1000
+When cargo of ship == 1000  
+Reproduce: halite.exe --replay-directory ../replays/ -vvv --width 32 --height 32 -s 1542381581 "python ../MyBot.py" "python ../MyBot.py"  
 https://halite.io/play/?game_id=1669676&replay_class=1&replay_name=replay-20181110-193501%2B0000-1541878392-64-64-1669676
 https://halite.io/play/?game_id=1672809&replay_class=1&replay_name=replay-20181110-205532%2B0000-1541883284-64-64-1672809
 
