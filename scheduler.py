@@ -138,7 +138,6 @@ class Scheduler:
 
     def dropoff_ship(self, ships):
         """Determine ship that creates dropoff"""
-        ships = np.array(ships)
         halites = np.array([ship.halite_amount + self.game_map[ship].halite_amount for ship in ships])
         costs = constants.DROPOFF_COST - halites
         halite_densities = np.array([self.map_data.halite_density[to_index(ship)] for ship in ships])
