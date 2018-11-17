@@ -97,7 +97,7 @@ class Scheduler:
         for ship in self.ships:
             if ship.halite_amount < 0.25 * constants.MAX_HALITE:
                 returning_to_dropoff.discard(ship.id)
-            if self.map_data.free_turns(ship) < 3:
+            if self.map_data.free_turns(ship) < (len(self.ships) / (4 * len(self.map_data.dropoffs))):
                 returning_to_dropoff.add(ship.id)
 
         remaining_ships = []
