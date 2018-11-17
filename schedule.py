@@ -123,5 +123,5 @@ class Schedule:
     def allow_dropoff_collisions(self):
         """Return True if we allow endgame dropoff collisions at a closest dropoff."""
         turns_left = constants.MAX_TURNS - game.turn_number
-        ship_dropoff_ratio_left = len(me.get_ships())
-        return turns_left <= math.ceil(ships_left / 4.0)
+        required_turns = math.ceil(len(me.get_ships()) / (4.0 * len(self.map_data.dropoffs)))
+        return turns_left <= required_turns
