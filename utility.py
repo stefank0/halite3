@@ -88,17 +88,22 @@ def neighbours(index):
     return index_north, index_south, index_east, index_west
 
 
-def bonus_neighbours(index):
-    """Return a generator for the indices of the bonus neighbours."""
+def neighbourhood(index, radius):
+    """Generator for all indices around index within a radius."""
     h = game_map.height
     w = game_map.width
     x = index % w
     y = index // w
     return (
         ((x + dx) % w) + (w * ((y + dy) % h))
-        for dx in range(-4, 5)
-        for dy in range(-4 + abs(dx), 5 - abs(dx))
+        for dx in range(-radius, radius + 1)
+        for dy in range(-radius + abs(dx), radius + 1 - abs(dx))
     )
+
+
+def bonus_neighbours(index):
+    """Return a generator for the indices of the bonus neighbours."""
+    return neighbourhood(index, 4)
 
 
 def ship_bonus_neighbours(ship):
@@ -273,8 +278,17 @@ class MapData:
             The term containing self.enemy_cost represents the fact that
             losing a ship to a collision costs a lot of turns.
         """
-        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4) + self.occupied + packing_fraction(ship) * self.dropoff_cost + enemy_cost_func(ship, self.enemy_cost)
-        edge_data = MapData.edge_data
+        edge_costs = np.repeat(1.0 + self.halite / 750.0, 4) + 0.8 * self.occupied + packing_fraction(ship) * self.dropoff_cost + enemy_cost_func(ship, self.enemy_cost)
+        subgraph_indices = np.array(list(neighbourhood(to_index(ship), 15)))
+        indexing_indices = np.concatenate((
+            4 * subgraph_indices,
+            4 * subgraph_indices + 1,
+            4 * subgraph_indices + 2,
+            4 * subgraph_indices + 3,
+        ))
+        row, col = MapData.edge_data
+        edge_data = (row[indexing_indices], col[indexing_indices])
+        edge_costs = edge_costs[indexing_indices]
         m = game_map.height * game_map.width
         return csr_matrix((edge_costs, edge_data), shape=(m, m))
 
@@ -283,8 +297,14 @@ class MapData:
         graph = self.create_graph(ship)
         ship_index = to_index(ship)
         indices = (ship_index, ) + neighbours(ship_index)
-        dist_matrix = dijkstra(graph, indices=indices, limit=30.0)
+        dist_matrix = dijkstra(graph, indices=indices)
         dist_matrix[dist_matrix == np.inf] = 99999.9
+        for index in indices:
+            for dropoff in self.dropoffs:
+                dropoff_index = to_index(dropoff)
+                indices_index = indices.index(index)
+                if dist_matrix[indices_index][dropoff_index] == 99999.9:
+                    dist_matrix[indices_index][dropoff_index] = simple_distance(index, dropoff_index)
         return dist_matrix, indices
 
     def shortest_path(self):
