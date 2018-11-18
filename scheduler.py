@@ -97,7 +97,7 @@ class Scheduler:
         for ship in self.ships:
             if ship.halite_amount < 0.25 * constants.MAX_HALITE:
                 returning_to_dropoff.discard(ship.id)
-            if self.map_data.free_turns(ship) < 5:
+            if self.map_data.free_turns(ship) < 3:
                 returning_to_dropoff.add(ship.id)
 
         remaining_ships = []
@@ -134,13 +134,15 @@ class Scheduler:
         """Determine if it is time to create dropoff"""
         dists = self.map_data.distance_dropoffs(ships)
         ship_per_dropoff = len(ships) / len(self.map_data.dropoffs)
-        if dists.any() and (10 < self.turn_number < 0.8 * constants.MAX_TURNS) and ship_per_dropoff > 10:
-            return dists.mean() > 5
-        return False
+        return (
+                dists.any() and
+                dists.mean() > 10 and
+                (self.turn_number < 0.8 * constants.MAX_TURNS) and
+                ship_per_dropoff > 10
+        )
 
     def dropoff_ship(self, ships):
         """Determine ship that creates dropoff"""
-        ships = np.array(ships)
         halites = np.array([ship.halite_amount + self.game_map[ship].halite_amount for ship in ships])
         costs = constants.DROPOFF_COST - halites
         halite_densities = np.array([self.map_data.halite_density[to_index(ship)] for ship in ships])
@@ -148,7 +150,7 @@ class Scheduler:
         dists = self.map_data.distance_dropoffs(ships)
         suitability = (
                 halite_densities *
-                (dists > 15) *
+                (dists > 10) *
                 (costs < self.me.halite_amount) *
                 (halite_densities > 100) *
                 (ship_densities > 0)

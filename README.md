@@ -4,7 +4,6 @@
 * location is right 
     * distance between enemy drop off points
     * closer to the enemy to 'steal' more halite with higher changes on bonus
-    * other own ships in neighbourhood
     * ratio between density and number of ships in neighbourhood
 
 ### 1.2. TODO - optimize vars
