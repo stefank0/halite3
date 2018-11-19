@@ -196,6 +196,7 @@ class MapData:
         if MapData.edge_data is None:
             self.initialize_edge_data()
         self.dropoff_cost = self.dropoff_distance_edge_cost()
+        self.dropoff_dists = self.simple_dropoff_distances()
         self.enemy_threat = self.get_enemy_threat()
         self.enemy_cost = self.enemy_edge_cost()
         self._dist_matrices = self.shortest_path()
@@ -379,7 +380,7 @@ class MapData:
 
     def distance_dropoffs(self, ships):
         """Get a list of distances to the nearest dropoff for all ships."""
-        return np.array([self.simple_dropoff_distances()[to_index(ship)] for ship in ships])
+        return np.array([self.dropoff_dists[to_index(ship)] for ship in ships])
 
     def simple_dropoff_distances(self):
         """Simple step distances from all cells to the nearest dropoff."""
