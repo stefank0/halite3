@@ -2,25 +2,11 @@ import logging, math
 
 from hlt import constants
 from scipy.optimize import linear_sum_assignment
-#from matplotlib import pyplot as plt
 import numpy as np
 from utility import to_cell, to_index, can_move
 from schedule import Schedule
 
 returning_to_dropoff = set()
-
-
-def plot(arrs, fn):
-    """Plot a dictionary of costs"""
-    fig, axes = plt.subplots(len(arrs))
-    for i, arr in enumerate(arrs):
-        im = axes[i].imshow(arrs[arr])
-        axes[i].set_title(arr)
-        fig.colorbar(im, ax=axes[i])
-        axes[i].xaxis.set_major_formatter(plt.NullFormatter())
-        axes[i].yaxis.set_major_formatter(plt.NullFormatter())
-    fig.savefig(fn, bbox_inches='tight')
-    return
 
 
 class Scheduler:
@@ -81,7 +67,6 @@ class Scheduler:
         """Assign this ship to return to closest dropoff."""
         returning_to_dropoff.add(ship.id)
         destination = self.map_data.get_closest(ship, self.map_data.dropoffs)
-        logging.info(f'{ship} return to {destination}')
         dropoff_index = to_index(destination)
         # Create olifantenpaadjes:
         if (
@@ -99,7 +84,7 @@ class Scheduler:
         for ship in self.ships:
             if ship.halite_amount < 0.25 * constants.MAX_HALITE:
                 returning_to_dropoff.discard(ship.id)
-            if self.map_data.free_turns(ship) < required_turns:
+            if self.map_data.free_turns(ship) < required_turns + 2:
                 returning_to_dropoff.add(ship.id)
 
         remaining_ships = self.ships.copy()
@@ -108,7 +93,7 @@ class Scheduler:
             if ship:
                 self.schedule.dropoff(ship)
                 remaining_ships.remove(ship)
-        logging.info(self.map_data.dropoffs)
+
         for ship in remaining_ships[:]:
             if self.returning(ship):
                 self.assign_return(ship)
