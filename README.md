@@ -25,6 +25,23 @@ https://halite.io/play/?game_id=1672809&replay_class=1&replay_name=replay-201811
 ### Bug2
 Should be deterministic, but isn't? Playing against self doesn't result in a symmetric game. What is happening?
 
+### Bug3   
+Time performance:
+* Add "--no-timeout" var to run_game.bat
+* Example (>4s for 64*64 2p 100 ships each):  
+
+Function | Time (s)
+---|---
+MapData(game)|0.61
+Scheduler(game, map_data)|0.61
+to_destination() - dropoff|0.612
+to_destination() - return|0.615
+to_destination() - costmatrix|3.88
+create schedule |4.48
+create commands |4.74
+end turn|4.75
+
+
 ## Rationale
 ###
 
