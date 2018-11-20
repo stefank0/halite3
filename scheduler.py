@@ -1,26 +1,12 @@
-import logging
+import logging, math, time
 
 from hlt import constants
 from scipy.optimize import linear_sum_assignment
-#from matplotlib import pyplot as plt
 import numpy as np
 from utility import to_cell, to_index, can_move
 from schedule import Schedule
 
 returning_to_dropoff = set()
-
-
-def plot(arrs, fn):
-    """Plot a dictionary of costs"""
-    fig, axes = plt.subplots(len(arrs))
-    for i, arr in enumerate(arrs):
-        im = axes[i].imshow(arrs[arr])
-        axes[i].set_title(arr)
-        fig.colorbar(im, ax=axes[i])
-        axes[i].xaxis.set_major_formatter(plt.NullFormatter())
-        axes[i].yaxis.set_major_formatter(plt.NullFormatter())
-    fig.savefig(fn, bbox_inches='tight')
-    return
 
 
 class Scheduler:
@@ -94,30 +80,30 @@ class Scheduler:
 
     def to_destination(self):
         """Find the fit for the cost matrix"""
+        required_turns = math.ceil(len(self.ships) / (4.0 * len(self.map_data.dropoffs)))
         for ship in self.ships:
             if ship.halite_amount < 0.25 * constants.MAX_HALITE:
                 returning_to_dropoff.discard(ship.id)
-            if self.map_data.free_turns(ship) < 3:
+            if self.map_data.free_turns(ship) < required_turns + 2:
                 returning_to_dropoff.add(ship.id)
 
-        remaining_ships = []
-        for ship in self.ships:
-            if self.returning(ship):
-                self.assign_return(ship)
-            elif not can_move(ship):
-                self.schedule.assign(ship, ship.position)
-            else:
-                remaining_ships.append(ship)
-
+        remaining_ships = self.ships.copy()
         if self.dropoff_time(remaining_ships):
             ship = self.dropoff_ship(remaining_ships)
             if ship:
                 self.schedule.dropoff(ship)
                 remaining_ships.remove(ship)
 
+        for ship in remaining_ships[:]:
+            if self.returning(ship):
+                self.assign_return(ship)
+                remaining_ships.remove(ship)
+            elif not can_move(ship):
+                self.schedule.assign(ship, ship.position)
+                remaining_ships.remove(ship)
+
         cost_matrix = self.create_cost_matrix(remaining_ships)
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
-
         for i, j in zip(row_ind, col_ind):
             ship = remaining_ships[i]
             destination = to_cell(j).position
@@ -146,7 +132,7 @@ class Scheduler:
         halites = np.array([ship.halite_amount + self.game_map[ship].halite_amount for ship in ships])
         costs = constants.DROPOFF_COST - halites
         halite_densities = np.array([self.map_data.halite_density[to_index(ship)] for ship in ships])
-        ship_densities = np.array([self.map_data.density_ships[to_index(ship)] for ship in ships])
+        ship_densities = np.array([self.map_data.ship_density[to_index(ship)] for ship in ships])
         dists = self.map_data.distance_dropoffs(ships)
         suitability = (
                 halite_densities *
@@ -157,5 +143,6 @@ class Scheduler:
         )
         best_ship_id = suitability.argsort()[-1]
         if suitability[best_ship_id]:
+            self.map_data.dropoffs.append(ships[best_ship_id])
             return ships[best_ship_id]
         return False
