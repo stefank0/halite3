@@ -37,6 +37,11 @@ def packing_fraction(ship):
     return ship.halite_amount / constants.MAX_HALITE
 
 
+def target(origin, direction):
+    """Calculate the target cell if the ship moves in the given direction."""
+    return game_map[origin.directional_offset(direction)]
+
+
 def neighbours(index):
     """Get the indices of the neighbours of the cell belonging to index."""
     h = game_map.height
