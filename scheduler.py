@@ -54,7 +54,7 @@ class Scheduler:
 
         for i, ship in enumerate(remaining_ships):
             loot = self.map_data.loot(ship)
-            halite = np.max([apparent_halite, loot], axis=0)
+            halite = apparent_halite + loot
             distance_array = self.map_data.get_distances(ship)
             # Maximize the halite gathered per turn (considering only the first mining action)(factor 0.25 not
             # necessary, because it is there for all costs)(amount of turns: steps + 1 for mining)

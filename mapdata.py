@@ -486,7 +486,7 @@ class MapData:
 
     def _ship_density(self):
         """Get density of friendly - hostile ships"""
-        radius = 9
+        radius = 5
         friendly = np.zeros(self.halite.shape)
         friendly_indices = [to_index(ship) for ship in game.me.get_ships()]
         friendly[friendly_indices] = 1
@@ -542,7 +542,7 @@ class MapData:
             enemy_index = to_index(enemy_ship)
             if self.ship_density[enemy_index] > 0:
                 dhalite = enemy_ship.halite_amount - ship.halite_amount
-                if dhalite > 0:
+                if dhalite > 100:
                     loot[enemy_index] += dhalite
                     for index in neighbours(enemy_index):
                         if dropoff_dists[index] > dropoff_dists[enemy_index]:
