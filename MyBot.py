@@ -104,6 +104,6 @@ while True:
     game.update_frame()
     start = time.time()
     command_queue = generate_commands()
-    if time.time() - start > 2.0:
-        log_profiling()
+    #if time.time() - start > 2.0:
+    #    log_profiling()
     game.end_turn(command_queue)
