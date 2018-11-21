@@ -1,8 +1,7 @@
 from hlt import Direction, constants
-from scipy.optimize import linear_sum_assignment
 import numpy as np
 import logging, math, time
-from mapdata import to_cell, to_index, can_move, neighbours
+from mapdata import to_cell, to_index, can_move, neighbours, LinearSum
 
 
 def target(origin, direction):
@@ -99,7 +98,8 @@ class Schedule:
         if self.allow_dropoff_collisions():
             self.resolve_dropoff_collisions(commands)
         cost_matrix = self.create_cost_matrix()
-        row_ind, col_ind = linear_sum_assignment(cost_matrix)
+        ships = [assignment.ship for assignment in self.assignments]
+        row_ind, col_ind = LinearSum.assignment(cost_matrix, ships)
         for k, i in zip(row_ind, col_ind):
             assignment = self.assignments[k]
             target = to_cell(i)
@@ -119,7 +119,7 @@ class Schedule:
         for assignment in self.assignments:
             dropoff = self.map_data.get_closest_dropoff(assignment.ship)
             dropoff_cell = game_map[dropoff]
-            if self.near_dropoff(assignment.ship):
+            if self.near_dropoff(assignment.ship) and can_move(assignment.ship):
                 commands.append(assignment.to_command(dropoff_cell))
             else:
                 remaining_assignments.append(assignment)

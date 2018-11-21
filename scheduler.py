@@ -1,9 +1,7 @@
 import logging, math, time
-
 from hlt import constants
-from scipy.optimize import linear_sum_assignment
 import numpy as np
-from mapdata import to_cell, to_index, can_move
+from mapdata import to_cell, to_index, can_move, LinearSum
 from schedule import Schedule
 
 returning_to_dropoff = set()
@@ -101,9 +99,8 @@ class Scheduler:
             elif not can_move(ship):
                 self.schedule.assign(ship, ship.position)
                 remaining_ships.remove(ship)
-
         cost_matrix = self.create_cost_matrix(remaining_ships)
-        row_ind, col_ind = linear_sum_assignment(cost_matrix)
+        row_ind, col_ind = LinearSum.assignment(cost_matrix, remaining_ships)
         for i, j in zip(row_ind, col_ind):
             ship = remaining_ships[i]
             destination = to_cell(j).position
