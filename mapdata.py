@@ -369,27 +369,6 @@ def _mining_probability(halite, ship):
     return cargo_factor * mining_cost / (mining_cost + moving_cost)
 
 
-def nearby_loot(halite, ship):
-    """Calculate enemy halite near a ship that can be stolen.
-
-    Strategy:
-        Take into account the amount of collisions with the enemy player:
-        - Keep track of how and to whom you lost your own ships.
-        - Flee/attack more aggresively for aggresive players (tit-for-tat).
-    """
-    m = game_map.height * game_map.width
-    loot = np.zeros(m)
-    for enemy_ship in _nearby_enemy_ships(ship):
-        dhalite = enemy_ship.halite_amount - ship.halite_amount
-        if dhalite > 0:
-            mining_probability = _mining_probability(halite, enemy_ship)
-            enemy_index = to_index(enemy_ship)
-            loot[enemy_index] += dhalite * mining_probability
-            for index in neighbours(enemy_index):
-                loot[index] += dhalite * (1 - mining_probability)
-    return loot
-
-
 ##############################################################################
 #
 # MapData, the main class
@@ -463,5 +442,27 @@ class MapData:
         return self.calculator.get_distance(ship, index)
 
     def loot(self, ship):
-        """Calculate enemy halite near a ship that can be stolen."""
-        return nearby_loot(self.halite, ship)
+        """Calculate enemy halite near a ship that can be stolen.
+
+        Strategy:
+            Take into account the amount of collisions with the enemy player:
+            - Keep track of how and to whom you lost your own ships.
+            - Flee/attack more aggresively for aggresive players (tit-for-tat).
+        """
+        m = game_map.height * game_map.width
+        dropoff_dists = self.calculator.simple_dropoff_distances
+        loot = np.zeros(m)
+
+        if len(game.players) == 4 and game.turn_number < 0.75 * constants.MAX_TURNS:
+            return loot
+
+        for enemy_ship in _nearby_enemy_ships(ship):
+            enemy_index = to_index(enemy_ship)
+            if self.ship_density[enemy_index] > 0:
+                dhalite = enemy_ship.halite_amount - ship.halite_amount
+                if dhalite > 0:
+                    loot[enemy_index] += dhalite
+                    for index in neighbours(enemy_index):
+                        if dropoff_dists[index] > dropoff_dists[enemy_index]:
+                            loot[index] += dhalite
+        return loot

@@ -77,6 +77,20 @@ def generate_commands():
     return command_queue
 
 
+def log_profiling():
+    """Profiling to get insight in performance issues."""
+    import cProfile, pstats, io
+    pr = cProfile.Profile()
+    pr.enable()
+    generate_commands()
+    pr.disable()
+    s = io.StringIO()
+    ps = pstats.Stats(pr, stream=s).sort_stats('cumulative')
+    ps.print_stats()
+    logging.info(s.getvalue())
+    s.close()
+
+
 # Initialize the game.
 game = hlt.Game()
 game.ready("Schildpad")
@@ -88,5 +102,8 @@ game_map = game.game_map
 # Play the game.
 while True:
     game.update_frame()
+    start = time.time()
     command_queue = generate_commands()
+    if time.time() - start > 2.0:
+        log_profiling()
     game.end_turn(command_queue)
