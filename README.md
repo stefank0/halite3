@@ -9,12 +9,10 @@
 ### 1.2. TODO - optimize vars
 * rethink independent variables and minimize amount 
 * run some kind of monte carlo (ML) to determine optimal set of vars
-### 1.3. TODO - Split utility.py, put code about enemy interaction in separate file. Improve readability of the new code.
 ### 1.4. TODO - Improve attack and enemy_threat, predict enemy movement (improve on using just mining_probability()). For enemy_threat, only predict movement for nearby enemy ships.
 ### 1.5. TODO - Improve attack. Make sure that we do not follow an enemy ship to their base (the attack should succeed within a couple of turns: ideally our ship is between the enemy ship and their dropoff)
 ### 1.6. TODO - Improve attack. Make sure there is a friendly ship to take the dropped halite from both collided ships.
 ### 1.7. TODO - Improve attack and enemy_threat, keep track of enemy collisions with our own ships and adjust our behavior depending on enemy behavior (tit-for-tat).
-### 1.8. TODO - Reduce computation time (times out at large maps): use a subgraph for the dijkstra algorithm.
 
 ### Bug1
 When cargo of ship == 1000  

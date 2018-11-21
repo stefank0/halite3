@@ -3,7 +3,7 @@ import logging, math, time
 from hlt import constants
 from scipy.optimize import linear_sum_assignment
 import numpy as np
-from utility import to_cell, to_index, can_move
+from mapdata import to_cell, to_index, can_move
 from schedule import Schedule
 
 returning_to_dropoff = set()
@@ -30,7 +30,7 @@ class Scheduler:
         """Determine if ship has to return to a dropoff location"""
         if ship.id in returning_to_dropoff:
             return True
-        dropoff = self.map_data.get_closest(ship, self.map_data.dropoffs)
+        dropoff = self.map_data.get_closest_dropoff(ship)
         dropoff_index = to_index(dropoff)
         if self.map_data.get_distance(ship, dropoff_index) < 7:
             return ship.halite_amount > 0.75 * constants.MAX_HALITE
@@ -66,7 +66,7 @@ class Scheduler:
     def assign_return(self, ship):
         """Assign this ship to return to closest dropoff."""
         returning_to_dropoff.add(ship.id)
-        destination = self.map_data.get_closest(ship, self.map_data.dropoffs)
+        destination = self.map_data.get_closest_dropoff(ship)
         dropoff_index = to_index(destination)
         # Create olifantenpaadjes:
         if (
