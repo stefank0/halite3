@@ -6,7 +6,7 @@ from statistics import median
 import hlt
 from hlt import constants, Position
 from scheduler import Scheduler
-from utility import MapData
+from mapdata import MapData
 
 
 def create_schedule():
