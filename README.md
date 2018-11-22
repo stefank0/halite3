@@ -1,47 +1,17 @@
 # Schildpad
-## 1. TODO
-### 1.1. TODO - dropoff points
-* location is right 
-    * distance between enemy drop off points
-    * closer to the enemy to 'steal' more halite with higher changes on bonus
-    * ratio between density and number of ships in neighbourhood
+## TODO
+- [ ] TODO - Improve dropoff points (move ship towards best dropoff loc)
+- [ ] TODO - Improve decision make ship <Turn 125 every 1000 build ship; estimated return on investment f(n_ships, halite_available, n_players, map)
+- [ ] TODO - Optimize vars possibly with own server or ML?
+- [ ] TODO - Improve attack and enemy_threat, predict enemy movement (improve on using just mining_probability()). For enemy_threat, only predict movement for nearby enemy ships.
+- [ ] TODO - Improve attack. Make sure that we do not follow an enemy ship to their base (the attack should succeed within a couple of turns: ideally our ship is between the enemy ship and their dropoff)
+- [ ] TODO - Improve attack. Make sure there is a friendly ship to take the dropped halite from both collided ships.
+- [ ] TODO - Improve attack and enemy_threat, keep track of enemy collisions with our own ships and adjust our behavior depending on enemy behavior (tit-for-tat).
+- [ ] TODO - Implement loot for 4 players
+- [ ] TODO - Aggresiveness higher for 2p when ships and halite > enemy ships and enemy halite
 
-### 1.2. TODO - optimize vars
-* rethink independent variables and minimize amount 
-* run some kind of monte carlo (ML) to determine optimal set of vars
-### 1.4. TODO - Improve attack and enemy_threat, predict enemy movement (improve on using just mining_probability()). For enemy_threat, only predict movement for nearby enemy ships.
-### 1.5. TODO - Improve attack. Make sure that we do not follow an enemy ship to their base (the attack should succeed within a couple of turns: ideally our ship is between the enemy ship and their dropoff)
-### 1.6. TODO - Improve attack. Make sure there is a friendly ship to take the dropped halite from both collided ships.
-### 1.7. TODO - Improve attack and enemy_threat, keep track of enemy collisions with our own ships and adjust our behavior depending on enemy behavior (tit-for-tat).
-
-### Bug1
-When cargo of ship == 1000  
-Reproduce: halite.exe --replay-directory ../replays/ -vvv --width 32 --height 32 -s 1542381581 "python ../MyBot.py" "python ../MyBot.py"  
-https://halite.io/play/?game_id=1669676&replay_class=1&replay_name=replay-20181110-193501%2B0000-1541878392-64-64-1669676
-https://halite.io/play/?game_id=1672809&replay_class=1&replay_name=replay-20181110-205532%2B0000-1541883284-64-64-1672809
-
-### Bug2
-Should be deterministic, but isn't? Playing against self doesn't result in a symmetric game. What is happening?
-
-### Bug3   
-Time performance:
-* Add "--no-timeout" var to run_game.bat
-* Example (>4s for 64*64 2p 100 ships each):  
-
-Function | Time (s)
----|---
-MapData(game)|0.61
-Scheduler(game, map_data)|0.61
-to_destination() - dropoff|0.612
-to_destination() - return|0.615
-to_destination() - costmatrix|3.88
-create schedule |4.48
-create commands |4.74
-end turn|4.75
-
-
-## Rationale
-###
+## Bugs
+None
 
 # Halite III
 General information from Halite III adjusted to our project.
@@ -54,7 +24,7 @@ General information from Halite III adjusted to our project.
 * MyBot.py, schildpad bot
 * scheduler.py, module to assign ships to destinations (distance is 0 to mapsize)
 * schedule.py, module to make next step schedule (distance is 0 or 1)
-* utility.py, module with useful general functions and MapData
+* mapdata.py, module with useful general functions and MapData
 
 ## Testing your bot locally
 * Run run_game.bat (Windows) and run_game.sh (MacOS, Linux) to run a game of Halite III. By default, these scripts run a game of your MyBot.py bot vs. itself.  You can modify the board size, map seed, and the opponents of test games using the CLI.
