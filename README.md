@@ -7,6 +7,7 @@
 - [ ] TODO - Improve decision spawn ship <Turn 200 every 1000 build ship; estimated return on investment f(n_ships, halite_available, n_players, map)
 - [ ] TODO - Return edge costs. Use parameters in the calculation: Halite's left on the map, turns left. (Halite / turns left)
 - [ ] TODO - Optimise contants: 
+    - HLT parser (pip install Zstandard)
     - Use gradient decent algorithm.
     - Define constants per map size and players.
     - One constant/dimension at the time, one step all together.
