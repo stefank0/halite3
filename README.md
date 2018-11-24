@@ -1,17 +1,30 @@
 # Schildpad
 ## TODO
-- [ ] TODO - Improve dropoff points (move ship towards best dropoff loc)
-- [ ] TODO - Improve decision make ship <Turn 125 every 1000 build ship; estimated return on investment f(n_ships, halite_available, n_players, map)
-- [ ] TODO - Optimize vars possibly with own server or ML?
-- [ ] TODO - Improve attack and enemy_threat, predict enemy movement (improve on using just mining_probability()). For enemy_threat, only predict movement for nearby enemy ships.
-- [ ] TODO - Improve attack. Make sure that we do not follow an enemy ship to their base (the attack should succeed within a couple of turns: ideally our ship is between the enemy ship and their dropoff)
-- [ ] TODO - Improve attack. Make sure there is a friendly ship to take the dropped halite from both collided ships.
-- [ ] TODO - Improve attack and enemy_threat, keep track of enemy collisions with our own ships and adjust our behavior depending on enemy behavior (tit-for-tat).
-- [ ] TODO - Implement loot for 4 players
-- [ ] TODO - Aggresiveness higher for 2p when ships and halite > enemy ships and enemy halite
+- [ ] TODO - Conquer or reconquer area from enemy (awareness of area)
+- [ ] TODO - Dropoff planner  
+        - don't just look to current positions of ships --> plan ahead  
+        - ghost dropoff
+- [ ] TODO - Improve decision spawn ship <Turn 200 every 1000 build ship; estimated return on investment f(n_ships, halite_available, n_players, map)
+- [ ] TODO - Return edge costs. Use parameters in the calculation: Halite's left on the map, turns left. (Halite / turns left)
+- [ ] TODO - Optimise contants: 
+    - Use gradient decent algorithm.
+    - Define constants per map size and players.
+    - One constant/dimension at the time, one step all together.
+    - Depending on turn number. 
+- [ ] TODO - Improve attack and enemy_threat, predict enemy movement (improve on using just mining_probability()). For enemy_threat, only predict movement for nearby enemy ships. (Machine learning?)
+- [ ] TODO - Check qualitative behaviour, check if parameters are broad enough, or that rules needs to reimplemented.  
+- [ ] TODO - Improve loot:
+    - Increase aggressiveness in end game.
+    - Multiple strategies
+    - Predict success rate of an attack.
+    - Improve attack and enemy_threat, keep track of enemy collisions with our own ships and adjust our behavior depending on enemy behavior and (tit-for-tat - only for lower ranked based on mined Halite).
+- [ ] TODO - If moving is free or if ship is full, stay still should be more expensive.
+- [ ] TODO - Max (cargo space, 25% halite)
+- [ ] TODO - Factor (0. - 1.) number of free turns (endgame)
+- [ ] TODO - Improve returning within (dependent on closeness to dropoff in stead of hardcoded numbers
 
 ## Bugs
-None
+- [ ] Bot is currently not deterministic. 
 
 # Halite III
 General information from Halite III adjusted to our project.
