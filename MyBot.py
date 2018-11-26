@@ -5,6 +5,7 @@ import time
 from statistics import median
 import hlt
 from hlt import constants, Position
+from parameters import EARLYGAME, ENDGAME
 from scheduler import Scheduler
 from mapdata import MapData
 
@@ -40,8 +41,8 @@ def _ship_number_falling_behind():
 
 def want_to_spawn():
     """Return True if we would like to spawn a new ship."""
-    is_early_game = game.turn_number <= constants.MAX_TURNS / 2
-    is_late_game = game.turn_number >= constants.MAX_TURNS * 3 / 4
+    is_early_game = game.turn_number <= EARLYGAME
+    is_late_game = game.turn_number >= (constants.MAX_TURNS - ENDGAME)
     is_mid_game = (not is_early_game) and (not is_late_game)
     return is_early_game or (is_mid_game and _ship_number_falling_behind())
 
