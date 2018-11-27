@@ -36,17 +36,22 @@ class Calibrator:
 
     @property
     def args(self):
-        return ['halite.exe', '-vvv',
+        """cmd arguments to run a halite game"""
+        args = ['halite.exe', '-vvv',
                 '--replay-directory', self._dir_output,
                 '--width', str(self.mapsize),
-                '--height', str(self.mapsize),
-                self.get_bot(self.pars_default),
-                self.get_bot(self.pars_reference),
-                self.get_bot(self.pars_low),
-                self.get_bot(self.pars_high),
-                ]
+                '--height', str(self.mapsize)]
+        if self.n_player == 2:
+            return args + [self.get_bot(self.pars_low), self.get_bot(self.pars_high)]
+        elif self.n_player == 4:
+            return args + [self.get_bot(self.pars_default),
+                           self.get_bot(self.pars_reference),
+                           self.get_bot(self.pars_low),
+                           self.get_bot(self.pars_high)]
+        raise NotImplementedError
 
     def get_bot(self, pars):
+        """cmd argument to the a single bot with certain parameters in a yaml file"""
         return self.bot.format(pars)
 
     def start(self):
@@ -65,15 +70,18 @@ class Calibrator:
             iteration += 1
         return 0
 
-    def load(self):
+    def load(self, folder):
+        """Load a calibration state"""
         raise NotImplementedError
 
     def get_parameters(self):
+        """Get a list of the parameters to be calibrated"""
         with open(self.pars_reference) as f:
             pars = yaml.load(f)
         return list(pars.keys())
 
     def set_parameters(self, param, iteration, step):
+        """Set the parameters to be used in a bot"""
         with open(self.pars_reference, 'r') as f:
             pars = yaml.load(f)
         pars[param] = pars[param] + step
