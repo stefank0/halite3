@@ -1,3 +1,4 @@
+import yaml
 import time
 from subprocess import check_output
 import os
@@ -6,17 +7,25 @@ from tqdm import tqdm
 
 
 class Calibrator:
-    def __init__(self, mapsize, n_player, n_games, n_iter, dir_replay):
+    """Calibrator object to start or load a stopped Calibration of parameterrs for a halite bot.
+    """
+
+    def __init__(self, mapsize, n_player, n_games, n_iter,
+                 pars_default='..\parameters.yaml', dir_replay=r'..\replays'):
+        self.pars_high = None
+        self.pars_low = None
         self.step = 0
         self.bot = r'python ..\MyBot.py {}'
-        self.f_pars = '..\parameters.yaml'
 
         self.mapsize = mapsize
         self.n_player = n_player
         self.n_games = n_games
         self.n_iter = n_iter
         self._dir_replay = dir_replay
+        self.pars_default = pars_default
+        self.pars_reference = pars_default
         self._dir_output = self.set_dir_output()
+        self._dir_pars = os.path.join(self._dir_output, 'pars')
 
     def set_dir_output(self):
         """Folder where the hlt and errorlogs will be written"""
@@ -31,36 +40,54 @@ class Calibrator:
                 '--replay-directory', self._dir_output,
                 '--width', str(self.mapsize),
                 '--height', str(self.mapsize),
-                self.set_bot(self.f_pars),
-                self.set_bot(self.f_pars),
-                self.set_bot(self.f_pars),
-                self.set_bot(self.f_pars),
+                self.get_bot(self.pars_default),
+                self.get_bot(self.pars_reference),
+                self.get_bot(self.pars_low),
+                self.get_bot(self.pars_high),
                 ]
 
-    def set_bot(self, pars):
+    def get_bot(self, pars):
         return self.bot.format(pars)
 
     def start(self):
         """Run game from commandline"""
         os.mkdir(self._dir_output)
-        os.mkdir(os.path.join(self._dir_output, 'pars'))
-
-        # read reference parameter yaml
+        os.mkdir(self._dir_pars)
         iteration = 0
         while iteration < self.n_iter:
-            # initialize parameters for each step
-            # run n games
-            for _ in tqdm(range(self.n_games), total=self.n_games):
-                check_output(self.args).decode("ascii")
-            # evaluate game results
-            # determine new stepsize
+            for param in self.get_parameters():
+                self.set_parameters(param=param, iteration=iteration, step=-20)
+                self.set_parameters(param=param, iteration=iteration, step=20)
+                for _ in tqdm(range(self.n_games), total=self.n_games):
+                    check_output(self.args).decode("ascii")
+                # evaluate game results: gradient=
+                # determine gradient and step of pamam: step=gradient*
             iteration += 1
-        return
+        return 0
 
-    def set_parameters(self):
-        pass
+    def load(self):
+        raise NotImplementedError
+
+    def get_parameters(self):
+        with open(self.pars_reference) as f:
+            pars = yaml.load(f)
+        return list(pars.keys())
+
+    def set_parameters(self, param, iteration, step):
+        with open(self.pars_reference, 'r') as f:
+            pars = yaml.load(f)
+        pars[param] = pars[param] + step
+        if step < 0:
+            self.pars_low = os.path.join(self._dir_pars, f'parameters_{param}_{iteration}_low.yaml')
+            with open(self.pars_low, 'w') as f_low:
+                yaml.dump(pars, f_low, default_flow_style=False)
+        elif step > 0:
+            self.pars_high = os.path.join(self._dir_pars, f'parameters_{param}_{iteration}_high.yaml')
+            with open(self.pars_high, 'w') as f_high:
+                yaml.dump(pars, f_high, default_flow_style=False)
+        return 0
 
 
 if __name__ == '__main__':
-    calibrator = Calibrator(mapsize=32, n_player=4, n_games=100, n_iter=5, dir_replay=r'..\replays')
+    calibrator = Calibrator(mapsize=32, n_player=4, n_games=100, n_iter=1)
     calibrator.start()
