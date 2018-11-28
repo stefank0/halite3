@@ -1,0 +1,46 @@
+{
+    "2": {
+        "32": {
+            "earlygame": 200,
+            "endgame": 100
+        },
+		"40": {
+            "earlygame": 200,
+            "endgame": 100
+        },
+		"48": {
+            "earlygame": 200,
+            "endgame": 100
+        },
+		"56": {
+            "earlygame": 200,
+            "endgame": 100
+        },
+		"64": {
+            "earlygame": 200,
+            "endgame": 100
+        }
+    },
+    "4": {
+        "32": {
+            "earlygame": 200,
+            "endgame": 100
+        },
+		"40": {
+            "earlygame": 200,
+            "endgame": 100
+        },
+		"48": {
+            "earlygame": 200,
+            "endgame": 100
+        },
+		"56": {
+            "earlygame": 200,
+            "endgame": 100
+        },
+		"64": {
+            "earlygame": 200,
+            "endgame": 100
+        }
+    }
+}
