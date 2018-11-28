@@ -4,6 +4,7 @@ from subprocess import check_output
 import os
 
 from tqdm import tqdm
+from parser import parse_replay_folder, parse_replay_file
 
 
 class Calibrator:
@@ -39,7 +40,7 @@ class Calibrator:
                             f'calibrator_'
                             f'p{self.n_player}_'
                             f's{self.mapsize}_'
-                            f'd{time.strftime("%Y%m%d")}'
+                            f'd{time.strftime("%Y%m%d")}_'
                             f't{time.strftime("%H%M%S")}')
 
     @property
@@ -60,14 +61,17 @@ class Calibrator:
 
     @property
     def _pars_default_file(self):
+        """File with the default parameters, which update each iteration based on the gradients per parameter"""
         return os.path.join(self._dir_pars, f'parameters_{self.iter}_default.yaml')
 
     @property
     def _pars_high_file(self):
+        """File with the parameters and a parameter with one high step"""
         return os.path.join(self._dir_pars, f'parameters_{self.iter}_high_{self.param}.yaml')
 
     @property
     def _pars_low_file(self):
+        """File with the parameters and a parameter with one low step"""
         return os.path.join(self._dir_pars, f'parameters_{self.iter}_low_{self.param}.yaml')
 
     def get_bot(self, pars):
@@ -88,6 +92,7 @@ class Calibrator:
                 self.set_parameter(file=self._pars_high_file, step=step)
                 for _ in tqdm(range(self.n_games), total=self.n_games):
                     check_output(self.args).decode("ascii")
+                parse_replay_file()
                 # evaluate game results: gradient=
                 # determine gradient and step of pamam: step = +/-gradient * reference_params[param]
                 # update default parameters
@@ -117,10 +122,12 @@ class Calibrator:
         return self.set_parameters(file, pars)
 
     def reset_parameters(self, file):
+        """Reset the parameters back to the default parameters"""
         with open(file, 'w') as f:
             return yaml.dump(self._pars_default, f, default_flow_style=False)
 
 
 if __name__ == '__main__':
+    # Run the calibration
     calibrator = Calibrator(mapsize=32, n_player=4, n_games=100, n_iter=1)
     calibrator.start()
