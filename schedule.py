@@ -60,6 +60,16 @@ class Schedule:
         m = game_map.width * game_map.height  # Number of cells/targets.
         return np.full((n, m), 99999999999.9)
 
+    def wasted_turn_cost(self, ship, target_index):
+        """Costs (0.0 - 0.1) for a wasted turn. Also breaks some symmetry."""
+        if to_index(ship) == target_index:
+            return 0.0
+        else:
+            cargo_space = constants.MAX_HALITE - ship.halite_amount
+            mining_potential = math.ceil(0.25 * game_map[ship].halite_amount)
+            mining_profit = min(cargo_space, mining_potential)
+            return min(0.0, 0.1 - 0.001 * mining_profit)
+
     def reduce_feasible(self, cost_matrix):
         """Reduce the cost of all feasible moves for all ships."""
         for k, assignment in enumerate(self.assignments):
@@ -68,17 +78,15 @@ class Schedule:
             origin_index = to_index(ship)
             target_index = to_index(game_map[destination])
             origin_enemy_cost = self.map_data.enemy_threat[origin_index]
-            edge_to_self_cost = 1.0 + self.map_data.calculator.threat_costs_func(ship, origin_enemy_cost)
+            edge_to_self_cost = 1.0 + self.wasted_turn_cost(ship, target_index) + self.map_data.calculator.threat_costs_func(ship, origin_enemy_cost)
             remaining_cost = self.map_data.get_distance(ship, target_index)
             cost_matrix[k][origin_index] = edge_to_self_cost + remaining_cost
-            #logging.info("{}) {} - {}".format(ship.id, edge_to_self_cost, remaining_cost))
             if can_move(ship):
                 for neighbour_index in neighbours(origin_index):
                     first_edge_cost = self.map_data.get_distance(ship, neighbour_index)
                     remaining_cost = self.map_data.calculator.get_distance_from_index(
                         ship, neighbour_index, target_index
                     )
-                    #logging.info("{}) {} - {}".format(ship.id, first_edge_cost, remaining_cost))
                     cost_matrix[k][neighbour_index] = first_edge_cost + remaining_cost
 
     def create_cost_matrix(self):

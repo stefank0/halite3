@@ -35,13 +35,29 @@ class Scheduler:
         else:
             return ship.halite_amount > 0.95 * constants.MAX_HALITE
 
+    def remove_exhausted(self, halite):
+        """Only keep cells that have a reasonable amount of halite.
+
+        Experimental feature.
+        Desired behaviour:
+            When there are no reasonable cells left close to the ship, for
+            example immediately after a dropoff, make sure the ship does not
+            choose a bad nearby cell. Instead, choose a more distant one.
+            Hopefully, this has the side-effect that Olifantenpaadjes are
+            created, because bad cells that are not on a shortest path are
+            left alone completely and the shortest path is mined even further.
+        """
+        threshold = np.mean(halite) - 0.5 * np.std(halite)
+        halite[halite < threshold] = 0.0
+
     def capped(self, halite, ship):
+        """Top off halite: a ship cannot mine more than it can carry."""
         cargo_space = constants.MAX_HALITE - ship.halite_amount
         return np.minimum(halite, 4.0 * cargo_space)
 
     def create_cost_matrix(self, remaining_ships):
-        """Create a cost matrix for linear_sum_assignment() to determine the destination for each ship based on
-        a combination of multiple costs matrices
+        """Cost matrix for linear_sum_assignment() to determine destinations.
+
         Note:
             The rows/columns of the cost matrix represent ships/targets. An
             element in the cost matrix represents the cost of moving a ship
@@ -55,6 +71,7 @@ class Scheduler:
         global_threat_factor = self.map_data.global_threat
         bonus_factor = 1 + 3 * (self.map_data.in_bonus_range > 1)
         apparent_halite = halite_array * global_threat_factor * bonus_factor
+        self.remove_exhausted(apparent_halite)
 
         for i, ship in enumerate(remaining_ships):
             loot = self.map_data.loot(ship)

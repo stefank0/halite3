@@ -1,7 +1,7 @@
 # Schildpad
 ## TODO
 - [ ] TODO - Conquer or reconquer area from enemy (awareness of area)
-- [ ] TODO - Dropoff planner  
+- [ ] TODO - Dropoff planner
         - don't just look to current positions of ships --> plan ahead  
         - ghost dropoff
 - [ ] TODO - Improve decision spawn ship <Turn 200 every 1000 build ship; estimated return on investment f(n_ships, halite_available, n_players, map)
@@ -13,14 +13,12 @@
     - One constant/dimension at the time, one step all together.
     - Depending on turn number. 
 - [ ] TODO - Improve attack and enemy_threat, predict enemy movement (improve on using just mining_probability()). For enemy_threat, only predict movement for nearby enemy ships. (Machine learning?)
-- [ ] TODO - Check qualitative behaviour, check if parameters are broad enough, or that rules needs to reimplemented.  
+- [ ] TODO - Check qualitative behaviour, check if parameters are broad enough, or that rules needs to reimplemented.
 - [ ] TODO - Improve loot:
     - Increase aggressiveness in end game.
     - Multiple strategies
     - Predict success rate of an attack.
     - Improve attack and enemy_threat, keep track of enemy collisions with our own ships and adjust our behavior depending on enemy behavior and (tit-for-tat - only for lower ranked based on mined Halite).
-- [ ] TODO - If moving is free or if ship is full, stay still should be more expensive.
-- [ ] TODO - Max (cargo space, 25% halite)
 - [ ] TODO - Factor (0. - 1.) number of free turns (endgame)
 - [ ] TODO - Improve returning within (dependent on closeness to dropoff in stead of hardcoded numbers
 

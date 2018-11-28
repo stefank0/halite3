@@ -243,7 +243,7 @@ class DistanceCalculator:
 
     def _movement_edge_costs(self, halite):
         """Edge costs describing basic movement."""
-        halite_cost = math.floor(0.1 * halite)
+        halite_cost = np.floor(0.1 * halite)
         return np.repeat(1.0 + halite_cost / 75.0, 4)
 
     def _edge_costs(self, ship):
