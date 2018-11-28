@@ -28,7 +28,7 @@ def to_cell(index):
 
 def can_move(ship):
     """True if a ship is able to move."""
-    necessary_halite = math.ceil(0.1 * game_map[ship].halite_amount)
+    necessary_halite = math.floor(0.1 * game_map[ship].halite_amount)
     return necessary_halite <= ship.halite_amount
 
 
@@ -243,7 +243,8 @@ class DistanceCalculator:
 
     def _movement_edge_costs(self, halite):
         """Edge costs describing basic movement."""
-        return np.repeat(1.0 + halite / 750.0, 4)
+        halite_cost = math.floor(0.1 * halite)
+        return np.repeat(1.0 + halite_cost / 75.0, 4)
 
     def _edge_costs(self, ship):
         """Edge costs for all edges in the graph.
