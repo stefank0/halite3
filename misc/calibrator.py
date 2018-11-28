@@ -8,13 +8,18 @@ from tqdm import tqdm
 
 class Calibrator:
     """Calibrator object to start or load a stopped Calibration of parameterrs for a halite bot.
+    pars --> parameters
+    args --> arguments
+    iter --> iteration
+    n    --> number
+    dir  --> directory
+    State of the parameters not managed in object, but in the yaml files.
     """
 
     def __init__(self, mapsize, n_player, n_games, n_iter,
-                 pars_default='..\parameters.yaml', dir_replay=r'..\replays'):
-        self.pars_high = None
-        self.pars_low = None
-        self.step = 0
+                 pars_reference='..\parameters.yaml', dir_replay=r'..\replays'):
+        self.param = None
+        self.iter = 0
         self.bot = r'python ..\MyBot.py {}'
 
         self.mapsize = mapsize
@@ -22,17 +27,20 @@ class Calibrator:
         self.n_games = n_games
         self.n_iter = n_iter
         self._dir_replay = dir_replay
-        self.pars_default = pars_default
-        self.pars_reference = pars_default
         self._dir_output = self.set_dir_output()
         self._dir_pars = os.path.join(self._dir_output, 'pars')
+        self._pars_reference_file = pars_reference
+        self._pars_reference = self.get_parameters(self._pars_reference_file)
+        self._pars_default = self.get_parameters(self._pars_reference_file)
 
     def set_dir_output(self):
         """Folder where the hlt and errorlogs will be written"""
         return os.path.join(self._dir_replay,
-                            f'{time.strftime("%Y%m%d_%H%M%S")}_'
-                            f'P{self.n_player}_'
-                            f'S{self.mapsize}')
+                            f'calibrator_'
+                            f'p{self.n_player}_'
+                            f's{self.mapsize}_'
+                            f'd{time.strftime("%Y%m%d")}'
+                            f't{time.strftime("%H%M%S")}')
 
     @property
     def args(self):
@@ -42,13 +50,25 @@ class Calibrator:
                 '--width', str(self.mapsize),
                 '--height', str(self.mapsize)]
         if self.n_player == 2:
-            return args + [self.get_bot(self.pars_low), self.get_bot(self.pars_high)]
+            return args + [self.get_bot(self._pars_high_file), self.get_bot(self._pars_high_file)]
         elif self.n_player == 4:
-            return args + [self.get_bot(self.pars_default),
-                           self.get_bot(self.pars_reference),
-                           self.get_bot(self.pars_low),
-                           self.get_bot(self.pars_high)]
+            return args + [self.get_bot(self._pars_reference_file),
+                           self.get_bot(self._pars_default_file),
+                           self.get_bot(self._pars_low_file),
+                           self.get_bot(self._pars_high_file)]
         raise NotImplementedError
+
+    @property
+    def _pars_default_file(self):
+        return os.path.join(self._dir_pars, f'parameters_{self.iter}_default.yaml')
+
+    @property
+    def _pars_high_file(self):
+        return os.path.join(self._dir_pars, f'parameters_{self.iter}_high_{self.param}.yaml')
+
+    @property
+    def _pars_low_file(self):
+        return os.path.join(self._dir_pars, f'parameters_{self.iter}_low_{self.param}.yaml')
 
     def get_bot(self, pars):
         """cmd argument to the a single bot with certain parameters in a yaml file"""
@@ -58,42 +78,47 @@ class Calibrator:
         """Run game from commandline"""
         os.mkdir(self._dir_output)
         os.mkdir(self._dir_pars)
-        iteration = 0
-        while iteration < self.n_iter:
-            for param in self.get_parameters():
-                self.set_parameters(param=param, iteration=iteration, step=-20)
-                self.set_parameters(param=param, iteration=iteration, step=20)
+        while self.iter < self.n_iter:
+            self.set_parameters(self._pars_default_file, self._pars_default)
+            for param in self._pars_reference.keys():
+                self.param = param
+                if self.iter == 0:
+                    step = self._pars_default[param] * 0.1
+                self.set_parameter(file=self._pars_low_file, step=-step)
+                self.set_parameter(file=self._pars_high_file, step=step)
                 for _ in tqdm(range(self.n_games), total=self.n_games):
                     check_output(self.args).decode("ascii")
                 # evaluate game results: gradient=
-                # determine gradient and step of pamam: step=gradient*
-            iteration += 1
+                # determine gradient and step of pamam: step = +/-gradient * reference_params[param]
+                # update default parameters
+            self.iter += 1
         return 0
 
     def load(self, folder):
         """Load a calibration state"""
         raise NotImplementedError
 
-    def get_parameters(self):
-        """Get a list of the parameters to be calibrated"""
-        with open(self.pars_reference) as f:
-            pars = yaml.load(f)
-        return list(pars.keys())
+    @staticmethod
+    def get_parameters(file):
+        """Get a dict of parameters to be calibrated"""
+        with open(file) as f:
+            return yaml.load(f)
 
-    def set_parameters(self, param, iteration, step):
+    @staticmethod
+    def set_parameters(file, pars):
+        """Set a dict of parameters to be calibrated to file"""
+        with open(file, 'w') as f:
+            return yaml.dump(pars, f, default_flow_style=False)
+
+    def set_parameter(self, file, step):
         """Set the parameters to be used in a bot"""
-        with open(self.pars_reference, 'r') as f:
-            pars = yaml.load(f)
-        pars[param] = pars[param] + step
-        if step < 0:
-            self.pars_low = os.path.join(self._dir_pars, f'parameters_{param}_{iteration}_low.yaml')
-            with open(self.pars_low, 'w') as f_low:
-                yaml.dump(pars, f_low, default_flow_style=False)
-        elif step > 0:
-            self.pars_high = os.path.join(self._dir_pars, f'parameters_{param}_{iteration}_high.yaml')
-            with open(self.pars_high, 'w') as f_high:
-                yaml.dump(pars, f_high, default_flow_style=False)
-        return 0
+        pars = self._pars_default.copy()
+        pars[self.param] = pars[self.param] + step
+        return self.set_parameters(file, pars)
+
+    def reset_parameters(self, file):
+        with open(file, 'w') as f:
+            return yaml.dump(self._pars_default, f, default_flow_style=False)
 
 
 if __name__ == '__main__':
