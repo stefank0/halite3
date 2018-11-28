@@ -1,12 +1,7 @@
 from hlt import Direction, constants
 import numpy as np
 import logging, math, time
-from mapdata import to_cell, to_index, can_move, neighbours, LinearSum
-
-
-def target(origin, direction):
-    """Calculate the target cell if the ship moves in the given direction."""
-    return game_map[origin.directional_offset(direction)]
+from mapdata import to_cell, to_index, can_move, neighbours, LinearSum, target
 
 
 class Assignment:
