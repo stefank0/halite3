@@ -119,7 +119,7 @@ if CALIBRATION:
 else:
     number_of_players = len(game.players)
     map_size = game.game_map.height
-    with open('../parameters.json') as f:
+    with open('parameters.json') as f:
         all_parameters = json.load(f)
         parameters = all_parameters[str(number_of_players)][str(map_size)]
 
