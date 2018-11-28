@@ -35,6 +35,10 @@ class Scheduler:
         else:
             return ship.halite_amount > 0.95 * constants.MAX_HALITE
 
+    def capped(self, halite, ship):
+        cargo_space = constants.MAX_HALITE - ship.halite_amount
+        return np.minimum(halite, 4.0 * cargo_space)
+
     def create_cost_matrix(self, remaining_ships):
         """Create a cost matrix for linear_sum_assignment() to determine the destination for each ship based on
         a combination of multiple costs matrices
@@ -54,7 +58,7 @@ class Scheduler:
 
         for i, ship in enumerate(remaining_ships):
             loot = self.map_data.loot(ship)
-            halite = apparent_halite + loot
+            halite = self.capped(apparent_halite + loot, ship)
             distance_array = self.map_data.get_distances(ship)
             # Maximize the halite gathered per turn (considering only the first mining action)(factor 0.25 not
             # necessary, because it is there for all costs)(amount of turns: steps + 1 for mining)
