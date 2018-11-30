@@ -4,7 +4,6 @@ from subprocess import check_output
 import os
 
 from tqdm import tqdm
-from parser import parse_replay_folder, parse_replay_file
 
 
 class Calibrator:
@@ -27,21 +26,23 @@ class Calibrator:
         self.n_player = n_player
         self.n_games = n_games
         self.n_iter = n_iter
-        self._dir_replay = dir_replay
-        self._dir_output = self.set_dir_output()
-        self._dir_pars = os.path.join(self._dir_output, 'pars')
+        self._dir_replay = os.path.join(dir_replay, f'calibration_{time.strftime("%Y%m%d")}')
         self._pars_reference_file = pars_reference
         self._pars_reference = self.get_parameters(self._pars_reference_file)
         self._pars_default = self.get_parameters(self._pars_reference_file)
 
-    def set_dir_output(self):
+        if not os.path.exists(self._dir_replay):
+            os.mkdir(self._dir_replay)
+
+    @property
+    def _dir_output(self):
         """Folder where the hlt and errorlogs will be written"""
         return os.path.join(self._dir_replay,
                             f'calibrator_'
                             f'p{self.n_player}_'
                             f's{self.mapsize}_'
-                            f'd{time.strftime("%Y%m%d")}_'
-                            f't{time.strftime("%H%M%S")}')
+                            f'i{self.iter}_'
+                            f'{self.param}')
 
     @property
     def args(self):
@@ -62,17 +63,17 @@ class Calibrator:
     @property
     def _pars_default_file(self):
         """File with the default parameters, which update each iteration based on the gradients per parameter"""
-        return os.path.join(self._dir_pars, f'parameters_{self.iter}_default.yaml')
+        return os.path.join(self._dir_output, f'parameters_{self.iter}_default.yaml')
 
     @property
     def _pars_high_file(self):
         """File with the parameters and a parameter with one high step"""
-        return os.path.join(self._dir_pars, f'parameters_{self.iter}_high_{self.param}.yaml')
+        return os.path.join(self._dir_output, f'parameters_{self.iter}_high_{self.param}.yaml')
 
     @property
     def _pars_low_file(self):
         """File with the parameters and a parameter with one low step"""
-        return os.path.join(self._dir_pars, f'parameters_{self.iter}_low_{self.param}.yaml')
+        return os.path.join(self._dir_output, f'parameters_{self.iter}_low_{self.param}.yaml')
 
     def get_bot(self, pars):
         """cmd argument to the a single bot with certain parameters in a yaml file"""
@@ -80,24 +81,28 @@ class Calibrator:
 
     def start(self):
         """Run game from commandline"""
-        os.mkdir(self._dir_output)
-        os.mkdir(self._dir_pars)
         while self.iter < self.n_iter:
-            self.set_parameters(self._pars_default_file, self._pars_default)
             for param in self._pars_reference.keys():
                 self.param = param
-                if self.iter == 0:
-                    step = self._pars_default[param] * 0.1
-                self.set_parameter(file=self._pars_low_file, step=-step)
-                self.set_parameter(file=self._pars_high_file, step=step)
+                os.mkdir(self._dir_output)
+                self.set_parameters(self._pars_default_file, self._pars_default)
+
+                self.set_parameter(file=self._pars_low_file, step=-self.step)
+                self.set_parameter(file=self._pars_high_file, step=self.step)
                 for _ in tqdm(range(self.n_games), total=self.n_games):
                     check_output(self.args).decode("ascii")
-                parse_replay_file()
-                # evaluate game results: gradient=
-                # determine gradient and step of pamam: step = +/-gradient * reference_params[param]
-                # update default parameters
+            # evaluate game results: gradient=
+            # determine gradient and step of pamam: step = +/-gradient * reference_params[param]
+            # update default parameters
             self.iter += 1
         return 0
+
+    @property
+    def step(self):
+        if self.iter == 0:
+            return self._pars_default[self.param] * 0.5
+        else:
+            raise NotImplementedError
 
     def load(self, folder):
         """Load a calibration state"""
@@ -115,7 +120,7 @@ class Calibrator:
         with open(file, 'w') as f:
             return yaml.dump(pars, f, default_flow_style=False)
 
-    def set_parameter(self, file, step):
+    def set_parameter(self, file, step=0.):
         """Set the parameters to be used in a bot"""
         pars = self._pars_default.copy()
         pars[self.param] = pars[self.param] + step
