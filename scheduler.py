@@ -70,8 +70,9 @@ class Scheduler:
         halite_array = self.map_data.halite
         global_threat_factor = self.map_data.global_threat
         bonus_factor = 1 + 3 * (self.map_data.in_bonus_range > 1)
-        apparent_halite = halite_array * global_threat_factor * bonus_factor
+        apparent_halite = halite_array * global_threat_factor
         self.remove_exhausted(apparent_halite)
+        apparent_halite *= bonus_factor
 
         for i, ship in enumerate(remaining_ships):
             loot = self.map_data.loot(ship)
