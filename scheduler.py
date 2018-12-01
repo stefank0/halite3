@@ -1,7 +1,7 @@
 import logging, math, time
 from hlt import constants
 import numpy as np
-from mapdata import to_cell, to_index, can_move, LinearSum
+from mapdata import to_cell, to_index, can_move, LinearSum, neighbours
 from schedule import Schedule
 
 returning_to_dropoff = set()
@@ -55,6 +55,79 @@ class Scheduler:
         cargo_space = constants.MAX_HALITE - ship.halite_amount
         return np.minimum(halite, 4.0 * cargo_space)
 
+    def mining_profit(bonussed_halite):
+        """Calculate the total profit after mining up to 5 turns.
+
+        Args:
+            bonussed_halite (np.array): halite, including bonus factor.
+        Returns:
+            list(np.array): [<profit after 1 turn>, <profit after 2 turns>, ..]
+        """
+        multipliers = (0.25, 0.4375, 0.578125, 0.68359375, 0.7626953125)
+        return [c * bonussed_halite for c in multipliers]
+
+    def move_cost(halite):
+        """Calculate the cost of moving after mining up to 3 turns.
+
+        Args:
+            halite (np.array): halite, not including bonus factor.
+        Returns:
+            list(np.array): [<cost after 1 turn>, <cost after 2 turns>, ..]
+        """
+        multipliers = (0.075, 0.05625, 0.0421875)
+        return [c * halite for c in multipliers]
+
+    def multiple_turn_halite():
+        """Max gathered halite within x turns, under some simple conditions.
+
+        Reasoning:
+            - Currently, we maximize the average halite per turn up to and
+            including the next mining turn. Turtles should not be this greedy
+            and plan a little bit further ahead. It is feasible to calculate
+            the maximum halite minable within the next x turns, for small x,
+            which is done by this method. This information is then used to see
+            if the average halite per turn can be greater if we consider a
+            couple of mining turns at once.
+            - Bonus factor is 3 instead of 2, because you also take halite from
+            the enemy, by taking it first.
+        Conditions:
+            - A single neighbouring cell is allowed to contribute, but this
+            contribution cannot be larger than the contribution of the cell
+            itself, in order to avoid that neighbours of high halite cells
+            always receive a high value.
+            - The first mining turn should be on the cell itself.
+        """
+        m = self.nmap
+        halite = self.map_data.halite
+        bonus_factor = 1 + 2 * (self.map_data.in_bonus_range > 1)
+        bonussed_halite = bonus_factor * halite
+        mining_profit = self.mining_profit(bonussed_halite)
+        move_cost = self.move_cost(halite)
+        key = lambda index: bonussed_halite[index]
+        best_neighbours = [max(neighbours(i), key=key) for i in range(m)]
+        neighbour_mining_profit = mining_profit[best_neighbours]
+
+        # Implement first condition.
+
+        max1 = mining_profit[0]
+        max2 = mining_profit[1]
+        max3 = np.maximum(
+            mining_profit[2],
+            mining_profit[0] + move_cost[0] + neighbour_mining_profit[0]
+        )
+        max4 = np.maximum.reduce([
+            mining_profit[3],
+            mining_profit[0] + move_cost[0] + neighbour_mining_profit[1],
+            mining_profit[1] + move_cost[1] + neighbour_mining_profit[0]
+        ])
+        max5 = np.maximum.reduce([
+            mining_profit[4],
+            mining_profit[0] + move_cost[0] + neighbour_mining_profit[2],
+            mining_profit[1] + move_cost[1] + neighbour_mining_profit[1],
+            mining_profit[2] + move_cost[2] + neighbour_mining_profit[0]
+        ])
+        return max1, max2, max3, max4, max5
+
     def create_cost_matrix(self, remaining_ships):
         """Cost matrix for linear_sum_assignment() to determine destinations.
 
@@ -70,8 +143,9 @@ class Scheduler:
         halite_array = self.map_data.halite
         global_threat_factor = self.map_data.global_threat
         bonus_factor = 1 + 3 * (self.map_data.in_bonus_range > 1)
-        apparent_halite = halite_array * global_threat_factor * bonus_factor
+        apparent_halite = halite_array * global_threat_factor
         self.remove_exhausted(apparent_halite)
+        apparent_halite *= bonus_factor
 
         for i, ship in enumerate(remaining_ships):
             loot = self.map_data.loot(ship)
