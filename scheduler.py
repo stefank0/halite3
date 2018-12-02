@@ -97,11 +97,15 @@ class Scheduler:
             always receive a high value. Implementation: the profit per turn on
             the neighbour is capped by twice the profit on the cell itself.
             - The first mining turn should be on the cell itself.
+        Returns:
+            list(np.array): [<maximum gathered halite after 1 turn>,
+                             <maximum gathered halite after 2 turns>, ..]
         """
         m = self.nmap
         halite = self.map_data.halite
         bonus_factor = 1 + 2 * (self.map_data.in_bonus_range > 1)
-        bonussed_halite = bonus_factor * halite
+        global_threat_factor = self.map_data.global_threat
+        bonussed_halite = bonus_factor * halite * global_threat_factor
         profit = self.mining_profit(bonussed_halite)
         move_cost = self.move_cost(halite)
         reduced_profit = [
@@ -146,24 +150,25 @@ class Scheduler:
             in a single turn. However, because these have high costs, they will
             never be chosen by the algorithm.
         """
-
-        multiple_turn_halite = self.multiple_turn_halite()
-
         cost_matrix = np.full((len(remaining_ships), self.nmap), 9999)
-        halite_array = self.map_data.halite
-        global_threat_factor = self.map_data.global_threat
-        bonus_factor = 1 + 3 * (self.map_data.in_bonus_range > 1)
-        apparent_halite = halite_array * global_threat_factor
-        self.remove_exhausted(apparent_halite)
-        apparent_halite *= bonus_factor
+        max1, max2, max3, max4, max5 = self.multiple_turn_halite()
 
         for i, ship in enumerate(remaining_ships):
-            loot = self.map_data.loot(ship)
-            halite = self.capped(apparent_halite + loot, ship)
+            loot = 0.25 * self.map_data.loot(ship) # Factor 0.25 to keep the same relative cost as before.
             distance_array = self.map_data.get_distances(ship)
-            # Maximize the halite gathered per turn (considering only the first mining action)(factor 0.25 not
-            # necessary, because it is there for all costs)(amount of turns: steps + 1 for mining)
-            cost_matrix[i][:] = -1.0 * halite / (distance_array + 1.0)
+            max1 = np.maximum(self.capped(max1, ship), loot)
+            max2 = self.capped(max2, ship)
+            max3 = self.capped(max3, ship)
+            max4 = self.capped(max4, ship)
+            max5 = self.capped(max5, ship)
+            # Maximize the average halite gathered per turn.
+            average1 = max1 / (distance_array + 1.0)
+            average2 = max2 / (distance_array + 2.0)
+            average3 = max3 / (distance_array + 3.0)
+            average4 = max4 / (distance_array + 4.0)
+            average5 = max5 / (distance_array + 5.0)
+            best_average = np.maximum.reduce([average1, average2, average3, average4, average5])
+            cost_matrix[i][:] = -1.0 * best_average
         return cost_matrix
 
     def assign_return(self, ship):
