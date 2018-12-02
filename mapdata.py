@@ -201,7 +201,7 @@ class DistanceCalculator:
         self.simple_dropoff_distances = self._simple_dropoff_distances(dropoffs)
         self._traffic_costs = self._traffic_edge_costs()
         self._movement_costs = self._movement_edge_costs(halite)
-        self._return_costs = self._return_edge_costs(dropoffs)
+        #self._return_costs = self._return_edge_costs(dropoffs)
         self._threat_costs = self._threat_edge_costs(enemy_threat)
         self._dist_tuples = self._shortest_path()
 
@@ -274,9 +274,9 @@ class DistanceCalculator:
         """
         movement_costs = self._movement_costs
         traffic_costs = self._traffic_costs
-        return_costs = packing_fraction(ship) * self._return_costs
+        #return_costs = packing_fraction(ship) * self._return_costs
         threat_costs = self.threat_costs_func(ship, self._threat_costs)
-        return movement_costs + traffic_costs + return_costs + threat_costs
+        return movement_costs + traffic_costs + threat_costs
 
     def _nearby_edges(self, ship, edge_costs, row, col):
         """Drop far away edges to reduce computation time."""
@@ -373,10 +373,20 @@ def enemy_ships():
 
 def enemy_threat():
     """Assign a value to every cell describing enemy threat."""
+    dropoffs = [game.me.shipyard] + game.me.get_dropoffs()
+    dropoff_indices = [to_index(dropoff) for dropoff in dropoffs]
+    near_dropoff_indices = [
+        index
+        for dropoff_index in dropoff_indices
+        for index in neighbours(dropoff_index)
+    ]
+    troll_indices = dropoff_indices + near_dropoff_indices
     m = game_map.height * game_map.width
     threat = np.zeros(m)
     for ship in enemy_ships():
         ship_index = to_index(ship)
+        if ship_index in troll_indices:
+            continue
         threat[ship_index] += 1.0 - packing_fraction(ship)
         for index in neighbours(ship_index):
             threat[index] += 1.0 - packing_fraction(ship)
