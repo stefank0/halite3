@@ -50,10 +50,9 @@ class Scheduler:
         threshold = np.mean(halite) - 0.5 * np.std(halite)
         halite[halite < threshold] = 0.0
 
-    def capped(self, halite, ship):
+    def capped(self, halite, cargo_space):
         """Top off halite: a ship cannot mine more than it can carry."""
-        cargo_space = constants.MAX_HALITE - ship.halite_amount
-        return np.minimum(halite, 4.0 * cargo_space)
+        return np.minimum(halite, cargo_space)
 
     def mining_profit(self, bonussed_halite):
         """Calculate the total profit after mining up to 5 turns.
@@ -121,24 +120,32 @@ class Scheduler:
             np.minimum(profit[2][best_neighbours], 2 * profit[2])
         ]
 
-        max1 = profit[0]
-        max2 = profit[1]
-        max3 = np.maximum(
+        max_1turn = profit[0]
+        max_2turns = profit[1]
+        max_3turns = np.maximum(
             profit[2],
             reduced_profit[0] + neighbour_profit[0]
         )
-        max4 = np.maximum.reduce([
+        max_4turns = np.maximum.reduce([
             profit[3],
             reduced_profit[0] + neighbour_profit[1],
             reduced_profit[1] + neighbour_profit[0]
         ])
-        max5 = np.maximum.reduce([
+        max_5turns = np.maximum.reduce([
             profit[4],
             reduced_profit[0] + neighbour_profit[2],
             reduced_profit[1] + neighbour_profit[1],
             reduced_profit[2] + neighbour_profit[0]
         ])
-        return max1, max2, max3, max4, max5
+        return [max_1turn, max_2turns, max_3turns, max_4turns, max_5turns]
+
+    def return_distances(self, ship):
+        """Get extra turns necessary to return to a dropoff."""
+        dropoff_distances = self.map_data.calculator.simple_dropoff_distances
+        dropoff_distance = dropoff_distances[to_index(ship)]
+        return_distances = dropoff_distances - dropoff_distance
+        return_distances[return_distances < 0] = 0
+        return return_distances
 
     def create_cost_matrix(self, remaining_ships):
         """Cost matrix for linear_sum_assignment() to determine destinations.
@@ -151,23 +158,26 @@ class Scheduler:
             never be chosen by the algorithm.
         """
         cost_matrix = np.full((len(remaining_ships), self.nmap), 9999)
-        max1, max2, max3, max4, max5 = self.multiple_turn_halite()
+        halite = self.multiple_turn_halite()
 
         for i, ship in enumerate(remaining_ships):
             loot = 0.25 * self.map_data.loot(ship) # Factor 0.25 to keep the same relative cost as before.
-            distance_array = self.map_data.get_distances(ship)
-            max1 = np.maximum(self.capped(max1, ship), loot)
-            max2 = self.capped(max2, ship)
-            max3 = self.capped(max3, ship)
-            max4 = self.capped(max4, ship)
-            max5 = self.capped(max5, ship)
+            cargo_space = constants.MAX_HALITE - ship.halite_amount
+            distances = self.map_data.get_distances(ship)
+            return_distances = self.return_distances(ship)
+
+            # Top off halite based on cargo space and add loot.
+            capped_halite = [self.capped(h, cargo_space) for h in halite]
+            capped_halite[0] = np.maximum(capped_halite[0], loot)
+
+            # Calculate the average halite gathered per turn.
+            average_halite = [
+                h / (1.0 + i + distances + (h / cargo_space) * return_distances)
+                for i, h in enumerate(capped_halite)
+            ]
+
             # Maximize the average halite gathered per turn.
-            average1 = max1 / (distance_array + 1.0)
-            average2 = max2 / (distance_array + 2.0)
-            average3 = max3 / (distance_array + 3.0)
-            average4 = max4 / (distance_array + 4.0)
-            average5 = max5 / (distance_array + 5.0)
-            best_average = np.maximum.reduce([average1, average2, average3, average4, average5])
+            best_average = np.maximum.reduce(average_halite)
             cost_matrix[i][:] = -1.0 * best_average
         return cost_matrix
 
