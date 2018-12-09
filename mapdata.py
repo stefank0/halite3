@@ -183,16 +183,58 @@ def simple_distance(index_a, index_b):
     return min(dx, width - dx) + min(dy, height - dy)
 
 
+def specific_simple_distances(index, indices):
+    """Get an array of the actual step distances to specific cells."""
+    height = game_map.height
+    width = game_map.width
+    x0 = index % width
+    x = indices % width
+    y0 = index // width
+    y = indices // width
+    dx = np.abs(x - x0)
+    dy = np.abs(y - y0)
+    return np.minimum(dx, width - dx) + np.minimum(dy, height - dy)
+
+
 def simple_distances(index):
     """Get an array of the actual step distances to all cells."""
-    m = game_map.height * game_map.width
-    return np.array([simple_distance(index, i) for i in range(m)])
+    m = game_map.width * game_map.height
+    indices = np.arange(m)
+    return specific_simple_distances(index, indices)
 
 
 class DistanceCalculator:
     """Calculates shortest path distances for all ships."""
 
     _edge_data = None
+
+    _dijkstra_radius = 15
+    _expand_radius_by = 15
+
+    @classmethod
+    def reduce_radius(cls):
+        """Reduce shortest_path radius to reduce computation time."""
+        cls._dijkstra_radius = max(cls._dijkstra_radius - 1, 10)
+        cls._expand_radius_by = max(cls._expand_radius_by - 6, 3)
+        logging.info(
+            'Reduced radius to: {} - {}'.format(
+                cls._dijkstra_radius,
+                cls._expand_radius_by
+            )
+        )
+
+    @classmethod
+    def increase_radius(cls):
+        """Reduce shortest_path radius to reduce computation time."""
+        if not (cls._dijkstra_radius == 15 and cls._expand_radius_by == 15):
+            cls._dijkstra_radius = min(cls._dijkstra_radius + 2, 15)
+            cls._expand_radius_by = min(cls._expand_radius_by + 6, 15)
+            logging.info(
+                'Increased radius to: {} - {}'.format(
+                    cls._dijkstra_radius,
+                    cls._expand_radius_by
+                )
+            )
 
     def __init__(self, halite, dropoffs, enemy_threat):
         if DistanceCalculator._edge_data is None:
@@ -221,7 +263,7 @@ class DistanceCalculator:
 
     def threat_costs_func(self, ship, threat_costs):
         """Necessary to keep Schedule costs in sync."""
-        return 20.0 * packing_fraction(ship) * threat_costs
+        return 10.0 * packing_fraction(ship) * threat_costs
 
     def _threat_edge_costs(self, enemy_threat):
         """Edge costs describing avoiding enemies (fleeing)."""
@@ -280,7 +322,9 @@ class DistanceCalculator:
 
     def _nearby_edges(self, ship, edge_costs, row, col):
         """Drop far away edges to reduce computation time."""
-        subgraph_indices = np.array(list(neighbourhood(to_index(ship), 15)))
+        radius = DistanceCalculator._dijkstra_radius
+        ship_index = to_index(ship)
+        subgraph_indices = np.array(list(neighbourhood(ship_index, radius)))
         edge_indices = np.concatenate((
             4 * subgraph_indices,
             4 * subgraph_indices + 1,
@@ -303,11 +347,49 @@ class DistanceCalculator:
             distance = 10.0 + simple_distance(index, target_index)
             dist_matrix[i][target_index] = distance
 
+    def _expand_indices(self, ship_index):
+        """Boundary indices of the region that received costs by dijkstra."""
+        h = game_map.height
+        w = game_map.width
+        x = ship_index % w
+        y = ship_index // w
+        boundary_radius = DistanceCalculator._dijkstra_radius + 1
+        boundary_indices = np.array([
+            ((x + dx) % w) + (w * ((y + dy) % h))
+            for dx in range(-boundary_radius, boundary_radius + 1)
+            for dy in {-boundary_radius + abs(dx), boundary_radius - abs(dx)}
+        ])
+        max_radius = boundary_radius + DistanceCalculator._expand_radius_by
+        expand_indices = np.array([
+            ((x + dx) % w) + (w * ((y + dy) % h))
+            for dx in range(-max_radius, max_radius + 1)
+            for dy in range(-max_radius + abs(dx), max_radius + 1 - abs(dx))
+            if abs(dx) + abs(dy) > boundary_radius
+        ])
+        return boundary_indices, expand_indices
+
+    def _expand(self, dist_matrix, indices):
+        """Expand the region for which distances are set in dist_matrix."""
+        boundary_indices, expand_indices = self._expand_indices(indices[0])
+        expand_indices = np.array([
+            index for index in expand_indices
+            if dist_matrix[0][index] == np.inf
+        ])
+        dists = np.array([
+            2.0 * specific_simple_distances(index, expand_indices)
+            for index in boundary_indices
+        ])
+        for i in range(len(indices)):
+            boundary_dists = dist_matrix[i, boundary_indices]
+            distances = dists + boundary_dists[:, None]
+            dist_matrix[i, expand_indices] = np.min(distances, 0)
+
     def _postprocess(self, dist_matrix, indices):
         """Do some postprocessing on the result from dijkstra()."""
+        self._expand(dist_matrix, indices)
         for dropoff in self.dropoffs:
             dropoff_index = to_index(dropoff)
-            if dist_matrix[0][dropoff_index] == np.inf:
+            if dist_matrix[0, dropoff_index] == np.inf:
                 self._unreachable(dist_matrix, indices, dropoff_index)
         dist_matrix[dist_matrix == np.inf] = 99999.9
 
