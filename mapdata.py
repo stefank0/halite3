@@ -7,7 +7,6 @@ from scipy.optimize import linear_sum_assignment
 import numpy as np
 
 from hlt import Position, constants
-# from .parameters import
 
 ##############################################################################
 #
@@ -214,8 +213,10 @@ class DistanceCalculator:
     @classmethod
     def reduce_radius(cls):
         """Reduce shortest_path radius to reduce computation time."""
-        cls._dijkstra_radius = max(cls._dijkstra_radius - 1, 10)
-        cls._expand_radius_by = max(cls._expand_radius_by - 6, 3)
+        if cls._expand_radius_by > 3:
+            cls._expand_radius_by = max(cls._expand_radius_by - 6, 3)
+        else:
+            cls._dijkstra_radius = max(cls._dijkstra_radius - 1, 10)
         logging.info(
             'Reduced radius to: {} - {}'.format(
                 cls._dijkstra_radius,
@@ -225,10 +226,12 @@ class DistanceCalculator:
 
     @classmethod
     def increase_radius(cls):
-        """Reduce shortest_path radius to reduce computation time."""
+        """Increase shortest_path radius."""
         if not (cls._dijkstra_radius == 15 and cls._expand_radius_by == 15):
-            cls._dijkstra_radius = min(cls._dijkstra_radius + 2, 15)
-            cls._expand_radius_by = min(cls._expand_radius_by + 6, 15)
+            if cls._dijkstra_radius < 15:
+                cls._dijkstra_radius = min(cls._dijkstra_radius + 2, 15)
+            else:
+                cls._expand_radius_by = min(cls._expand_radius_by + 6, 15)
             logging.info(
                 'Increased radius to: {} - {}'.format(
                     cls._dijkstra_radius,
