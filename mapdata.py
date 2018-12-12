@@ -480,48 +480,22 @@ def enemy_threat():
     return threat
 
 
-def _simple_ship_threat(ship):
-    """Get the indices threatened by an enemy ship.
-
-    Note:
-        The current location of the ship counts extra, because a ship is
-        likely to stay still. Possible improvement: guess if the ship is going
-        to move based on the halite of its current position and its cargo.
-        At the moment, the ships current position is more threatening if it is
-        not carrying much halite.
-    """
-    ship_index = to_index(ship)
-    factor = math.ceil(4.0 * (1.0 - packing_fraction(ship)**2))
-    return tuple(ship_index for i in range(factor)) + neighbours(ship_index)
-
-
 def _bonus_neighbourhood(ship):
     """Generator for the indices of the bonus neighbourhood of a ship."""
     return neighbourhood(to_index(ship), 4)
 
 
-def _index_count(index_func):
-    """Loops over enemy ships and counts indices returned by index_func."""
+def enemies_in_bonus_range():
+    """Calculate the number of enemies within bonus range for all cells."""
     counted = Counter(
         index
         for ship in enemy_ships()
-        for index in index_func(ship)
+        for index in _bonus_neighbourhood(ship)
     )
-    index_count = np.zeros(game_map.height * game_map.width)
+    in_bonus_range = np.zeros(game_map.height * game_map.width)
     for index, counted_number in counted.items():
-        index_count[index] = counted_number
-    return index_count
-
-
-def enemies_in_bonus_range():
-    """Calculate the number of enemies within bonus range for all cells."""
-    return _index_count(_bonus_neighbourhood)
-
-
-def global_threat():
-    """Calculate enemy threat factor for all cells."""
-    threat = _index_count(_simple_ship_threat)
-    return 3.0 / (threat + 3.0)
+        in_bonus_range[index] = counted_number
+    return in_bonus_range
 
 
 def _nearby_enemy_ships(ship):
@@ -627,8 +601,6 @@ class MapData:
 
     def _global_factor(self):
         """Calculate a factor to win the race for halite."""
-        global_threat_factor = global_threat()
-
         hostile_density3 = ship_density(enemy_ships(), 3)
         friendly_density3 = ship_density(game.me.get_ships(), 3)
         self.density_difference3 = friendly_density3 - hostile_density3
@@ -637,9 +609,9 @@ class MapData:
             friendly_density3 == 0.0,
             hostile_density3 > 0.0
         )
-        enemy_territory_factor = 1.0 - 0.5 * enemy_territory
+        enemy_territory_factor = 1.0 - 0.75 * enemy_territory
 
-        return global_threat_factor * enemy_territory_factor
+        return enemy_territory_factor
 
     def loot(self, ship):
         """Calculate enemy halite near a ship that can be stolen.
