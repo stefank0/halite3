@@ -431,8 +431,8 @@ def enemy_ships():
     )
 
 
-def enemy_threat():
-    """Assign a value to every cell describing enemy threat."""
+def get_troll_indices():
+    """Indices that could be occupied by enemy trolls."""
     dropoffs = [game.me.shipyard] + game.me.get_dropoffs()
     dropoff_indices = [to_index(dropoff) for dropoff in dropoffs]
     near_dropoff_indices = [
@@ -440,9 +440,13 @@ def enemy_threat():
         for dropoff_index in dropoff_indices
         for index in neighbours(dropoff_index)
     ]
-    troll_indices = dropoff_indices + near_dropoff_indices
-    m = game_map.height * game_map.width
-    threat = np.zeros(m)
+    return dropoff_indices + near_dropoff_indices
+
+
+def enemy_threat():
+    """Assign a value to every cell describing enemy threat."""
+    troll_indices = get_troll_indices()
+    threat = np.zeros(game_map.height * game_map.width)
     for ship in enemy_ships():
         ship_index = to_index(ship)
         if ship_index in troll_indices:
@@ -480,8 +484,7 @@ def _index_count(index_func):
         for ship in enemy_ships()
         for index in index_func(ship)
     )
-    m = game_map.height * game_map.width
-    index_count = np.zeros(m)
+    index_count = np.zeros(game_map.height * game_map.width)
     for index, counted_number in counted.items():
         index_count[index] = counted_number
     return index_count
@@ -547,10 +550,10 @@ class MapData:
         self.dropoffs = [game.me.shipyard] + game.me.get_dropoffs()
         self.enemy_threat = enemy_threat()
         self.in_bonus_range = enemies_in_bonus_range()
-        self.global_threat = global_threat()
         self.calculator = DistanceCalculator(self.dropoffs, self.halite, self.enemy_threat)
         self.halite_density = self._halite_density()
         self.ship_density = self._ship_density()
+        self.global_factor = self._global_factor()
 
     def _halite(self):
         """Get an array of available halite on the map."""
@@ -600,6 +603,10 @@ class MapData:
     def get_distance(self, ship, index):
         """Get the perturbed distance from a ship an index (a cell)."""
         return self.calculator.get_distance(ship, index)
+
+    def _global_factor(self):
+        """Tactical/strategic factor to influence ship behavior."""
+        return global_threat()
 
     def loot(self, ship):
         """Calculate enemy halite near a ship that can be stolen.

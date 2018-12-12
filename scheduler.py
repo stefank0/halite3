@@ -103,8 +103,8 @@ class Scheduler:
         m = self.nmap
         halite = self.map_data.halite
         bonus_factor = 1 + 2 * (self.map_data.in_bonus_range > 1)
-        global_threat_factor = self.map_data.global_threat
-        bonussed_halite = bonus_factor * halite * global_threat_factor
+        global_factor = self.map_data.global_factor
+        bonussed_halite = bonus_factor * halite * global_factor
         profit = self.mining_profit(bonussed_halite)
         move_cost = self.move_cost(halite)
         reduced_profit = [
