@@ -8,6 +8,7 @@ import numpy as np
 
 from hlt import Position, constants
 
+
 ##############################################################################
 #
 # Utility
@@ -172,24 +173,20 @@ def simple_distance(index_a, index_b):
     return min(dx, width - dx) + min(dy, height - dy)
 
 
-def specific_simple_distances(index, indices):
+def simple_distances(index, indices):
     """Get an array of the actual step distances to specific cells."""
     height = game_map.height
     width = game_map.width
-    x0 = index % width
-    x = indices % width
-    y0 = index // width
-    y = indices // width
-    dx = np.abs(x - x0)
-    dy = np.abs(y - y0)
+    dx = np.abs(indices % width - index % width)
+    dy = np.abs(indices // width - index // width)
     return np.minimum(dx, width - dx) + np.minimum(dy, height - dy)
 
 
-def simple_distances(index):
+def all_simple_distances(index):
     """Get an array of the actual step distances to all cells."""
     m = game_map.width * game_map.height
     indices = np.arange(m)
-    return specific_simple_distances(index, indices)
+    return simple_distances(index, indices)
 
 
 class DistanceCalculator:
@@ -250,7 +247,7 @@ class DistanceCalculator:
     def _simple_dropoff_distances(self, dropoffs):
         """Simple step distances from all cells to the nearest dropoff."""
         distances_to_all_dropoffs = np.array([
-            simple_distances(to_index(dropoff)) for dropoff in dropoffs
+            all_simple_distances(to_index(dropoff)) for dropoff in dropoffs
         ])
         return np.min(distances_to_all_dropoffs, axis=0)
 
@@ -369,7 +366,7 @@ class DistanceCalculator:
             if dist_matrix[0][index] == np.inf
         ])
         dists = np.array([
-            2.0 * specific_simple_distances(index, expand_indices)
+            2.0 * simple_distances(index, expand_indices)
             for index in boundary_indices
         ])
         for i in range(len(indices)):
@@ -537,7 +534,7 @@ def _mining_probability(halite, ship):
     if not can_move(ship):
         return 1.0
     ship_index = to_index(ship)
-    simple_cost = halite / (simple_distances(ship_index) + 1.0)
+    simple_cost = halite / (all_simple_distances(ship_index) + 1.0)
     mining_cost = simple_cost[ship_index]
     moving_cost = np.delete(simple_cost, ship_index).max()
     cargo_factor = min(1.0, 10.0 * (1.0 - packing_fraction(ship)))
