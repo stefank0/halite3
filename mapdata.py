@@ -193,63 +193,55 @@ class DistanceCalculator:
     """Calculates shortest path distances for all ships."""
 
     _edge_data = None
-
     _dijkstra_radius = 15
-    _expand_radius_by = 15
+    _expanded_radius = 30
 
     @classmethod
     def reduce_radius(cls):
         """Reduce shortest_path radius to reduce computation time."""
-        if cls._expand_radius_by > 3:
-            cls._expand_radius_by = max(cls._expand_radius_by - 6, 3)
-        else:
-            cls._dijkstra_radius = max(cls._dijkstra_radius - 1, 10)
-        logging.info(
-            'Reduced radius to: {} - {}'.format(
-                cls._dijkstra_radius,
-                cls._expand_radius_by
-            )
-        )
+        if cls._expanded_radius > cls._dijkstra_radius:
+            cls._expanded_radius = cls._dijkstra_radius
+        elif cls._dijkstra_radius > 10:
+            cls._dijkstra_radius -= 1
+            cls._expanded_radius -= 1
+        logging.info('Reduced radius: {}'.format(cls._expanded_radius))
 
     @classmethod
     def increase_radius(cls):
         """Increase shortest_path radius."""
-        if not (cls._dijkstra_radius == 15 and cls._expand_radius_by == 15):
-            if cls._dijkstra_radius < 15:
-                cls._dijkstra_radius = min(cls._dijkstra_radius + 2, 15)
-            else:
-                cls._expand_radius_by = min(cls._expand_radius_by + 6, 15)
-            logging.info(
-                'Increased radius to: {} - {}'.format(
-                    cls._dijkstra_radius,
-                    cls._expand_radius_by
-                )
-            )
+        if cls._dijkstra_radius < 15:
+            cls._dijkstra_radius += 1
+            cls._expanded_radius += 1
+        elif cls._expanded_radius < 30:
+            cls._expanded_radius += 5
 
-    def __init__(self, halite, dropoffs, enemy_threat):
-        if DistanceCalculator._edge_data is None:
-            self._initialize_edge_data()
-        self.dropoffs = dropoffs
-        self.simple_dropoff_distances = self._simple_dropoff_distances(dropoffs)
-        self._traffic_costs = self._traffic_edge_costs()
-        self._movement_costs = self._movement_edge_costs(halite)
-        #self._return_costs = self._return_edge_costs(dropoffs)
-        self._threat_costs = self._threat_edge_costs(enemy_threat)
-        self._dist_tuples = self._shortest_path()
-
-    def _initialize_edge_data(self):
+    @classmethod
+    def _initialize_edge_data(cls):
         """Store edge_data for create_graph() on the class for performance."""
         m = game_map.height * game_map.width
         col = np.array([j for i in range(m) for j in neighbours(i)])
         row = np.repeat(np.arange(m), 4)
-        DistanceCalculator._edge_data = (row, col)
+        cls._edge_data = (row, col)
 
-    def _simple_dropoff_distances(self, dropoffs):
+    def __init__(self, dropoffs, halite, enemy_threat):
+        if self._edge_data is None:
+            self._initialize_edge_data()
+        self.dropoffs = dropoffs
+        self.simple_dropoff_distances = self._simple_dropoff_distances()
+
+        self._traffic_costs = self._traffic_edge_costs()
+        self._movement_costs = self._movement_edge_costs(halite)
+        self._threat_costs = self._threat_edge_costs(enemy_threat)
+        ## self._return_costs = self._return_edge_costs()
+        self._dist_tuples = self._shortest_path()
+
+    def _simple_dropoff_distances(self):
         """Simple step distances from all cells to the nearest dropoff."""
-        distances_to_all_dropoffs = np.array([
-            all_simple_distances(to_index(dropoff)) for dropoff in dropoffs
+        all_dropoff_distances = np.array([
+            all_simple_distances(to_index(dropoff))
+            for dropoff in self.dropoffs
         ])
-        return np.min(distances_to_all_dropoffs, axis=0)
+        return np.min(all_dropoff_distances, axis=0)
 
     def threat_costs_func(self, ship, threat_costs):
         """Necessary to keep Schedule costs in sync."""
@@ -257,14 +249,14 @@ class DistanceCalculator:
 
     def _threat_edge_costs(self, enemy_threat):
         """Edge costs describing avoiding enemies (fleeing)."""
-        _row, col = DistanceCalculator._edge_data
+        _row, col = self._edge_data
         return enemy_threat[col]
 
-    def _return_edge_costs(self, dropoffs):
-        """Edge costs describing turns necessary to return to a dropoff."""
-        dropoff_distances = self.simple_dropoff_distances
-        row, col = DistanceCalculator._edge_data
-        return 0.5 * (dropoff_distances[col] - dropoff_distances[row] + 1.0)
+    ## def _return_edge_costs(self):
+    ##    """Edge costs describing turns necessary to return to a dropoff."""
+    ##    dropoff_distances = self.simple_dropoff_distances
+    ##    row, col = self._edge_data
+    ##    return 0.5 * (dropoff_distances[col] - dropoff_distances[row] + 1.0)
 
     def _traffic_edge_costs(self):
         """Edge costs describing avoiding or waiting for traffic."""
@@ -276,45 +268,31 @@ class DistanceCalculator:
         return 0.8 * occupation
 
     def _movement_edge_costs(self, halite):
-        """Edge costs describing basic movement."""
+        """Edge costs describing basic movement.
+
+        Note
+            The edge cost is chosen such that the shortest path is mainly based
+            on the number of steps necessary, but also slightly incorporates
+            the halite costs of moving. Therefore, the most efficient path is
+            chosen when there are several shortest distance paths.
+            More solid justification: if mining yields 75 halite on average,
+            one mining turn corresponds to moving over 75/(10%) = 750 halite.
+            Therefore, moving over 1 halite corresponds to 1/750 of a turn.
+        """
         halite_cost = np.floor(0.1 * halite)
         return np.repeat(1.0 + halite_cost / 75.0, 4)
 
     def _edge_costs(self, ship):
-        """Edge costs for all edges in the graph.
-
-        Note:
-            The edge cost 1.0 + cell.halite_amount / 750.0 is chosen such
-            that the shortest path is mainly based on the number of steps
-            necessary, but also slightly incorporates the halite costs of
-            moving. Therefore, the most efficient path is chosen when there
-            are several shortest distance paths.
-            More solid justification: if mining yields 75 halite on average,
-            one mining turn corresponds to moving over 75/(10%) = 750 halite.
-            Therefore, moving over 1 halite corresponds to 1/750 of a turn.
-            The term self.occupied is added, so that the shortest path also
-            takes traffic delays into consideration.
-            The term packing_fraction(ship) * self.dropoff_cost represents
-            costs for turns needed to return to a dropoff. If the ship is
-            almost full, only the next mining action benefits from the move
-            that increased the distance. Therefore, the extra turns needed to
-            return are added to the costs. However, when the ship is almost
-            empty, many mining turns benefit from the move and therefore the
-            extra turns are only slightly added to the costs.
-            The term containing self.enemy_cost represents the fact that
-            losing a ship to a collision costs a lot of turns.
-        """
-        movement_costs = self._movement_costs
-        traffic_costs = self._traffic_costs
+        """Edge costs for all edges in the graph."""
         #return_costs = packing_fraction(ship) * self._return_costs
         threat_costs = self.threat_costs_func(ship, self._threat_costs)
-        return movement_costs + traffic_costs + threat_costs
+        return self._movement_costs + self._traffic_costs + threat_costs
 
     def _nearby_edges(self, ship, edge_costs, row, col):
-        """Drop far away edges to reduce computation time."""
-        radius = DistanceCalculator._dijkstra_radius
-        ship_index = to_index(ship)
-        subgraph_indices = np.array(list(neighbourhood(ship_index, radius)))
+        """Keep only nearby edges to reduce computation time."""
+        radius = self._dijkstra_radius
+        ship_neighbourhood = neighbourhood(to_index(ship), radius)
+        subgraph_indices = np.array(list(ship_neighbourhood))
         edge_indices = np.concatenate((
             4 * subgraph_indices,
             4 * subgraph_indices + 1,
@@ -327,44 +305,53 @@ class DistanceCalculator:
         """Create a sparse matrix representing the game map graph."""
         m = game_map.height * game_map.width
         edge_costs = self._edge_costs(ship)
-        row, col = DistanceCalculator._edge_data
+        row, col = self._edge_data
         edge_costs, row, col = self._nearby_edges(ship, edge_costs, row, col)
         return csr_matrix((edge_costs, (row, col)), shape=(m, m))
 
-    def _unreachable(self, dist_matrix, indices, target_index):
-        """Set simple distances for unreachable cells (in the graph)."""
+    def _set_simple_distance(self, dist_matrix, indices, target_index):
+        """Update dist_matrix, set simple distances for target_index."""
         for i, index in enumerate(indices):
             distance = 10.0 + simple_distance(index, target_index)
             dist_matrix[i][target_index] = distance
 
-    def _expand_indices(self, ship_index):
+    def _boundary_indices(self, ship_index):
         """Boundary indices of the region that received costs by dijkstra."""
         h = game_map.height
         w = game_map.width
         x = ship_index % w
         y = ship_index // w
-        boundary_radius = DistanceCalculator._dijkstra_radius + 1
-        boundary_indices = np.array([
+        boundary_radius = self._dijkstra_radius + 1
+        return np.array([
             ((x + dx) % w) + (w * ((y + dy) % h))
             for dx in range(-boundary_radius, boundary_radius + 1)
             for dy in {-boundary_radius + abs(dx), boundary_radius - abs(dx)}
         ])
-        max_radius = boundary_radius + DistanceCalculator._expand_radius_by
-        expand_indices = np.array([
+
+    def _expand_indices(self, ship_index, dist_matrix):
+        """Indices that receive costs by expansion in postprocessing."""
+        h = game_map.height
+        w = game_map.width
+        x = ship_index % w
+        y = ship_index // w
+        boundary_radius = self._dijkstra_radius + 1
+        max_radius = self._expanded_radius
+        expand_indices = (
             ((x + dx) % w) + (w * ((y + dy) % h))
             for dx in range(-max_radius, max_radius + 1)
             for dy in range(-max_radius + abs(dx), max_radius + 1 - abs(dx))
             if abs(dx) + abs(dy) > boundary_radius
-        ])
-        return boundary_indices, expand_indices
-
-    def _expand(self, dist_matrix, indices):
-        """Expand the region for which distances are set in dist_matrix."""
-        boundary_indices, expand_indices = self._expand_indices(indices[0])
-        expand_indices = np.array([
+        )
+        return np.array([
             index for index in expand_indices
             if dist_matrix[0][index] == np.inf
         ])
+
+    def _expand(self, dist_matrix, indices):
+        """Expand the region for which distances are set in dist_matrix."""
+        ship_index = indices[0]
+        boundary_indices = self._boundary_indices(ship_index)
+        expand_indices = self._expand_indices(ship_index, dist_matrix)
         dists = np.array([
             2.0 * simple_distances(index, expand_indices)
             for index in boundary_indices
@@ -376,11 +363,12 @@ class DistanceCalculator:
 
     def _postprocess(self, dist_matrix, indices):
         """Do some postprocessing on the result from dijkstra()."""
-        self._expand(dist_matrix, indices)
+        if self._expanded_radius > self._dijkstra_radius + 1:
+            self._expand(dist_matrix, indices)
         for dropoff in self.dropoffs:
             dropoff_index = to_index(dropoff)
             if dist_matrix[0, dropoff_index] == np.inf:
-                self._unreachable(dist_matrix, indices, dropoff_index)
+                self._set_simple_distance(dist_matrix, indices, dropoff_index)
         dist_matrix[dist_matrix == np.inf] = 99999.9
 
     def _indices(self, ship):
@@ -560,7 +548,7 @@ class MapData:
         self.enemy_threat = enemy_threat()
         self.in_bonus_range = enemies_in_bonus_range()
         self.global_threat = global_threat()
-        self.calculator = DistanceCalculator(self.halite, self.dropoffs, self.enemy_threat)
+        self.calculator = DistanceCalculator(self.dropoffs, self.halite, self.enemy_threat)
         self.halite_density = self._halite_density()
         self.ship_density = self._ship_density()
 
