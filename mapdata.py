@@ -85,30 +85,30 @@ def calc_density(radius, array, count_self=True):
     return density
 
 
-def nearby_ships(ship, ships):
+def nearby_ships(ship, ships, radius):
     """Return a list of nearby ships out of ships."""
     return [
         other_ship
         for other_ship in ships
-        if simple_distance(to_index(ship), to_index(other_ship)) <= 2
+        if simple_distance(to_index(ship), to_index(other_ship)) <= radius
     ]
 
 
 class LinearSum:
     """Wrapper for linear_sum_assignment() from scipy to avoid timeouts."""
 
-    time_saving_mode = False
+    _time_saving_mode = False
 
     @classmethod
-    def add_to_cluster(cls, cluster, ship, ships):
+    def _add_to_cluster(cls, cluster, ship, ships):
         """Add ship to cluster and search other ships for the cluster."""
         cluster.append(ship)
-        for other_ship in nearby_ships(ship, ships):
+        for other_ship in nearby_ships(ship, ships, 2):
             if other_ship not in cluster:
-                cls.add_to_cluster(cluster, other_ship, ships)
+                cls._add_to_cluster(cluster, other_ship, ships)
 
     @classmethod
-    def already_in_cluster(cls, clusters, ship):
+    def _already_in_cluster(cls, clusters, ship):
         """Test if the ship is already in another cluster."""
         for cluster in clusters:
             if ship in cluster:
@@ -116,35 +116,25 @@ class LinearSum:
         return False
 
     @classmethod
-    def get_clusters(cls, ships):
-        """Cluster ships into clusters."""
+    def _get_clusters(cls, ships):
+        """Create the ship clusters."""
         clusters = []
         for ship in ships:
-            if cls.already_in_cluster(clusters, ship):
+            if cls._already_in_cluster(clusters, ship):
                 continue
             cluster = []
-            cls.add_to_cluster(cluster, ship, ships)
+            cls._add_to_cluster(cluster, ship, ships)
             clusters.append(cluster)
         return clusters
 
     @classmethod
-    def _categorize(cls, ships):
-        """Categorize ships based on ship clusters."""
-        clusters = cls.get_clusters(ships)
-        categories = np.zeros(len(ships))
-        for i, cluster in enumerate(clusters):
-            for ship in cluster:
-                categories[ships.index(ship)] = i
-        return categories
-
-    @classmethod
     def _efficient_assignment(cls, cost_matrix, ships):
-        """Categorize ships and solve multiple linear sum assigments."""
-        categories = cls._categorize(ships)
+        """Cluster ships and solve multiple linear sum assigments."""
+        clusters = cls._get_clusters(ships)
         row_inds = []
         col_inds = []
-        for category in np.unique(categories):
-            indices = np.flatnonzero(categories == category)
+        for cluster in clusters:
+            indices = np.array([ships.index(ship) for ship in cluster])
             partial_cost_matrix = cost_matrix[indices, :]
             row_ind, col_ind = linear_sum_assignment(partial_cost_matrix)
             row_inds += [int(x) for x in indices[row_ind]]
@@ -154,14 +144,14 @@ class LinearSum:
     @classmethod
     def assignment(cls, cost_matrix, ships):
         """Wraps linear_sum_assignment()."""
-        if cls.time_saving_mode:
+        if cls._time_saving_mode:
             return cls._efficient_assignment(cost_matrix, ships)
         else:
             start = time.time()
             row_ind, col_ind = linear_sum_assignment(cost_matrix)
             stop = time.time()
             if stop - start > 0.5:
-                cls.time_saving_mode = True
+                cls._time_saving_mode = True
                 logging.info("Switching to time saving mode.")
             return row_ind, col_ind
 
