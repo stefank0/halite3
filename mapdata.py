@@ -86,6 +86,29 @@ def calc_density(radius, array, count_self=True):
     return density
 
 
+def density(base_density, radius):
+    """Smooth/distribute a base density over a region."""
+    base_density_sum = base_density.sum()
+    if base_density_sum == 0.0:
+        return base_density
+    base_density = base_density.reshape(game_map.height, game_map.width)
+    density = np.zeros((game_map.height, game_map.width))
+    for dx in range(-radius, radius + 1):
+        for dy in range(-radius + abs(dx), radius + 1 - abs(dx)):
+            factor = 1.0 - (abs(dx) + abs(dy)) / (radius + 1.0)
+            density += factor * np.roll(base_density, (dx, dy), (0, 1))
+    density = density.ravel()
+    return density * (base_density_sum / density.sum())
+
+
+def ship_density(ships, radius):
+    """Transform a list of ships into a density on the game map."""
+    base_density = np.zeros(game_map.height * game_map.width)
+    ship_indices = [to_index(ship) for ship in ships]
+    base_density[ship_indices] = 1.0
+    return density(base_density, radius)
+
+
 def nearby_ships(ship, ships, radius):
     """Return a list of nearby ships out of ships."""
     return [
@@ -603,8 +626,20 @@ class MapData:
         return self.calculator.get_distance(ship, index)
 
     def _global_factor(self):
-        """Tactical/strategic factor to influence ship behavior."""
-        return global_threat()
+        """Calculate a factor to win the race for halite."""
+        global_threat_factor = global_threat()
+
+        hostile_density3 = ship_density(enemy_ships(), 3)
+        friendly_density3 = ship_density(game.me.get_ships(), 3)
+        self.density_difference3 = friendly_density3 - hostile_density3
+
+        enemy_territory = np.logical_and(
+            friendly_density3 == 0.0,
+            hostile_density3 > 0.0
+        )
+        enemy_territory_factor = 1.0 - 0.5 * enemy_territory
+
+        return global_threat_factor * enemy_territory_factor * contested_territory_factor
 
     def loot(self, ship):
         """Calculate enemy halite near a ship that can be stolen.
@@ -623,7 +658,7 @@ class MapData:
 
         for enemy_ship in _nearby_enemy_ships(ship):
             enemy_index = to_index(enemy_ship)
-            if self.density_difference[enemy_index] > 0:
+            if self.density_difference3[enemy_index] > 0:
                 dhalite = enemy_ship.halite_amount - ship.halite_amount
                 if dhalite > 100:
                     loot[enemy_index] += dhalite
