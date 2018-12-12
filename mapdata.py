@@ -552,7 +552,7 @@ class MapData:
         self.in_bonus_range = enemies_in_bonus_range()
         self.calculator = DistanceCalculator(self.dropoffs, self.halite, self.enemy_threat)
         self.halite_density = self._halite_density()
-        self.ship_density = self._ship_density()
+        self.density_difference = self._ship_density_difference()
         self.global_factor = self._global_factor()
 
     def _halite(self):
@@ -565,20 +565,18 @@ class MapData:
         halite = self.halite.reshape(game_map.height, game_map.width)
         return calc_density(radius=15, array=halite).ravel()
 
-    def _ship_density(self):
+    def _ship_density(self, ships, radius, count_self=True):
+        """Get density of ships."""
+        density = np.zeros(game_map.height * game_map.width)
+        ship_indices = [to_index(ship) for ship in ships]
+        density[ship_indices] = 1
+        return calc_density(radius, density.reshape(game_map.height, game_map.width), count_self).ravel()
+
+    def _ship_density_difference(self):
         """Get density of friendly - hostile ships"""
-        radius = 5
-        friendly = np.zeros(self.halite.shape)
-        friendly_indices = [to_index(ship) for ship in game.me.get_ships()]
-        friendly[friendly_indices] = 1
-        friendly_density = calc_density(radius, friendly.reshape(game_map.height, game_map.width), count_self=False)
-        hostile = np.zeros(self.halite.shape)
-        hostile_indices = [to_index(ship)
-                           for player in game.players.values() if player is not game.me
-                           for ship in player.get_ships()]
-        hostile[hostile_indices] = 1
-        hostile_density = calc_density(radius=radius, array=hostile.reshape(game_map.height, game_map.width))
-        return (friendly_density - hostile_density).ravel()
+        friendly_density = self._ship_density(game.me.get_ships(), 5, count_self=False)
+        self.hostile_density = self._ship_density(enemy_ships(), 5)
+        return friendly_density - self.hostile_density
 
     def distance_dropoffs(self, ships):
         """Get a list of distances to the nearest dropoff for all ships."""
@@ -625,7 +623,7 @@ class MapData:
 
         for enemy_ship in _nearby_enemy_ships(ship):
             enemy_index = to_index(enemy_ship)
-            if self.ship_density[enemy_index] > 0:
+            if self.density_difference[enemy_index] > 0:
                 dhalite = enemy_ship.halite_amount - ship.halite_amount
                 if dhalite > 100:
                     loot[enemy_index] += dhalite

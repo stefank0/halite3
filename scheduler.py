@@ -249,7 +249,7 @@ class Scheduler:
         halites = np.array([ship.halite_amount + self.game_map[ship].halite_amount for ship in ships])
         costs = constants.DROPOFF_COST - halites
         halite_densities = np.array([self.map_data.halite_density[to_index(ship)] for ship in ships])
-        ship_densities = np.array([self.map_data.ship_density[to_index(ship)] for ship in ships])
+        ship_densities = np.array([self.map_data.density_difference[to_index(ship)] for ship in ships])
         dists = self.map_data.distance_dropoffs(ships)
         suitability = (
                 halite_densities *
