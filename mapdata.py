@@ -639,7 +639,7 @@ class MapData:
         )
         enemy_territory_factor = 1.0 - 0.5 * enemy_territory
 
-        return global_threat_factor * enemy_territory_factor * contested_territory_factor
+        return global_threat_factor * enemy_territory_factor
 
     def loot(self, ship):
         """Calculate enemy halite near a ship that can be stolen.
