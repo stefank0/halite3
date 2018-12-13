@@ -557,7 +557,13 @@ class MapData:
     def _halite(self):
         """Get an array of available halite on the map."""
         m = game_map.height * game_map.width
-        return np.array([to_cell(i).halite_amount for i in range(m)])
+        halite = np.array([to_cell(i).halite_amount for i in range(m)])
+        for i in range(m):
+            cell = to_cell(i)
+            if cell.is_occupied and cell.ship.owner != game.me.id:
+                # Halite is already gathered by enemy.
+                halite[i] = max(halite[i] - 500, 0)
+        return halite
 
     def _halite_density(self):
         """Get density of halite map with radius"""

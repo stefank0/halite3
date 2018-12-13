@@ -170,14 +170,12 @@ class Scheduler:
             capped_halite[0] = np.maximum(capped_halite[0], loot)
 
             # Calculate the average halite gathered per turn.
-            movement_turns = np.maximum(
-                distances + (h / cargo_space) * return_distances,
-                np.zeros(self.nmap)
-            )
-            average_halite = [
-                h / (1.0 + i + total_distances)
-                for i, h in enumerate(capped_halite)
-            ]
+            average_halite = []
+            for extra_turns, h in enumerate(capped_halite):
+                mine_turns = 1.0 + extra_turns
+                move_turns = distances + (h / cargo_space) * return_distances
+                move_turns[move_turns < 0.0] = 0.0
+                average_halite.append(h / (mine_turns + move_turns))
 
             # Maximize the average halite gathered per turn.
             best_average = np.maximum.reduce(average_halite)
