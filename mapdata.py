@@ -227,7 +227,7 @@ class DistanceCalculator:
         elif cls._dijkstra_radius > 10:
             cls._dijkstra_radius -= 1
             cls._expanded_radius -= 1
-        logging.info('Reduced radius: {}'.format(cls._expanded_radius))
+        logging.info('Reduced radius: {},{}'.format(cls._expanded_radius, cls._dijkstra_radius))
 
     @classmethod
     def increase_radius(cls):
@@ -235,8 +235,10 @@ class DistanceCalculator:
         if cls._dijkstra_radius < 15:
             cls._dijkstra_radius += 1
             cls._expanded_radius += 1
+            logging.info('Increased radius: {},{}'.format(cls._expanded_radius, cls._dijkstra_radius))
         elif cls._expanded_radius < 30:
             cls._expanded_radius += 5
+            logging.info('Increased radius: {},{}'.format(cls._expanded_radius, cls._dijkstra_radius))
 
     @classmethod
     def _initialize_edge_data(cls):
@@ -637,4 +639,4 @@ class MapData:
                     for index in neighbours(enemy_index):
                         if dropoff_dists[index] > dropoff_dists[enemy_index]:
                             loot[index] += dhalite
-        return loot
+        return 0.25 * loot # Factor 0.25 to keep the same relative cost as before.

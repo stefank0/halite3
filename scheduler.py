@@ -103,8 +103,7 @@ class Scheduler:
         m = self.nmap
         halite = self.map_data.halite
         bonus_factor = 1 + 2 * (self.map_data.in_bonus_range > 1)
-        global_factor = self.map_data.global_factor
-        bonussed_halite = bonus_factor * halite * global_factor
+        bonussed_halite = bonus_factor * halite
         profit = self.mining_profit(bonussed_halite)
         move_cost = self.move_cost(halite)
         reduced_profit = [
@@ -144,7 +143,6 @@ class Scheduler:
         dropoff_distances = self.map_data.calculator.simple_dropoff_distances
         dropoff_distance = dropoff_distances[to_index(ship)]
         return_distances = dropoff_distances - dropoff_distance
-        return_distances[return_distances < 0] = 0
         return return_distances
 
     def create_cost_matrix(self, remaining_ships):
@@ -159,9 +157,10 @@ class Scheduler:
         """
         cost_matrix = np.full((len(remaining_ships), self.nmap), 9999)
         halite = self.multiple_turn_halite()
+        global_factor = self.map_data.global_factor
 
         for i, ship in enumerate(remaining_ships):
-            loot = 0.25 * self.map_data.loot(ship) # Factor 0.25 to keep the same relative cost as before.
+            loot = self.map_data.loot(ship)
             cargo_space = constants.MAX_HALITE - ship.halite_amount
             distances = self.map_data.get_distances(ship)
             return_distances = self.return_distances(ship)
@@ -171,14 +170,18 @@ class Scheduler:
             capped_halite[0] = np.maximum(capped_halite[0], loot)
 
             # Calculate the average halite gathered per turn.
+            movement_turns = np.maximum(
+                distances + (h / cargo_space) * return_distances,
+                np.zeros(self.nmap)
+            )
             average_halite = [
-                h / (1.0 + i + distances + (h / cargo_space) * return_distances)
+                h / (1.0 + i + total_distances)
                 for i, h in enumerate(capped_halite)
             ]
 
             # Maximize the average halite gathered per turn.
             best_average = np.maximum.reduce(average_halite)
-            cost_matrix[i][:] = -1.0 * best_average
+            cost_matrix[i][:] = -1.0 * global_factor * best_average
         return cost_matrix
 
     def assign_return(self, ship):
