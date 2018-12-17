@@ -268,7 +268,7 @@ class DistanceCalculator:
         ])
         return np.min(all_dropoff_distances, axis=0)
 
-    def threat_costs_func(self, ship, threat_costs):
+    def threat_func(self, ship, threat_costs):
         """Necessary to keep Schedule costs in sync."""
         return 10.0 * packing_fraction(ship) * threat_costs
 
@@ -310,7 +310,7 @@ class DistanceCalculator:
     def _edge_costs(self, ship):
         """Edge costs for all edges in the graph."""
         #return_costs = packing_fraction(ship) * self._return_costs
-        threat_costs = self.threat_costs_func(ship, self._threat_costs)
+        threat_costs = self.threat_func(ship, self._threat_costs)
         return self._movement_costs + self._traffic_costs + threat_costs
 
     def _nearby_edges(self, ship, edge_costs, row, col):
