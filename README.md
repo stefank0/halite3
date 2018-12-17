@@ -19,7 +19,6 @@
     - Multiple strategies
     - Predict success rate of an attack.
     - Improve attack and enemy_threat, keep track of enemy collisions with our own ships and adjust our behavior depending on enemy behavior and (tit-for-tat - only for lower ranked based on mined Halite).
-- [ ] TODO - Factor (0. - 1.) number of free turns (endgame)
 - [ ] TODO - Improve returning within (dependent on closeness to dropoff in stead of hardcoded numbers
 
 ## Bugs

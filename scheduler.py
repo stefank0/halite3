@@ -5,12 +5,14 @@ from mapdata import to_cell, to_index, can_move, LinearSum, neighbours
 from schedule import Schedule
 
 returning_to_dropoff = set()
+nothing_to_lose = set() # Can be used to defend or to attack most threatening player.
 
 
 class Scheduler:
     """Creates a Schedule."""
 
     def __init__(self, _game, map_data):
+        self.game = _game
         self.game_map = _game.game_map
         self.me = _game.me
         self.turn_number = _game.turn_number
@@ -155,9 +157,10 @@ class Scheduler:
             in a single turn. However, because these have high costs, they will
             never be chosen by the algorithm.
         """
-        cost_matrix = np.full((len(remaining_ships), self.nmap), 9999)
+        cost_matrix = np.zeros((len(remaining_ships), self.nmap))
         halite = self.multiple_turn_halite()
         global_factor = self.map_data.global_factor
+        turns_left = constants.MAX_TURNS - self.game.turn_number
 
         for i, ship in enumerate(remaining_ships):
             loot = self.map_data.loot(ship)
@@ -175,11 +178,16 @@ class Scheduler:
                 mine_turns = 1.0 + extra_turns
                 move_turns = distances + (h / cargo_space) * return_distances
                 move_turns[move_turns < 0.0] = 0.0
-                average_halite.append(h / (mine_turns + move_turns))
+                total_turns = mine_turns + move_turns
+                h[total_turns > turns_left] = 0.0
+                average_halite.append(h / total_turns)
 
             # Maximize the average halite gathered per turn.
             best_average = np.maximum.reduce(average_halite)
-            cost_matrix[i][:] = -1.0 * global_factor * best_average
+            if best_average.max() * turns_left + ship.halite_amount > 50:
+                cost_matrix[i][:] = -1.0 * global_factor * best_average
+            else:
+                nothing_to_lose.add(ship.id)
         return cost_matrix
 
     def assign_return(self, ship):
