@@ -5,12 +5,14 @@ from mapdata import to_cell, to_index, can_move, LinearSum, neighbours
 from schedule import Schedule
 
 returning_to_dropoff = set()
+nothing_to_lose = set() # Can be used to defend or to attack most threatening player.
 
 
 class Scheduler:
     """Creates a Schedule."""
 
     def __init__(self, _game, map_data):
+        self.game = _game
         self.game_map = _game.game_map
         self.me = _game.me
         self.turn_number = _game.turn_number
@@ -103,8 +105,7 @@ class Scheduler:
         m = self.nmap
         halite = self.map_data.halite
         bonus_factor = 1 + 2 * (self.map_data.in_bonus_range > 1)
-        global_threat_factor = self.map_data.global_threat
-        bonussed_halite = bonus_factor * halite * global_threat_factor
+        bonussed_halite = bonus_factor * halite
         profit = self.mining_profit(bonussed_halite)
         move_cost = self.move_cost(halite)
         reduced_profit = [
@@ -144,7 +145,6 @@ class Scheduler:
         dropoff_distances = self.map_data.calculator.simple_dropoff_distances
         dropoff_distance = dropoff_distances[to_index(ship)]
         return_distances = dropoff_distances - dropoff_distance
-        return_distances[return_distances < 0] = 0
         return return_distances
 
     def create_cost_matrix(self, remaining_ships):
@@ -157,11 +157,13 @@ class Scheduler:
             in a single turn. However, because these have high costs, they will
             never be chosen by the algorithm.
         """
-        cost_matrix = np.full((len(remaining_ships), self.nmap), 9999)
+        cost_matrix = np.zeros((len(remaining_ships), self.nmap))
         halite = self.multiple_turn_halite()
+        global_factor = self.map_data.global_factor
+        turns_left = constants.MAX_TURNS - self.game.turn_number
 
         for i, ship in enumerate(remaining_ships):
-            loot = 0.25 * self.map_data.loot(ship) # Factor 0.25 to keep the same relative cost as before.
+            loot = self.map_data.loot(ship)
             cargo_space = constants.MAX_HALITE - ship.halite_amount
             distances = self.map_data.get_distances(ship)
             return_distances = self.return_distances(ship)
@@ -171,14 +173,21 @@ class Scheduler:
             capped_halite[0] = np.maximum(capped_halite[0], loot)
 
             # Calculate the average halite gathered per turn.
-            average_halite = [
-                h / (1.0 + i + distances + (h / cargo_space) * return_distances)
-                for i, h in enumerate(capped_halite)
-            ]
+            average_halite = []
+            for extra_turns, h in enumerate(capped_halite):
+                mine_turns = 1.0 + extra_turns
+                move_turns = distances + (h / cargo_space) * return_distances
+                move_turns[move_turns < 0.0] = 0.0
+                total_turns = mine_turns + move_turns
+                h[total_turns > turns_left] = 0.0
+                average_halite.append(h / total_turns)
 
             # Maximize the average halite gathered per turn.
             best_average = np.maximum.reduce(average_halite)
-            cost_matrix[i][:] = -1.0 * best_average
+            if best_average.max() * turns_left + ship.halite_amount > 50:
+                cost_matrix[i][:] = -1.0 * global_factor * best_average
+            else:
+                nothing_to_lose.add(ship.id)
         return cost_matrix
 
     def assign_return(self, ship):
@@ -249,7 +258,7 @@ class Scheduler:
         halites = np.array([ship.halite_amount + self.game_map[ship].halite_amount for ship in ships])
         costs = constants.DROPOFF_COST - halites
         halite_densities = np.array([self.map_data.halite_density[to_index(ship)] for ship in ships])
-        ship_densities = np.array([self.map_data.ship_density[to_index(ship)] for ship in ships])
+        ship_densities = np.array([self.map_data.density_difference[to_index(ship)] for ship in ships])
         dists = self.map_data.distance_dropoffs(ships)
         suitability = (
                 halite_densities *

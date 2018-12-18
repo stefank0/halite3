@@ -4,7 +4,7 @@ from statistics import median
 
 from hlt import constants, Game
 from scheduler import Scheduler
-from mapdata import MapData
+from mapdata import MapData, DistanceCalculator
 
 
 CALIBRATION = False
@@ -131,8 +131,14 @@ else:
 # Play the game.
 while True:
     game.update_frame()
-    #start = time.time()
+    start = time.time()
     command_queue = generate_commands()
-    #if time.time() - start > 2.0:
-    #    log_profiling()
+    time_taken = time.time() - start
+    #logging.info(time_taken)
+    if time_taken > 1.4:
+        #log_profiling()
+        DistanceCalculator.reduce_radius()
+    elif time_taken < 0.9:
+        DistanceCalculator.increase_radius()
+
     game.end_turn(command_queue)

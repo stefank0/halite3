@@ -1,6 +1,7 @@
-from hlt import Direction, constants
-import numpy as np
 import logging, math, time
+import numpy as np
+
+from hlt import Direction, constants
 from mapdata import to_cell, to_index, can_move, neighbours, LinearSum, target
 
 
@@ -13,8 +14,6 @@ class Assignment:
 
     def to_command(self, target_cell):
         """Return command to move its ship to a target cell."""
-        #if target_cell == game_map[self.ship] and game_map[self.destination] != game_map[self.ship]:
-        #    logging.info('MOVE? {}) {} -> {} -> {}'.format(self.ship.id, self.ship.position, self.destination, target_cell.position))
         target_cell.mark_unsafe(self.ship)
 
         if target_cell == game_map[self.ship]:
@@ -37,6 +36,7 @@ class Schedule:
         self.assignments = []
         self.dropoff_assignments = []
         self.map_data = map_data
+        self.calculator = map_data.calculator
 
     def assign(self, ship, destination):
         """Assign a ship to a destination."""
@@ -44,6 +44,7 @@ class Schedule:
         self.assignments.append(assignment)
 
     def dropoff(self, ship):
+        """Assign a ship to become a dropoff."""
         self.dropoff_assignments.append(ship)
 
     def initial_cost_matrix(self):
@@ -70,24 +71,43 @@ class Schedule:
             mining_profit = min(cargo_space, mining_potential)
             return min(0.0, 0.1 - 0.001 * mining_profit)
 
+    def reduce_stay_still(self, cost_array, ship, destination):
+        """Reduce the cost of staying still."""
+        # Indices.
+        target_index = to_index(game_map[destination])
+        origin_index = to_index(ship)
+
+        # Partial costs for the first turn (stay still).
+        origin_threat = self.map_data.enemy_threat[origin_index]
+        threat_cost = self.calculator.threat_func(ship, origin_threat)
+        wasted_cost = self.wasted_turn_cost(ship, target_index)
+
+        # Update cost matrix.
+        first_cost = 1.0 + threat_cost + wasted_cost
+        remaining_cost = self.map_data.get_distance(ship, target_index)
+        cost_array[origin_index] = first_cost + remaining_cost
+
+    def reduce_move(self, cost_array, ship, destination):
+        """Reduce the cost of moving to a neighbouring cell."""
+        # Indices.
+        target_index = to_index(game_map[destination])
+        origin_index = to_index(ship)
+
+        for neighbour_index in neighbours(origin_index):
+            # Update cost matrix.
+            first_cost = self.map_data.get_distance(ship, neighbour_index)
+            remaining_cost = self.calculator.get_distance_from_index(ship, neighbour_index, target_index)
+            cost_array[neighbour_index] = first_cost + remaining_cost
+
     def reduce_feasible(self, cost_matrix):
         """Reduce the cost of all feasible moves for all ships."""
         for k, assignment in enumerate(self.assignments):
             ship = assignment.ship
             destination = assignment.destination
-            origin_index = to_index(ship)
-            target_index = to_index(game_map[destination])
-            origin_enemy_cost = self.map_data.enemy_threat[origin_index]
-            edge_to_self_cost = 1.0 + self.wasted_turn_cost(ship, target_index) + self.map_data.calculator.threat_costs_func(ship, origin_enemy_cost)
-            remaining_cost = self.map_data.get_distance(ship, target_index)
-            cost_matrix[k][origin_index] = edge_to_self_cost + remaining_cost
+            cost_array = cost_matrix[k]
+            self.reduce_stay_still(cost_array, ship, destination)
             if can_move(ship):
-                for neighbour_index in neighbours(origin_index):
-                    first_edge_cost = self.map_data.get_distance(ship, neighbour_index)
-                    remaining_cost = self.map_data.calculator.get_distance_from_index(
-                        ship, neighbour_index, target_index
-                    )
-                    cost_matrix[k][neighbour_index] = first_edge_cost + remaining_cost
+                self.reduce_move(cost_array, ship, destination)
 
     def create_cost_matrix(self):
         """"Create a cost matrix for linear_sum_assignment()."""
@@ -98,8 +118,12 @@ class Schedule:
     def to_commands(self):
         """Translate the assignments of ships to commands."""
         commands = []
+
+        # Dropoff collisions.
         if self.allow_dropoff_collisions():
             self.resolve_dropoff_collisions(commands)
+
+        # Assignment of next move.
         cost_matrix = self.create_cost_matrix()
         ships = [assignment.ship for assignment in self.assignments]
         row_ind, col_ind = LinearSum.assignment(cost_matrix, ships)
@@ -107,8 +131,11 @@ class Schedule:
             assignment = self.assignments[k]
             target = to_cell(i)
             commands.append(assignment.to_command(target))
+
+        # Create dropoff assignments.
         for ship in self.dropoff_assignments:
             commands.append(ship.make_dropoff())
+
         return commands
 
     def near_dropoff(self, ship):
@@ -120,16 +147,17 @@ class Schedule:
         """Handle endgame collisions at closest dropoff."""
         remaining_assignments = []
         for assignment in self.assignments:
-            dropoff = self.map_data.get_closest_dropoff(assignment.ship)
-            dropoff_cell = game_map[dropoff]
-            if self.near_dropoff(assignment.ship) and can_move(assignment.ship):
-                commands.append(assignment.to_command(dropoff_cell))
+            ship = assignment.ship
+            if self.near_dropoff(ship) and can_move(ship):
+                dropoff = self.map_data.get_closest_dropoff(ship)
+                commands.append(assignment.to_command(game_map[dropoff]))
             else:
                 remaining_assignments.append(assignment)
         self.assignments = remaining_assignments
 
     def allow_dropoff_collisions(self):
-        """Return True if we allow endgame dropoff collisions at a closest dropoff."""
+        """True if endgame dropoff collisions are allowed."""
+        ship_dropoff_ratio = len(me.get_ships()) / len(self.map_data.dropoffs)
+        required_turns = math.ceil(ship_dropoff_ratio / 4.0) + 5
         turns_left = constants.MAX_TURNS - game.turn_number
-        required_turns = math.ceil(len(me.get_ships()) / (4.0 * len(self.map_data.dropoffs))) + 5
         return turns_left <= required_turns
