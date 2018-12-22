@@ -4,7 +4,8 @@ from subprocess import check_output
 import os
 
 from tqdm import tqdm
-from parse import parse_replay_folder, parse_replay_file
+import numpy as np
+from parse import parse_replay_folder, parse_replay_file, evaluate_folder
 
 
 class Calibrator:
@@ -83,6 +84,16 @@ class Calibrator:
         """Folder for replay and error files for an iteration"""
         return os.path.join(self._dir_output, f'i{self.iter}_{self.param}')
 
+    @property
+    def _pars_low(self):
+        """Parameters of the high iteration"""
+        return self.get_parameters(self._pars_low_file)
+
+    @property
+    def _pars_high(self):
+        """Parameters of the high iteration"""
+        return self.get_parameters(self._pars_high_file)
+
     def get_bot(self, pars):
         """cmd argument to the a single bot with certain parameters in a yaml file"""
         return f'python {self.bot_path} {pars}'
@@ -97,21 +108,33 @@ class Calibrator:
                 self.param = param
                 os.mkdir(self._dir_iteration)
                 if self.iter == 0:
-                    step = self._pars_default[param] * 0.1
+                    step = self._pars_default[param] * 0.5
                 self.set_parameter(file=self._pars_low_file, step=-step)
                 self.set_parameter(file=self._pars_high_file, step=step)
                 for _ in tqdm(range(self.n_games), total=self.n_games):
                     check_output(self.args).decode("ascii")
-                parse_replay_file(self._dir_iteration)
-                # evaluate game results: gradient=
+                self.evaluate()
                 # determine gradient and step of pamam: step = +/-gradient * reference_params[param]
-                # update default parameters
+                # update step
             self.iter += 1
         return 0
 
     def load(self, folder):
         """Load a calibration state"""
         raise NotImplementedError
+
+    def get_iteration(self):
+        """Get list of the parameters used in the iteration"""
+        params = []
+        if self.n_player == 2:
+            params.append(self._pars_low[self.param])
+            params.append(self._pars_high[self.param])
+        elif self.n_player == 4:
+            params.append(self._pars_reference[self.param])
+            params.append(self._pars_default[self.param])
+            params.append(self._pars_low[self.param])
+            params.append(self._pars_high[self.param])
+        return params
 
     @staticmethod
     def get_parameters(file):
@@ -135,6 +158,12 @@ class Calibrator:
         """Reset the parameters back to the default parameters"""
         with open(file, 'w') as f:
             return yaml.dump(self._pars_default, f, default_flow_style=False)
+
+    def evaluate(self):
+        """Evaluates the result of the iteration step in the calibration"""
+        params = self.get_iteration()
+        result = evaluate_folder(self._dir_iteration)
+        (self.n_player / result.sum() * result * np.array(params)).mean()
 
 
 if __name__ == '__main__':

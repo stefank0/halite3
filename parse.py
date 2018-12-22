@@ -2,6 +2,7 @@ import json
 import os
 import zstd
 
+import pandas as pd
 import hlt
 
 ARBITRARY_ID = -1
@@ -31,6 +32,17 @@ def evaluate_file(file):
         result.append(player['final_production'])
     return result
 
+
+def evaluate_folder(folder):
+    result = []
+    for file_name in sorted(os.listdir(folder)):
+        if not file_name.endswith(".hlt"):
+            continue
+        else:
+            result.append(evaluate_file(os.path.join(folder, file_name)))
+    df = pd.DataFrame(result)
+    return df.divide(df.max(axis=1), axis=0).mean()
+    
 
 if __name__ == '__main__':
     parse_replay_file(
