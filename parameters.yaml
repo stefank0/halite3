@@ -1,5 +1,5 @@
 # Factor of aggresiveness
-lootfactor: 0.25
+lootfactor: 0.75
 
 # Estimation of average halite collection per turn (can also be calculated)
 mean_halite: 75.0

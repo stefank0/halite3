@@ -45,6 +45,7 @@ def evaluate_folder(folder):
     
 
 if __name__ == '__main__':
+    evaluate_folder(r'C:\dev\halite3\replays\calibrator_p4_s32_d20181223_t145403\i0_lootfactor')
     parse_replay_file(
         file=r'replays/'
              r'calibrator_p4_s32_d20181222_t112808/'

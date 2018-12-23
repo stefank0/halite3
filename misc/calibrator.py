@@ -1,3 +1,5 @@
+import logging
+
 import yaml
 import time
 from subprocess import check_output
@@ -10,12 +12,11 @@ from parse import parse_replay_folder, parse_replay_file, evaluate_folder
 
 class Calibrator:
     """Calibrator object to start or load a stopped Calibration of parameterrs for a halite bot.
-    pars --> parameters
-    args --> arguments
-    iter --> iteration
-    n    --> number
-    dir  --> directory
-    State of the parameters not managed in object, but in the yaml files.
+    params  --> parameters used in calibrate, state of the parameters is not managed in object, but in the yaml files.
+    args    --> arguments in halite command
+    iter    --> iteration in calibration
+    n_xxx   --> number of xxx
+    dir     --> directory
     """
 
     def __init__(self, mapsize, n_player, n_games, n_iter,
@@ -33,7 +34,6 @@ class Calibrator:
         self._dir_pars = os.path.join(self._dir_output, 'pars')
         self._pars_reference_file = pars_reference
         self._pars_reference = self.get_parameters(self._pars_reference_file)
-        self._pars_default = self.get_parameters(self._pars_reference_file)
 
     def __repr__(self):
         """Representation of Calibrator object"""
@@ -43,10 +43,10 @@ class Calibrator:
         """Folder where the hlt and errorlogs will be written"""
         return os.path.join(self._dir_replay,
                             f'calibrator_'
-                            f'p{self.n_player}_'
-                            f's{self.mapsize}_'
                             f'd{time.strftime("%Y%m%d")}_'
-                            f't{time.strftime("%H%M%S")}')
+                            f't{time.strftime("%H%M%S")}_'
+                            f'p{self.n_player}_'
+                            f's{self.mapsize}')
 
     @property
     def args(self):
@@ -56,13 +56,12 @@ class Calibrator:
                 '--width', str(self.mapsize),
                 '--height', str(self.mapsize)]
         if self.n_player == 2:
-            return args + [self.get_bot(self._pars_high_file), self.get_bot(self._pars_high_file)]
+            return args + [self.get_bot(self._pars_low_file), self.get_bot(self._pars_high_file)]
         elif self.n_player == 4:
             return args + [self.get_bot(self._pars_reference_file),
                            self.get_bot(self._pars_default_file),
                            self.get_bot(self._pars_low_file),
                            self.get_bot(self._pars_high_file)]
-        raise NotImplementedError
 
     @property
     def _pars_default_file(self):
@@ -83,6 +82,11 @@ class Calibrator:
     def _dir_iteration(self):
         """Folder for replay and error files for an iteration"""
         return os.path.join(self._dir_output, f'i{self.iter}_{self.param}')
+
+    @property
+    def _pars_default(self):
+        """Parameters of the high iteration"""
+        return self.get_parameters(self._pars_default_file)
 
     @property
     def _pars_low(self):
@@ -116,25 +120,31 @@ class Calibrator:
         """Run game from commandline"""
         os.mkdir(self._dir_output)
         os.mkdir(self._dir_pars)
+        logging.basicConfig(filename=os.path.join(self._dir_output, '.log'), level=logging.INFO)
+
+        self.set_parameters(self._pars_default_file, self._pars_reference)
         while self.iter < self.n_iter:
-            self.set_parameters(self._pars_default_file, self._pars_default)
             for param in self._pars_reference.keys():
+                if param != 'lootfactor':
+                    continue
                 self.param = param
                 os.mkdir(self._dir_iteration)
                 if self.iter == 0:
                     step = self._pars_default[param] * 0.5
+                logging.info(f'param: {self.param} old: {self._pars_default[self.param]}')
                 self.set_parameter(file=self._pars_low_file, step=-step)
                 self.set_parameter(file=self._pars_high_file, step=step)
                 for _ in tqdm(range(self.n_games), total=self.n_games):
                     check_output(self.args).decode("ascii")
-                # update default parameter
                 self.set_parameter(
                     file=self._pars_default_file,
-                    step=self._pars_default[self.param] - self.evaluate())
-                self.evaluate()
-                # determine gradient and step of pamam: step = +/-gradient * reference_params[param]
-                # update step
+                    step=self.evaluate() - self._pars_default[self.param])
+                logging.info(f'param: {self.param} new: {self._pars_default[self.param]}')
+                step /= 2
             self.iter += 1
+            self.set_parameters(self._pars_default_file,
+                                self.get_parameters(self._pars_default_file.replace(f'{self.iter}_default',
+                                                                                    f'{self.iter-1}_default')))
         return 0
 
     def load(self, folder):
@@ -174,5 +184,5 @@ class Calibrator:
 
 
 if __name__ == '__main__':
-    calibrator = Calibrator(mapsize=32, n_player=4, n_games=100, n_iter=1)
+    calibrator = Calibrator(mapsize=32, n_player=2, n_games=1, n_iter=2)
     calibrator.start()
