@@ -78,10 +78,10 @@ def calc_density(radius, array, count_self=True):
     for dist in range(1, radius + 1):
         x = dist
         while x >= 1:
-            density += np.roll(np.roll(array,  dist - x, 0),  x, 1) / ((radius + 1) * dist * 4)  # southeast
-            density += np.roll(np.roll(array,  dist - x, 1), -x, 0) / ((radius + 1) * dist * 4)  # northeast
+            density += np.roll(np.roll(array, dist - x, 0), x, 1) / ((radius + 1) * dist * 4)  # southeast
+            density += np.roll(np.roll(array, dist - x, 1), -x, 0) / ((radius + 1) * dist * 4)  # northeast
             density += np.roll(np.roll(array, -dist + x, 0), -x, 1) / ((radius + 1) * dist * 4)  # northwest
-            density += np.roll(np.roll(array, -dist + x, 1),  x, 0) / ((radius + 1) * dist * 4)  # southwest
+            density += np.roll(np.roll(array, -dist + x, 1), x, 0) / ((radius + 1) * dist * 4)  # southwest
             x += -1
     return density
 
@@ -248,11 +248,12 @@ class DistanceCalculator:
         row = np.repeat(np.arange(m), 4)
         cls._edge_data = (row, col)
 
-    def __init__(self, dropoffs, halite, enemy_threat):
+    def __init__(self, dropoffs, halite, enemy_threat, _params):
         if self._edge_data is None:
             self._initialize_edge_data()
         self.dropoffs = dropoffs
         self.simple_dropoff_distances = self._simple_dropoff_distances()
+        self.params = _params
 
         self._traffic_costs = self._traffic_edge_costs()
         self._movement_costs = self._movement_edge_costs(halite)
@@ -305,11 +306,11 @@ class DistanceCalculator:
             Therefore, moving over 1 halite corresponds to 1/750 of a turn.
         """
         halite_cost = np.floor(0.1 * halite)
-        return np.repeat(1.0 + halite_cost / 75.0, 4)
+        return np.repeat(1.0 + halite_cost / self.params['mean_halite'], 4)
 
     def _edge_costs(self, ship):
         """Edge costs for all edges in the graph."""
-        #return_costs = packing_fraction(ship) * self._return_costs
+        # return_costs = packing_fraction(ship) * self._return_costs
         threat_costs = self.threat_func(ship, self._threat_costs)
         return self._movement_costs + self._traffic_costs + threat_costs
 
@@ -337,7 +338,7 @@ class DistanceCalculator:
     def _set_simple_distance(self, dist_matrix, indices, target_index):
         """Update dist_matrix, set simple distances for target_index."""
         for i, index in enumerate(indices):
-            distance = 10.0 + simple_distance(index, target_index)
+            distance = self.params["distance"] + simple_distance(index, target_index)
             dist_matrix[i][target_index] = distance
 
     def _boundary_indices(self, ship_index):
@@ -399,7 +400,7 @@ class DistanceCalculator:
     def _indices(self, ship):
         """Shortest paths for the ship cell and its direct neighbours."""
         ship_index = to_index(ship)
-        return (ship_index, ) + neighbours(ship_index)
+        return (ship_index,) + neighbours(ship_index)
 
     def _ship_shortest_path(self, ship):
         """Calculate shortest path costs to all cells."""
@@ -541,15 +542,16 @@ def _mining_probability(halite, ship):
 class MapData:
     """Analyzes the gamemap and provides useful data/statistics."""
 
-    def __init__(self, _game):
+    def __init__(self, _game, _params):
         global game, game_map
         game = _game
         game_map = game.game_map
+        self.params = _params
         self.halite = self._halite()
         self.dropoffs = [game.me.shipyard] + game.me.get_dropoffs()
         self.enemy_threat = enemy_threat()
         self.in_bonus_range = enemies_in_bonus_range()
-        self.calculator = DistanceCalculator(self.dropoffs, self.halite, self.enemy_threat)
+        self.calculator = DistanceCalculator(self.dropoffs, self.halite, self.enemy_threat, self.params)
         self.halite_density = self._halite_density()
         self.density_difference = self._ship_density_difference()
         self.global_factor = self._global_factor()
@@ -633,8 +635,8 @@ class MapData:
         dropoff_dists = self.calculator.simple_dropoff_distances
         loot = np.zeros(m)
 
-        if len(game.players) == 4 and game.turn_number < 0.75 * constants.MAX_TURNS:
-            return loot
+        # if len(game.players) == 4 and game.turn_number < 0.75 * constants.MAX_TURNS:
+        #     return loot
 
         for enemy_ship in _nearby_enemy_ships(ship):
             enemy_index = to_index(enemy_ship)
@@ -645,4 +647,4 @@ class MapData:
                     for index in neighbours(enemy_index):
                         if dropoff_dists[index] > dropoff_dists[enemy_index]:
                             loot[index] += dhalite
-        return 0.25 * loot # Factor 0.25 to keep the same relative cost as before.
+        return self.params['lootfactor'] * loot  # Factor 0.25 to keep the same relative cost as before.

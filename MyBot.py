@@ -22,7 +22,7 @@ if CALIBRATION:
 
 def create_schedule():
     """Creates a schedule based on the current game map."""
-    map_data = MapData(game)
+    map_data = MapData(game, params)
     scheduler = Scheduler(game, map_data)
     return scheduler.get_schedule()
 
@@ -51,8 +51,8 @@ def _ship_number_falling_behind():
 
 def want_to_spawn():
     """Return True if we would like to spawn a new ship."""
-    is_early_game = game.turn_number <= parameters['earlygame']
-    is_late_game = game.turn_number >= (constants.MAX_TURNS - parameters['endgame'])
+    is_early_game = game.turn_number <= params['earlygame']
+    is_late_game = game.turn_number >= (constants.MAX_TURNS - params['endgame'])
     is_mid_game = (not is_early_game) and (not is_late_game)
     return is_early_game or (is_mid_game and _ship_number_falling_behind())
 
@@ -114,8 +114,8 @@ game_map = game.game_map
 if CALIBRATION:
     args = get_parser().parse_args()
     with open(args.inputfile) as y:
-        parameters = yaml.load(y)
-        parameters['inputfile'] = args.inputfile
+        params = yaml.load(y)
+        params['inputfile'] = args.inputfile
 else:
     number_of_players = len(game.players)
     map_size = game.game_map.height
@@ -125,11 +125,12 @@ else:
     except IOError:
         with open('../parameters.json') as f:
             all_parameters = json.load(f)
-    parameters = all_parameters[str(number_of_players)][str(map_size)]
+    params = all_parameters[str(number_of_players)][str(map_size)]
 
 
 # Play the game.
 while True:
+    logging.info(params)
     game.update_frame()
     start = time.time()
     command_queue = generate_commands()

@@ -1,44 +1,74 @@
 {
     "2": {
         "32": {
+            "lootfactor": 0.25,
+            "mean_halite": 75.0,
+            "distance": 10.0,
             "earlygame": 200,
             "endgame": 100
         },
         "40": {
+            "lootfactor": 0.25,
+            "mean_halite": 75.0,
+            "distance": 10.0,
             "earlygame": 200,
             "endgame": 100
         },
         "48": {
+            "lootfactor": 0.25,
+            "mean_halite": 75.0,
+            "distance": 10.0,
             "earlygame": 200,
             "endgame": 100
         },
         "56": {
+            "lootfactor": 0.25,
+            "mean_halite": 75.0,
+            "distance": 10.0,
             "earlygame": 200,
             "endgame": 100
         },
         "64": {
+            "lootfactor": 0.25,
+            "mean_halite": 75.0,
+            "distance": 10.0,
             "earlygame": 200,
             "endgame": 100
         }
     },
     "4": {
         "32": {
+            "lootfactor": 0.25,
+            "mean_halite": 75.0,
+            "distance": 10.0,
             "earlygame": 200,
             "endgame": 100
         },
         "40": {
+            "lootfactor": 0.25,
+            "mean_halite": 75.0,
+            "distance": 10.0,
             "earlygame": 200,
             "endgame": 100
         },
         "48": {
+            "lootfactor": 0.25,
+            "mean_halite": 75.0,
+            "distance": 10.0,
             "earlygame": 200,
             "endgame": 100
         },
         "56": {
+            "lootfactor": 0.25,
+            "mean_halite": 75.0,
+            "distance": 10.0,
             "earlygame": 200,
             "endgame": 100
         },
         "64": {
+            "lootfactor": 0.25,
+            "mean_halite": 75.0,
+            "distance": 10.0,
             "earlygame": 200,
             "endgame": 100
         }
