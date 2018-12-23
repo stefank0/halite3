@@ -94,6 +94,20 @@ class Calibrator:
         """Parameters of the high iteration"""
         return self.get_parameters(self._pars_high_file)
 
+    @property
+    def _params(self):
+        """Get list of the parameters used in the iteration"""
+        params = []
+        if self.n_player == 2:
+            params.append(self._pars_low[self.param])
+            params.append(self._pars_high[self.param])
+        elif self.n_player == 4:
+            params.append(self._pars_reference[self.param])
+            params.append(self._pars_default[self.param])
+            params.append(self._pars_low[self.param])
+            params.append(self._pars_high[self.param])
+        return np.array(params)
+
     def get_bot(self, pars):
         """cmd argument to the a single bot with certain parameters in a yaml file"""
         return f'python {self.bot_path} {pars}'
@@ -113,6 +127,10 @@ class Calibrator:
                 self.set_parameter(file=self._pars_high_file, step=step)
                 for _ in tqdm(range(self.n_games), total=self.n_games):
                     check_output(self.args).decode("ascii")
+                # update default parameter
+                self.set_parameter(
+                    file=self._pars_default_file,
+                    step=self._pars_default[self.param] - self.evaluate())
                 self.evaluate()
                 # determine gradient and step of pamam: step = +/-gradient * reference_params[param]
                 # update step
@@ -122,31 +140,6 @@ class Calibrator:
     def load(self, folder):
         """Load a calibration state"""
         raise NotImplementedError
-
-    def get_iteration(self):
-        """Get list of the parameters used in the iteration"""
-        params = []
-        if self.n_player == 2:
-            params.append(self._pars_low[self.param])
-            params.append(self._pars_high[self.param])
-        elif self.n_player == 4:
-            params.append(self._pars_reference[self.param])
-            params.append(self._pars_default[self.param])
-            params.append(self._pars_low[self.param])
-            params.append(self._pars_high[self.param])
-        return params
-
-    @staticmethod
-    def get_parameters(file):
-        """Get a dict of parameters to be calibrated"""
-        with open(file) as f:
-            return yaml.load(f)
-
-    @staticmethod
-    def set_parameters(file, pars):
-        """Set a dict of parameters to be calibrated to file"""
-        with open(file, 'w') as f:
-            return yaml.dump(pars, f, default_flow_style=False)
 
     def set_parameter(self, file, step):
         """Set the parameters to be used in a bot"""
@@ -159,11 +152,25 @@ class Calibrator:
         with open(file, 'w') as f:
             return yaml.dump(self._pars_default, f, default_flow_style=False)
 
+    def result(self):
+        return evaluate_folder(self._dir_iteration)
+
     def evaluate(self):
         """Evaluates the result of the iteration step in the calibration"""
-        params = self.get_iteration()
-        result = evaluate_folder(self._dir_iteration)
-        (self.n_player / result.sum() * result * np.array(params)).mean()
+        result = self.result()
+        return (self.n_player / result.sum() * result * self._params).mean()
+
+    @staticmethod
+    def set_parameters(file, pars):
+        """Set a dict of parameters to be calibrated to file"""
+        with open(file, 'w') as f:
+            return yaml.dump(pars, f, default_flow_style=False)
+
+    @staticmethod
+    def get_parameters(file):
+        """Get a dict of parameters to be calibrated"""
+        with open(file) as f:
+            return yaml.load(f)
 
 
 if __name__ == '__main__':
