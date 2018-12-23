@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
-import argparse
-import logging
-import time
+import json, logging, time
 from statistics import median
-import yaml
 
 from hlt import constants, Game
 from scheduler import Scheduler
-from mapdata import MapData
+from mapdata import MapData, DistanceCalculator
 
 
-def get_parser():
-    """Get argumentparser and add arguments"""
-    parser = argparse.ArgumentParser('read *pars.yaml and use parameters in MyBot')
-    parser.add_argument('inputfile', type=str, help='YAML input file containing keyword arguments')
-    return parser
+CALIBRATION = False
+
+
+if CALIBRATION:
+    import argparse, yaml
+
+    def get_parser():
+        """Get argumentparser and add arguments"""
+        parser = argparse.ArgumentParser('read *pars.yaml and use parameters in MyBot')
+        parser.add_argument('inputfile', type=str, help='YAML input file containing keyword arguments')
+        return parser
 
 
 def create_schedule():
@@ -107,16 +110,35 @@ game.ready("Schildpad")
 me = game.me
 game_map = game.game_map
 
-args = get_parser().parse_args()
-with open(args.inputfile) as y:
-    parameters = yaml.load(y)
-    parameters['inputfile'] = args.inputfile
+
+if CALIBRATION:
+    args = get_parser().parse_args()
+    with open(args.inputfile) as y:
+        parameters = yaml.load(y)
+        parameters['inputfile'] = args.inputfile
+else:
+    number_of_players = len(game.players)
+    map_size = game.game_map.height
+    try:
+        with open('parameters.json') as f:
+            all_parameters = json.load(f)
+    except IOError:
+        with open('../parameters.json') as f:
+            all_parameters = json.load(f)
+    parameters = all_parameters[str(number_of_players)][str(map_size)]
+
 
 # Play the game.
 while True:
     game.update_frame()
     start = time.time()
     command_queue = generate_commands()
-    #if time.time() - start > 2.0:
-    #    log_profiling()
+    time_taken = time.time() - start
+    #logging.info(time_taken)
+    if time_taken > 1.4:
+        #log_profiling()
+        DistanceCalculator.reduce_radius()
+    elif time_taken < 0.9:
+        DistanceCalculator.increase_radius()
+
     game.end_turn(command_queue)

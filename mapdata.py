@@ -7,7 +7,7 @@ from scipy.optimize import linear_sum_assignment
 import numpy as np
 
 from hlt import Position, constants
-# from .parameters import
+
 
 ##############################################################################
 #
@@ -86,30 +86,53 @@ def calc_density(radius, array, count_self=True):
     return density
 
 
-def nearby_ships(ship, ships):
+def density(base_density, radius):
+    """Smooth/distribute a base density over a region."""
+    base_density_sum = base_density.sum()
+    if base_density_sum == 0.0:
+        return base_density
+    base_density = base_density.reshape(game_map.height, game_map.width)
+    density = np.zeros((game_map.height, game_map.width))
+    for dx in range(-radius, radius + 1):
+        for dy in range(-radius + abs(dx), radius + 1 - abs(dx)):
+            factor = 1.0 - (abs(dx) + abs(dy)) / (radius + 1.0)
+            density += factor * np.roll(base_density, (dx, dy), (0, 1))
+    density = density.ravel()
+    return density * (base_density_sum / density.sum())
+
+
+def ship_density(ships, radius):
+    """Transform a list of ships into a density on the game map."""
+    base_density = np.zeros(game_map.height * game_map.width)
+    ship_indices = [to_index(ship) for ship in ships]
+    base_density[ship_indices] = 1.0
+    return density(base_density, radius)
+
+
+def nearby_ships(ship, ships, radius):
     """Return a list of nearby ships out of ships."""
     return [
         other_ship
         for other_ship in ships
-        if simple_distance(to_index(ship), to_index(other_ship)) <= 2
+        if simple_distance(to_index(ship), to_index(other_ship)) <= radius
     ]
 
 
 class LinearSum:
     """Wrapper for linear_sum_assignment() from scipy to avoid timeouts."""
 
-    time_saving_mode = False
+    _time_saving_mode = False
 
     @classmethod
-    def add_to_cluster(cls, cluster, ship, ships):
+    def _add_to_cluster(cls, cluster, ship, ships):
         """Add ship to cluster and search other ships for the cluster."""
         cluster.append(ship)
-        for other_ship in nearby_ships(ship, ships):
+        for other_ship in nearby_ships(ship, ships, 2):
             if other_ship not in cluster:
-                cls.add_to_cluster(cluster, other_ship, ships)
+                cls._add_to_cluster(cluster, other_ship, ships)
 
     @classmethod
-    def already_in_cluster(cls, clusters, ship):
+    def _already_in_cluster(cls, clusters, ship):
         """Test if the ship is already in another cluster."""
         for cluster in clusters:
             if ship in cluster:
@@ -117,35 +140,25 @@ class LinearSum:
         return False
 
     @classmethod
-    def get_clusters(cls, ships):
-        """Cluster ships into clusters."""
+    def _get_clusters(cls, ships):
+        """Create the ship clusters."""
         clusters = []
         for ship in ships:
-            if cls.already_in_cluster(clusters, ship):
+            if cls._already_in_cluster(clusters, ship):
                 continue
             cluster = []
-            cls.add_to_cluster(cluster, ship, ships)
+            cls._add_to_cluster(cluster, ship, ships)
             clusters.append(cluster)
         return clusters
 
     @classmethod
-    def _categorize(cls, ships):
-        """Categorize ships based on ship clusters."""
-        clusters = cls.get_clusters(ships)
-        categories = np.zeros(len(ships))
-        for i, cluster in enumerate(clusters):
-            for ship in cluster:
-                categories[ships.index(ship)] = i
-        return categories
-
-    @classmethod
     def _efficient_assignment(cls, cost_matrix, ships):
-        """Categorize ships and solve multiple linear sum assigments."""
-        categories = cls._categorize(ships)
+        """Cluster ships and solve multiple linear sum assigments."""
+        clusters = cls._get_clusters(ships)
         row_inds = []
         col_inds = []
-        for category in np.unique(categories):
-            indices = np.flatnonzero(categories == category)
+        for cluster in clusters:
+            indices = np.array([ships.index(ship) for ship in cluster])
             partial_cost_matrix = cost_matrix[indices, :]
             row_ind, col_ind = linear_sum_assignment(partial_cost_matrix)
             row_inds += [int(x) for x in indices[row_ind]]
@@ -155,14 +168,14 @@ class LinearSum:
     @classmethod
     def assignment(cls, cost_matrix, ships):
         """Wraps linear_sum_assignment()."""
-        if cls.time_saving_mode:
+        if cls._time_saving_mode:
             return cls._efficient_assignment(cost_matrix, ships)
         else:
             start = time.time()
             row_ind, col_ind = linear_sum_assignment(cost_matrix)
             stop = time.time()
             if stop - start > 0.5:
-                cls.time_saving_mode = True
+                cls._time_saving_mode = True
                 logging.info("Switching to time saving mode.")
             return row_ind, col_ind
 
@@ -183,56 +196,92 @@ def simple_distance(index_a, index_b):
     return min(dx, width - dx) + min(dy, height - dy)
 
 
-def simple_distances(index):
+def simple_distances(index, indices):
+    """Get an array of the actual step distances to specific cells."""
+    height = game_map.height
+    width = game_map.width
+    dx = np.abs(indices % width - index % width)
+    dy = np.abs(indices // width - index // width)
+    return np.minimum(dx, width - dx) + np.minimum(dy, height - dy)
+
+
+def all_simple_distances(index):
     """Get an array of the actual step distances to all cells."""
-    m = game_map.height * game_map.width
-    return np.array([simple_distance(index, i) for i in range(m)])
+    m = game_map.width * game_map.height
+    indices = np.arange(m)
+    return simple_distances(index, indices)
 
 
 class DistanceCalculator:
     """Calculates shortest path distances for all ships."""
 
     _edge_data = None
+    _dijkstra_radius = 15
+    _expanded_radius = 30
 
-    def __init__(self, halite, dropoffs, enemy_threat):
-        if DistanceCalculator._edge_data is None:
-            self._initialize_edge_data()
-        self.dropoffs = dropoffs
-        self.simple_dropoff_distances = self._simple_dropoff_distances(dropoffs)
-        self._traffic_costs = self._traffic_edge_costs()
-        self._movement_costs = self._movement_edge_costs(halite)
-        self._return_costs = self._return_edge_costs(dropoffs)
-        self._threat_costs = self._threat_edge_costs(enemy_threat)
-        self._dist_tuples = self._shortest_path()
+    @classmethod
+    def reduce_radius(cls):
+        """Reduce shortest_path radius to reduce computation time."""
+        if cls._expanded_radius > cls._dijkstra_radius:
+            cls._expanded_radius = cls._dijkstra_radius
+        elif cls._dijkstra_radius > 10:
+            cls._dijkstra_radius -= 1
+            cls._expanded_radius -= 1
+        logging.info('Reduced radius: {},{}'.format(cls._expanded_radius, cls._dijkstra_radius))
 
-    def _initialize_edge_data(self):
+    @classmethod
+    def increase_radius(cls):
+        """Increase shortest_path radius."""
+        if cls._dijkstra_radius < 15:
+            cls._dijkstra_radius += 1
+            cls._expanded_radius += 1
+            logging.info('Increased radius: {},{}'.format(cls._expanded_radius, cls._dijkstra_radius))
+        elif cls._expanded_radius < 30:
+            cls._expanded_radius += 5
+            logging.info('Increased radius: {},{}'.format(cls._expanded_radius, cls._dijkstra_radius))
+
+    @classmethod
+    def _initialize_edge_data(cls):
         """Store edge_data for create_graph() on the class for performance."""
         m = game_map.height * game_map.width
         col = np.array([j for i in range(m) for j in neighbours(i)])
         row = np.repeat(np.arange(m), 4)
-        DistanceCalculator._edge_data = (row, col)
+        cls._edge_data = (row, col)
 
-    def _simple_dropoff_distances(self, dropoffs):
+    def __init__(self, dropoffs, halite, enemy_threat):
+        if self._edge_data is None:
+            self._initialize_edge_data()
+        self.dropoffs = dropoffs
+        self.simple_dropoff_distances = self._simple_dropoff_distances()
+
+        self._traffic_costs = self._traffic_edge_costs()
+        self._movement_costs = self._movement_edge_costs(halite)
+        self._threat_costs = self._threat_edge_costs(enemy_threat)
+        ## self._return_costs = self._return_edge_costs()
+        self._dist_tuples = self._shortest_path()
+
+    def _simple_dropoff_distances(self):
         """Simple step distances from all cells to the nearest dropoff."""
-        distances_to_all_dropoffs = np.array([
-            simple_distances(to_index(dropoff)) for dropoff in dropoffs
+        all_dropoff_distances = np.array([
+            all_simple_distances(to_index(dropoff))
+            for dropoff in self.dropoffs
         ])
-        return np.min(distances_to_all_dropoffs, axis=0)
+        return np.min(all_dropoff_distances, axis=0)
 
-    def threat_costs_func(self, ship, threat_costs):
+    def threat_func(self, ship, threat_costs):
         """Necessary to keep Schedule costs in sync."""
-        return 20.0 * packing_fraction(ship) * threat_costs
+        return 10.0 * packing_fraction(ship) * threat_costs
 
     def _threat_edge_costs(self, enemy_threat):
         """Edge costs describing avoiding enemies (fleeing)."""
-        _row, col = DistanceCalculator._edge_data
+        _row, col = self._edge_data
         return enemy_threat[col]
 
-    def _return_edge_costs(self, dropoffs):
-        """Edge costs describing turns necessary to return to a dropoff."""
-        dropoff_distances = self.simple_dropoff_distances
-        row, col = DistanceCalculator._edge_data
-        return 0.5 * (dropoff_distances[col] - dropoff_distances[row] + 1.0)
+    ## def _return_edge_costs(self):
+    ##    """Edge costs describing turns necessary to return to a dropoff."""
+    ##    dropoff_distances = self.simple_dropoff_distances
+    ##    row, col = self._edge_data
+    ##    return 0.5 * (dropoff_distances[col] - dropoff_distances[row] + 1.0)
 
     def _traffic_edge_costs(self):
         """Edge costs describing avoiding or waiting for traffic."""
@@ -244,43 +293,31 @@ class DistanceCalculator:
         return 0.8 * occupation
 
     def _movement_edge_costs(self, halite):
-        """Edge costs describing basic movement."""
+        """Edge costs describing basic movement.
+
+        Note
+            The edge cost is chosen such that the shortest path is mainly based
+            on the number of steps necessary, but also slightly incorporates
+            the halite costs of moving. Therefore, the most efficient path is
+            chosen when there are several shortest distance paths.
+            More solid justification: if mining yields 75 halite on average,
+            one mining turn corresponds to moving over 75/(10%) = 750 halite.
+            Therefore, moving over 1 halite corresponds to 1/750 of a turn.
+        """
         halite_cost = np.floor(0.1 * halite)
         return np.repeat(1.0 + halite_cost / 75.0, 4)
 
     def _edge_costs(self, ship):
-        """Edge costs for all edges in the graph.
-
-        Note:
-            The edge cost 1.0 + cell.halite_amount / 750.0 is chosen such
-            that the shortest path is mainly based on the number of steps
-            necessary, but also slightly incorporates the halite costs of
-            moving. Therefore, the most efficient path is chosen when there
-            are several shortest distance paths.
-            More solid justification: if mining yields 75 halite on average,
-            one mining turn corresponds to moving over 75/(10%) = 750 halite.
-            Therefore, moving over 1 halite corresponds to 1/750 of a turn.
-            The term self.occupied is added, so that the shortest path also
-            takes traffic delays into consideration.
-            The term packing_fraction(ship) * self.dropoff_cost represents
-            costs for turns needed to return to a dropoff. If the ship is
-            almost full, only the next mining action benefits from the move
-            that increased the distance. Therefore, the extra turns needed to
-            return are added to the costs. However, when the ship is almost
-            empty, many mining turns benefit from the move and therefore the
-            extra turns are only slightly added to the costs.
-            The term containing self.enemy_cost represents the fact that
-            losing a ship to a collision costs a lot of turns.
-        """
-        movement_costs = self._movement_costs
-        traffic_costs = self._traffic_costs
-        return_costs = packing_fraction(ship) * self._return_costs
-        threat_costs = self.threat_costs_func(ship, self._threat_costs)
-        return movement_costs + traffic_costs + return_costs + threat_costs
+        """Edge costs for all edges in the graph."""
+        #return_costs = packing_fraction(ship) * self._return_costs
+        threat_costs = self.threat_func(ship, self._threat_costs)
+        return self._movement_costs + self._traffic_costs + threat_costs
 
     def _nearby_edges(self, ship, edge_costs, row, col):
-        """Drop far away edges to reduce computation time."""
-        subgraph_indices = np.array(list(neighbourhood(to_index(ship), 15)))
+        """Keep only nearby edges to reduce computation time."""
+        radius = self._dijkstra_radius
+        ship_neighbourhood = neighbourhood(to_index(ship), radius)
+        subgraph_indices = np.array(list(ship_neighbourhood))
         edge_indices = np.concatenate((
             4 * subgraph_indices,
             4 * subgraph_indices + 1,
@@ -293,22 +330,70 @@ class DistanceCalculator:
         """Create a sparse matrix representing the game map graph."""
         m = game_map.height * game_map.width
         edge_costs = self._edge_costs(ship)
-        row, col = DistanceCalculator._edge_data
+        row, col = self._edge_data
         edge_costs, row, col = self._nearby_edges(ship, edge_costs, row, col)
         return csr_matrix((edge_costs, (row, col)), shape=(m, m))
 
-    def _unreachable(self, dist_matrix, indices, target_index):
-        """Set simple distances for unreachable cells (in the graph)."""
+    def _set_simple_distance(self, dist_matrix, indices, target_index):
+        """Update dist_matrix, set simple distances for target_index."""
         for i, index in enumerate(indices):
             distance = 10.0 + simple_distance(index, target_index)
             dist_matrix[i][target_index] = distance
 
+    def _boundary_indices(self, ship_index):
+        """Boundary indices of the region that received costs by dijkstra."""
+        h = game_map.height
+        w = game_map.width
+        x = ship_index % w
+        y = ship_index // w
+        boundary_radius = self._dijkstra_radius + 1
+        return np.array([
+            ((x + dx) % w) + (w * ((y + dy) % h))
+            for dx in range(-boundary_radius, boundary_radius + 1)
+            for dy in {-boundary_radius + abs(dx), boundary_radius - abs(dx)}
+        ])
+
+    def _expand_indices(self, ship_index, dist_matrix):
+        """Indices that receive costs by expansion in postprocessing."""
+        h = game_map.height
+        w = game_map.width
+        x = ship_index % w
+        y = ship_index // w
+        boundary_radius = self._dijkstra_radius + 1
+        max_radius = self._expanded_radius
+        expand_indices = (
+            ((x + dx) % w) + (w * ((y + dy) % h))
+            for dx in range(-max_radius, max_radius + 1)
+            for dy in range(-max_radius + abs(dx), max_radius + 1 - abs(dx))
+            if abs(dx) + abs(dy) > boundary_radius
+        )
+        return np.array([
+            index for index in expand_indices
+            if dist_matrix[0][index] == np.inf
+        ])
+
+    def _expand(self, dist_matrix, indices):
+        """Expand the region for which distances are set in dist_matrix."""
+        ship_index = indices[0]
+        boundary_indices = self._boundary_indices(ship_index)
+        expand_indices = self._expand_indices(ship_index, dist_matrix)
+        dists = np.array([
+            2.0 * simple_distances(index, expand_indices)
+            for index in boundary_indices
+        ])
+        for i in range(len(indices)):
+            boundary_dists = dist_matrix[i, boundary_indices]
+            distances = dists + boundary_dists[:, None]
+            dist_matrix[i, expand_indices] = np.min(distances, 0)
+
     def _postprocess(self, dist_matrix, indices):
         """Do some postprocessing on the result from dijkstra()."""
+        if self._expanded_radius > self._dijkstra_radius + 1:
+            self._expand(dist_matrix, indices)
         for dropoff in self.dropoffs:
             dropoff_index = to_index(dropoff)
-            if dist_matrix[0][dropoff_index] == np.inf:
-                self._unreachable(dist_matrix, indices, dropoff_index)
+            if dist_matrix[0, dropoff_index] == np.inf:
+                self._set_simple_distance(dist_matrix, indices, dropoff_index)
         dist_matrix[dist_matrix == np.inf] = 99999.9
 
     def _indices(self, ship):
@@ -371,31 +456,30 @@ def enemy_ships():
     )
 
 
+def get_troll_indices():
+    """Indices that could be occupied by enemy trolls."""
+    dropoffs = [game.me.shipyard] + game.me.get_dropoffs()
+    dropoff_indices = [to_index(dropoff) for dropoff in dropoffs]
+    near_dropoff_indices = [
+        index
+        for dropoff_index in dropoff_indices
+        for index in neighbours(dropoff_index)
+    ]
+    return dropoff_indices + near_dropoff_indices
+
+
 def enemy_threat():
     """Assign a value to every cell describing enemy threat."""
-    m = game_map.height * game_map.width
-    threat = np.zeros(m)
+    troll_indices = get_troll_indices()
+    threat = np.zeros(game_map.height * game_map.width)
     for ship in enemy_ships():
         ship_index = to_index(ship)
+        if ship_index in troll_indices:
+            continue
         threat[ship_index] += 1.0 - packing_fraction(ship)
         for index in neighbours(ship_index):
             threat[index] += 1.0 - packing_fraction(ship)
     return threat
-
-
-def _simple_ship_threat(ship):
-    """Get the indices threatened by an enemy ship.
-
-    Note:
-        The current location of the ship counts extra, because a ship is
-        likely to stay still. Possible improvement: guess if the ship is going
-        to move based on the halite of its current position and its cargo.
-        At the moment, the ships current position is more threatening if it is
-        not carrying much halite.
-    """
-    ship_index = to_index(ship)
-    factor = math.ceil(4.0 * (1.0 - packing_fraction(ship)**2))
-    return tuple(ship_index for i in range(factor)) + neighbours(ship_index)
 
 
 def _bonus_neighbourhood(ship):
@@ -403,29 +487,17 @@ def _bonus_neighbourhood(ship):
     return neighbourhood(to_index(ship), 4)
 
 
-def _index_count(index_func):
-    """Loops over enemy ships and counts indices returned by index_func."""
+def enemies_in_bonus_range():
+    """Calculate the number of enemies within bonus range for all cells."""
     counted = Counter(
         index
         for ship in enemy_ships()
-        for index in index_func(ship)
+        for index in _bonus_neighbourhood(ship)
     )
-    m = game_map.height * game_map.width
-    index_count = np.zeros(m)
+    in_bonus_range = np.zeros(game_map.height * game_map.width)
     for index, counted_number in counted.items():
-        index_count[index] = counted_number
-    return index_count
-
-
-def enemies_in_bonus_range():
-    """Calculate the number of enemies within bonus range for all cells."""
-    return _index_count(_bonus_neighbourhood)
-
-
-def global_threat():
-    """Calculate enemy threat factor for all cells."""
-    threat = _index_count(_simple_ship_threat)
-    return 3.0 / (threat + 3.0)
+        in_bonus_range[index] = counted_number
+    return in_bonus_range
 
 
 def _nearby_enemy_ships(ship):
@@ -452,7 +524,7 @@ def _mining_probability(halite, ship):
     if not can_move(ship):
         return 1.0
     ship_index = to_index(ship)
-    simple_cost = halite / (simple_distances(ship_index) + 1.0)
+    simple_cost = halite / (all_simple_distances(ship_index) + 1.0)
     mining_cost = simple_cost[ship_index]
     moving_cost = np.delete(simple_cost, ship_index).max()
     cargo_factor = min(1.0, 10.0 * (1.0 - packing_fraction(ship)))
@@ -477,35 +549,39 @@ class MapData:
         self.dropoffs = [game.me.shipyard] + game.me.get_dropoffs()
         self.enemy_threat = enemy_threat()
         self.in_bonus_range = enemies_in_bonus_range()
-        self.global_threat = global_threat()
-        self.calculator = DistanceCalculator(self.halite, self.dropoffs, self.enemy_threat)
+        self.calculator = DistanceCalculator(self.dropoffs, self.halite, self.enemy_threat)
         self.halite_density = self._halite_density()
-        self.ship_density = self._ship_density()
+        self.density_difference = self._ship_density_difference()
+        self.global_factor = self._global_factor()
 
     def _halite(self):
         """Get an array of available halite on the map."""
         m = game_map.height * game_map.width
-        return np.array([to_cell(i).halite_amount for i in range(m)])
+        halite = np.array([to_cell(i).halite_amount for i in range(m)])
+        for i in range(m):
+            cell = to_cell(i)
+            if cell.is_occupied and cell.ship.owner != game.me.id:
+                # Halite is already gathered by enemy.
+                halite[i] = max(halite[i] - 500, 0)
+        return halite
 
     def _halite_density(self):
         """Get density of halite map with radius"""
         halite = self.halite.reshape(game_map.height, game_map.width)
         return calc_density(radius=15, array=halite).ravel()
 
-    def _ship_density(self):
+    def _ship_density(self, ships, radius, count_self=True):
+        """Get density of ships."""
+        density = np.zeros(game_map.height * game_map.width)
+        ship_indices = [to_index(ship) for ship in ships]
+        density[ship_indices] = 1
+        return calc_density(radius, density.reshape(game_map.height, game_map.width), count_self).ravel()
+
+    def _ship_density_difference(self):
         """Get density of friendly - hostile ships"""
-        radius = 5
-        friendly = np.zeros(self.halite.shape)
-        friendly_indices = [to_index(ship) for ship in game.me.get_ships()]
-        friendly[friendly_indices] = 1
-        friendly_density = calc_density(radius, friendly.reshape(game_map.height, game_map.width), count_self=False)
-        hostile = np.zeros(self.halite.shape)
-        hostile_indices = [to_index(ship)
-                           for player in game.players.values() if player is not game.me
-                           for ship in player.get_ships()]
-        hostile[hostile_indices] = 1
-        hostile_density = calc_density(radius=radius, array=hostile.reshape(game_map.height, game_map.width))
-        return (friendly_density - hostile_density).ravel()
+        friendly_density = self._ship_density(game.me.get_ships(), 5, count_self=False)
+        self.hostile_density = self._ship_density(enemy_ships(), 5)
+        return friendly_density - self.hostile_density
 
     def distance_dropoffs(self, ships):
         """Get a list of distances to the nearest dropoff for all ships."""
@@ -531,6 +607,20 @@ class MapData:
         """Get the perturbed distance from a ship an index (a cell)."""
         return self.calculator.get_distance(ship, index)
 
+    def _global_factor(self):
+        """Calculate a factor to win the race for halite."""
+        hostile_density3 = ship_density(enemy_ships(), 3)
+        friendly_density3 = ship_density(game.me.get_ships(), 3)
+        self.density_difference3 = friendly_density3 - hostile_density3
+
+        enemy_territory = np.logical_and(
+            friendly_density3 == 0.0,
+            hostile_density3 > 0.0
+        )
+        enemy_territory_factor = 1.0 - 0.75 * enemy_territory
+
+        return enemy_territory_factor
+
     def loot(self, ship):
         """Calculate enemy halite near a ship that can be stolen.
 
@@ -548,11 +638,11 @@ class MapData:
 
         for enemy_ship in _nearby_enemy_ships(ship):
             enemy_index = to_index(enemy_ship)
-            if self.ship_density[enemy_index] > 0:
+            if self.density_difference3[enemy_index] > 0:
                 dhalite = enemy_ship.halite_amount - ship.halite_amount
                 if dhalite > 100:
                     loot[enemy_index] += dhalite
                     for index in neighbours(enemy_index):
                         if dropoff_dists[index] > dropoff_dists[enemy_index]:
                             loot[index] += dhalite
-        return loot
+        return 0.25 * loot # Factor 0.25 to keep the same relative cost as before.
