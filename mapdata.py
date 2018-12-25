@@ -70,6 +70,19 @@ def neighbourhood(index, radius):
     )
 
 
+def circle(index, radius):
+    """Get indices at a circle around an index."""
+    h = game_map.height
+    w = game_map.width
+    x = index % w
+    y = index // w
+    return [
+        ((x + dx) % w) + (w * ((y + dy) % h))
+        for dx in range(-radius, radius + 1)
+        for dy in {-radius + abs(dx), radius - abs(dx)}
+    ]
+
+
 def calc_density(radius, array, count_self=True):
     """Calculate a density map based on a radius (sum of density and array remain the same)."""
     density = np.zeros(array.shape)
@@ -153,7 +166,14 @@ class LinearSum:
 
     @classmethod
     def _efficient_assignment(cls, cost_matrix, ships):
-        """Cluster ships and solve multiple linear sum assigments."""
+        """Cluster ships and solve multiple linear sum assigments.
+
+        Note:
+            The Hungarian algorithm has complexity n^3, so it is much more
+            efficient to solve several small problems than it is to solve one
+            large problem. The ships are split into groups in such a way that
+            the assignment in Schedule has exactly the same result.
+        """
         clusters = cls._get_clusters(ships)
         row_inds = []
         col_inds = []
@@ -342,16 +362,8 @@ class DistanceCalculator:
 
     def _boundary_indices(self, ship_index):
         """Boundary indices of the region that received costs by dijkstra."""
-        h = game_map.height
-        w = game_map.width
-        x = ship_index % w
-        y = ship_index // w
         boundary_radius = self._dijkstra_radius + 1
-        return np.array([
-            ((x + dx) % w) + (w * ((y + dy) % h))
-            for dx in range(-boundary_radius, boundary_radius + 1)
-            for dy in {-boundary_radius + abs(dx), boundary_radius - abs(dx)}
-        ])
+        return np.array(circle(ship_index, boundary_radius))
 
     def _expand_indices(self, ship_index, dist_matrix):
         """Indices that receive costs by expansion in postprocessing."""
@@ -541,7 +553,7 @@ def _mining_probability(halite, ship):
 class MapData:
     """Analyzes the gamemap and provides useful data/statistics."""
 
-    def __init__(self, _game):
+    def __init__(self, _game, ghost_dropoff):
         global game, game_map
         game = _game
         game_map = game.game_map
@@ -549,7 +561,8 @@ class MapData:
         self.dropoffs = [game.me.shipyard] + game.me.get_dropoffs()
         self.enemy_threat = enemy_threat()
         self.in_bonus_range = enemies_in_bonus_range()
-        self.calculator = DistanceCalculator(self.dropoffs, self.halite, self.enemy_threat)
+        self.all_dropoffs = self.dropoffs + [ghost_dropoff] if ghost_dropoff else self.dropoffs
+        self.calculator = DistanceCalculator(self.all_dropoffs, self.halite, self.enemy_threat)
         self.halite_density = self._halite_density()
         self.density_difference = self._ship_density_difference()
         self.global_factor = self._global_factor()
@@ -583,14 +596,9 @@ class MapData:
         self.hostile_density = self._ship_density(enemy_ships(), 5)
         return friendly_density - self.hostile_density
 
-    def distance_dropoffs(self, ships):
-        """Get a list of distances to the nearest dropoff for all ships."""
-        dropoff_dists = self.calculator.simple_dropoff_distances
-        return np.array([dropoff_dists[to_index(ship)] for ship in ships])
-
     def get_closest_dropoff(self, ship):
         """Get the dropoff that is closest to the ship."""
-        return self.calculator.get_closest(ship, self.dropoffs)
+        return self.calculator.get_closest(ship, self.all_dropoffs)
 
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""

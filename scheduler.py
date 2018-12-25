@@ -1,7 +1,7 @@
 import logging, math, time
-from hlt import constants
+from hlt import constants, entity
 import numpy as np
-from mapdata import to_cell, to_index, can_move, LinearSum, neighbours
+from mapdata import to_cell, to_index, can_move, LinearSum, neighbours, simple_distance
 from schedule import Schedule
 
 returning_to_dropoff = set()
@@ -22,12 +22,8 @@ class Scheduler:
         self.nships = len(self.ships)
         self.nmap = self.game_map.width * self.game_map.height
 
-    def get_schedule(self):
-        self.to_destination()
-        return self.schedule
-
     def returning(self, ship):
-        """Determine if ship has to return to a dropoff location"""
+        """Determine if ship has to return to a dropoff."""
         if ship.id in returning_to_dropoff:
             return True
         dropoff = self.map_data.get_closest_dropoff(ship)
@@ -194,18 +190,9 @@ class Scheduler:
         """Assign this ship to return to closest dropoff."""
         returning_to_dropoff.add(ship.id)
         destination = self.map_data.get_closest_dropoff(ship)
-        dropoff_index = to_index(destination)
-        # Create olifantenpaadjes:
-        if (
-            200 < self.turn_number < 300 and
-            self.game_map[ship].halite_amount > 40 and
-            constants.MAX_HALITE - ship.halite_amount > 30 and
-            self.map_data.get_distance(ship, dropoff_index) < 7
-        ):
-            destination = ship.position
         self.schedule.assign(ship, destination)
 
-    def to_destination(self):
+    def get_schedule(self):
         """Find the fit for the cost matrix"""
         required_turns = math.ceil(len(self.ships) / (4.0 * len(self.map_data.dropoffs)))
         for ship in self.ships:
@@ -214,12 +201,24 @@ class Scheduler:
             if self.map_data.free_turns(ship) < required_turns + 2:
                 returning_to_dropoff.add(ship.id)
 
+        returning_halite = self.returning_halite()
         remaining_ships = self.ships.copy()
-        if self.dropoff_time(remaining_ships):
-            ship = self.dropoff_ship(remaining_ships)
-            if ship:
-                self.schedule.dropoff(ship)
-                remaining_ships.remove(ship)
+        if self.dropoff_time(self.ships):
+            if self.ghost:
+                ship = self.dropoff_ship(remaining_ships)
+                if ship:
+                    self.remove_ghost_dropoff()
+                    self.map_data.dropoffs.append(ship)
+                    self.schedule.dropoff(ship)
+                    remaining_ships.remove(ship)
+                else:
+                    self.ghost.move()
+            else:
+                if self.me.halite_amount + returning_halite > 4000:
+                    self.spawn_ghost_dropoff(self.map_data)
+        else:
+            self.remove_ghost_dropoff()
+        Scheduler.free_halite = self.calc_free_halite(returning_halite)
 
         for ship in remaining_ships[:]:
             if self.returning(ship):
@@ -236,39 +235,142 @@ class Scheduler:
             self.schedule.assign(ship, destination)
         return self.schedule
 
-    def ship_matrix(self, ships):
-        ship_matrix = np.ones(self.nmap)
-        for ship in ships:
-            ship_matrix[to_index(ship)] = .5
-        return ship_matrix
-
     def dropoff_time(self, ships):
-        """Determine if it is time to create dropoff"""
-        dists = self.map_data.distance_dropoffs(ships)
-        ship_per_dropoff = len(ships) / len(self.map_data.dropoffs)
-        return (
-                dists.any() and
-                dists.mean() > 10 and
-                (self.turn_number < 0.8 * constants.MAX_TURNS) and
-                ship_per_dropoff > 10
-        )
+        """Determine if it is time to create a dropoff."""
+        ships_per_dropoff = len(ships) / len(self.map_data.dropoffs)
+        crowded = ships_per_dropoff > 15
+        end_game = self.turn_number > 0.8 * constants.MAX_TURNS
+        return crowded and not end_game
 
     def dropoff_ship(self, ships):
-        """Determine ship that creates dropoff"""
-        halites = np.array([ship.halite_amount + self.game_map[ship].halite_amount for ship in ships])
-        costs = constants.DROPOFF_COST - halites
-        halite_densities = np.array([self.map_data.halite_density[to_index(ship)] for ship in ships])
-        ship_densities = np.array([self.map_data.density_difference[to_index(ship)] for ship in ships])
-        dists = self.map_data.distance_dropoffs(ships)
-        suitability = (
-                halite_densities *
-                (dists > 10) *
-                (costs < self.me.halite_amount) *
-                (halite_densities > 100) *
-                (ship_densities > 0)
-        )
-        best_ship_id = suitability.argsort()[-1]
-        if suitability[best_ship_id]:
-            self.map_data.dropoffs.append(ships[best_ship_id])
-            return ships[best_ship_id]
-        return False
+        """Determine ship that creates the ghost dropoff."""
+        for ship in ships:
+            if ship.position == self.ghost.position:
+                ship_halite = ship.halite_amount
+                cell_halite = self.game_map[ship].halite_amount
+                reduction = min(4000, cell_halite + ship_halite)
+                if self.me.halite_amount < 4000 - reduction:
+                    return None
+                return ship
+        return None
+
+    ghost = None
+
+    @classmethod
+    def spawn_ghost_dropoff(cls, map_data):
+        """Instantiate a ghost dropoff, save it on the class."""
+        cls.ghost = GhostDropoff(map_data)
+        if cls.ghost.position is None:
+            cls.ghost = None
+
+    @classmethod
+    def remove_ghost_dropoff(cls):
+        """Remove the ghost dropoff from the class."""
+        cls.ghost = None
+
+    def returning_ships(self):
+        """List of ships that are returning to a dropoff."""
+        ships = []
+        for ship_id in returning_to_dropoff.copy():
+            try:
+                ships.append(self.me.get_ship(ship_id))
+            except KeyError:
+                returning_to_dropoff.discard(ship_id)
+        return ships
+
+    def returning_halite(self):
+        """Halite that is on its way to be returned."""
+        calculator = self.map_data.calculator
+        max_distance = self.ghost.distance(self.ships) if self.ghost else 10.0
+        halite = 0.0
+        for ship in self.returning_ships():
+            destination = self.map_data.get_closest_dropoff(ship)
+            distance = calculator.get_entity_distance(ship, destination)
+            if destination != self.ghost and distance < max_distance:
+                halite += 0.8 * ship.halite_amount
+        return halite
+
+    def calc_free_halite(self, returning_halite):
+        """Calculate the halite that is free to be used for spawning ships."""
+        halite = self.me.halite_amount
+        if self.schedule.dropoff_assignments:
+            ship = self.schedule.dropoff_assignments[0]
+            ship_halite = ship.halite_amount
+            cell_halite = self.game_map[ship].halite_amount
+            reduction = min(4000, cell_halite + ship_halite)
+            return halite - (4000 - reduction)
+        elif self.ghost:
+            ship_halite = 500
+            cell_halite = self.game_map[self.ghost].halite_amount
+            reduction = min(4000, cell_halite + ship_halite)
+            return min(halite, halite + returning_halite - (4000 - reduction))
+        else:
+            return halite
+
+
+class GhostDropoff(entity.Entity):
+    """Future dropoff already taken into account by distance functions."""
+
+    search_radius1 = 17
+    search_radius2 = 20  # To be optimized. Initial values based on watching some games by teccles.
+
+    def __init__(self, map_data):
+        self.map_data = map_data
+        self.calculator = map_data.calculator
+        self.position = self.spawn_position()
+
+    def distance(self, ships):
+        """Distance of the current position to the nearest ship."""
+        index = to_index(self)
+        return min([simple_distance(index, to_index(ship)) for ship in ships])
+
+    def cost(self, index):
+        """Cost representing the quality of the index as a dropoff location.
+
+        TODO:
+            - Add bonus for disputed areas (not clear who is going to take the
+                halite from the area) to gain a strategic advantage.
+                Use: simple_enemy_dropoff_distances
+            - Add negative bonus for regions that are already taken by the
+                enemy.
+            - Add bonus when a dropoff on this location brings us closer to a
+                large amount of far away halite.
+        """
+        cost = constants.DROPOFF_COST - to_cell(index).halite_amount - 750.0
+        if self.map_data.density_difference[index] < 0.0:
+            return 0.0
+        if self.map_data.halite_density[index] < 100.0:
+            return 0.0
+        else:
+            return -1.0 * self.map_data.halite_density[index]
+
+    def search_path(self):
+        """Indices at search_radius from the current dropoffs."""
+        r1 = self.search_radius1
+        r2 = self.search_radius2
+        d = self.calculator.simple_dropoff_distances
+        return np.flatnonzero(np.logical_or(d == r1, d == r2)).tolist()
+
+    def spawn_position(self):
+        """Determine a good position to 'spawn' the ghost dropoff."""
+        search_path = self.search_path()
+        if not search_path:
+            return None
+        spawn_index = min(search_path, key=self.cost)
+        if self.cost(spawn_index) == 0.0:
+            return None
+        return to_cell(spawn_index).position
+
+    def move(self):
+        """Move this ghost dropoff to a more optimal nearby location.
+
+        For example:
+            Walk towards dropoffs if the neighbouring cells have too much
+            halite, forcing returning ships to walk over them and to lose a lot
+            of halite in returning.
+            Walk away from enemies.
+            Walk to a high value cell with low value neighbours (easy to get to
+            and a lot of reduction of the build cost).
+        """
+        # TODO
+        self.position = self.position

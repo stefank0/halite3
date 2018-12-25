@@ -65,6 +65,8 @@ class Schedule:
         """Costs (0.0 - 0.1) for a wasted turn. Also breaks some symmetry."""
         if to_index(ship) == target_index:
             return 0.0
+        elif game_map[ship].has_structure:
+            return 9999.0
         else:
             cargo_space = constants.MAX_HALITE - ship.halite_amount
             mining_potential = math.ceil(0.25 * game_map[ship].halite_amount)
