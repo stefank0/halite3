@@ -615,6 +615,10 @@ class MapData:
         """Get the perturbed distance from a ship an index (a cell)."""
         return self.calculator.get_distance(ship, index)
 
+    def get_entity_distance(self, ship, entity):
+        """"Get the perturbed distance from a ship to an Entity."""
+        return self.calculator.get_entity_distance(ship, entity)
+
     def _global_factor(self):
         """Calculate a factor to win the race for halite."""
         hostile_density3 = ship_density(enemy_ships(), 3)
