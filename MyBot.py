@@ -132,6 +132,8 @@ while True:
     command_queue = generate_commands()
     time_taken = time.time() - start
     #logging.info(time_taken)
+    if time_taken > 0.5:
+        DistanceCalculator.disable_expansion()
     if time_taken > 1.4:
         #log_profiling()
         DistanceCalculator.reduce_radius()

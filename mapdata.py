@@ -240,13 +240,15 @@ class DistanceCalculator:
     _expanded_radius = 30
 
     @classmethod
+    def disable_expansion(cls):
+        """Disable looking further than the Dijkstra radius."""
+        cls._expanded_radius = cls._dijkstra_radius
+
+    @classmethod
     def reduce_radius(cls):
         """Reduce shortest_path radius to reduce computation time."""
-        if cls._expanded_radius > cls._dijkstra_radius:
-            cls._expanded_radius = cls._dijkstra_radius
-        elif cls._dijkstra_radius > 10:
-            cls._dijkstra_radius -= 1
-            cls._expanded_radius -= 1
+        cls._dijkstra_radius -= 1
+        cls._expanded_radius -= 1
         logging.info('Reduced radius: {},{}'.format(cls._expanded_radius, cls._dijkstra_radius))
 
     @classmethod
