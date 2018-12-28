@@ -22,7 +22,7 @@ if CALIBRATION:
 
 def create_schedule():
     """Creates a schedule based on the current game map."""
-    map_data = MapData(game)
+    map_data = MapData(game, Scheduler.ghost)
     scheduler = Scheduler(game, map_data)
     return scheduler.get_schedule()
 
@@ -59,10 +59,7 @@ def want_to_spawn():
 
 def can_spawn(command_queue):
     """Return True if it is possible to spawn a new ship."""
-    construct_dropoff = any(['c' in command for command in command_queue])
-    halite = me.halite_amount
-    if construct_dropoff:
-        halite -= constants.DROPOFF_COST
+    halite = Scheduler.free_halite
     enough_halite = halite >= constants.SHIP_COST
     shipyard_free = not game_map[me.shipyard].is_occupied
     return enough_halite and shipyard_free
@@ -135,6 +132,8 @@ while True:
     command_queue = generate_commands()
     time_taken = time.time() - start
     #logging.info(time_taken)
+    if time_taken > 0.5:
+        DistanceCalculator.disable_expansion()
     if time_taken > 1.4:
         #log_profiling()
         DistanceCalculator.reduce_radius()
