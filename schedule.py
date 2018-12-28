@@ -2,7 +2,7 @@ import logging, math, time
 import numpy as np
 
 from hlt import Direction, constants
-from mapdata import to_cell, to_index, can_move, neighbours, LinearSum, target
+from mapdata import to_cell, to_index, can_move, neighbours, LinearSum, target, packing_fraction
 
 
 class Assignment:
@@ -102,7 +102,16 @@ class Schedule:
             cost_array[neighbour_index] = first_cost + remaining_cost
 
     def reduce_feasible(self, cost_matrix):
-        """Reduce the cost of all feasible moves for all ships."""
+        """Reduce the cost of all feasible moves for all ships.
+
+        Note:
+            The priority factor scales all values, and therefore it scales the
+            differences between values. The larger the priority factor, the
+            larger the differences between values and the more likely the
+            algorithm chooses the most optimal value. The result is that when
+            two ships want to move to the same location and their cost arrays
+            are the same, the ship with higher priority factor gets priority.
+        """
         for k, assignment in enumerate(self.assignments):
             ship = assignment.ship
             destination = assignment.destination
@@ -110,6 +119,8 @@ class Schedule:
             self.reduce_stay_still(cost_array, ship, destination)
             if can_move(ship):
                 self.reduce_move(cost_array, ship, destination)
+            priority_factor = 1.0 + packing_fraction(ship)
+            cost_matrix[k] = priority_factor * cost_array
 
     def create_cost_matrix(self):
         """"Create a cost matrix for linear_sum_assignment()."""
