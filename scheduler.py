@@ -367,6 +367,8 @@ class GhostDropoff(entity.Entity):
             return 0.0
         elif self.map_data.halite_density[index] < 100.0:
             return 0.0
+        elif to_cell(index).has_structure:
+            return 0.0
         else:
             return -1.0 * self.map_data.halite_density[index]
 
