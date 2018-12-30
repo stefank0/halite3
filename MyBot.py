@@ -49,8 +49,18 @@ def _ship_number_falling_behind():
     return number_of_ships(me) <= median(ship_numbers)
 
 
+def _new_ships_are_all_mine():
+    """Return True if the last spawned ships are ours."""
+    ship_ids = [ship.id for player in game.players.values() for ship in player.get_ships()]
+    if len(ship_ids) > 5 and all([me.has_ship(ship_id) for ship_id in sorted(ship_ids)[-5:]]):
+        return True
+    return False
+
+
 def want_to_spawn():
     """Return True if we would like to spawn a new ship."""
+    if _new_ships_are_all_mine():
+        return False
     is_early_game = game.turn_number <= parameters['earlygame']
     is_late_game = game.turn_number >= (constants.MAX_TURNS - parameters['endgame'])
     is_mid_game = (not is_early_game) and (not is_late_game)
