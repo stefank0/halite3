@@ -306,9 +306,9 @@ class Scheduler:
         """List of ships that are returning to a dropoff."""
         ships = []
         for ship_id in returning_to_dropoff.copy():
-            try:
+            if self.me.has_ship(ship_id):
                 ships.append(self.me.get_ship(ship_id))
-            except KeyError:
+            else:
                 returning_to_dropoff.discard(ship_id)
         return ships
 
