@@ -137,12 +137,12 @@ class LinearSum:
     _time_saving_mode = False
 
     @classmethod
-    def _add_to_cluster(cls, cluster, ship, ships):
+    def _add_to_cluster(cls, cluster, ship, ships, radius=2):
         """Add ship to cluster and search other ships for the cluster."""
         cluster.append(ship)
-        for other_ship in nearby_ships(ship, ships, 2):
+        for other_ship in nearby_ships(ship, ships, radius):
             if other_ship not in cluster:
-                cls._add_to_cluster(cluster, other_ship, ships)
+                cls._add_to_cluster(cluster, other_ship, ships, radius)
 
     @classmethod
     def _already_in_cluster(cls, clusters, ship):
@@ -161,6 +161,9 @@ class LinearSum:
                 continue
             cluster = []
             cls._add_to_cluster(cluster, ship, ships)
+            if len(cluster) > 60:
+                cluster = []
+                cls._add_to_cluster(cluster, ship, ships, radius=1)
             clusters.append(cluster)
         return clusters
 
@@ -186,9 +189,9 @@ class LinearSum:
         return row_inds, col_inds
 
     @classmethod
-    def assignment(cls, cost_matrix, ships):
+    def assignment(cls, cost_matrix, ships, cluster_mode=False):
         """Wraps linear_sum_assignment()."""
-        if cls._time_saving_mode:
+        if cls._time_saving_mode or cluster_mode:
             return cls._efficient_assignment(cost_matrix, ships)
         else:
             start = time.time()

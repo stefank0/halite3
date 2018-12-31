@@ -128,7 +128,7 @@ class Schedule:
         # Assignment of next move.
         cost_matrix = self.create_cost_matrix()
         ships = [assignment.ship for assignment in self.assignments]
-        row_ind, col_ind = LinearSum.assignment(cost_matrix, ships)
+        row_ind, col_ind = LinearSum.assignment(cost_matrix, ships, cluster_mode=True)
         for k, i in zip(row_ind, col_ind):
             assignment = self.assignments[k]
             target = to_cell(i)
