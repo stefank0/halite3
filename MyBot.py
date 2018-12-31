@@ -4,7 +4,7 @@ from statistics import median
 
 from hlt import constants, Game
 from scheduler import Scheduler
-from mapdata import MapData, DistanceCalculator
+from mapdata import MapData, DistanceCalculator, other_players
 
 
 CALIBRATION = False
@@ -31,11 +31,6 @@ def add_move_commands(command_queue):
     """Add movement commands to the command queue."""
     schedule = create_schedule()
     command_queue.extend(schedule.to_commands())
-
-
-def other_players():
-    """Get a list of the other players."""
-    return [player for player in game.players.values() if player is not me]
 
 
 def number_of_ships(player):

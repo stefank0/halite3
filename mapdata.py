@@ -275,7 +275,8 @@ class DistanceCalculator:
         if self._edge_data is None:
             self._initialize_edge_data()
         self.dropoffs = dropoffs
-        self.simple_dropoff_distances = self._simple_dropoff_distances()
+        self.simple_dropoff_distances = self._simple_dropoff_distances(dropoffs)
+        self.enemy_dropoff_distances = self._enemy_dropoff_distances()
 
         self._traffic_costs = self._traffic_edge_costs()
         self._movement_costs = self._movement_edge_costs(halite)
@@ -283,13 +284,18 @@ class DistanceCalculator:
         ## self._return_costs = self._return_edge_costs()
         self._dist_tuples = self._shortest_path()
 
-    def _simple_dropoff_distances(self):
+    def _simple_dropoff_distances(self, dropoffs):
         """Simple step distances from all cells to the nearest dropoff."""
         all_dropoff_distances = np.array([
             all_simple_distances(to_index(dropoff))
-            for dropoff in self.dropoffs
+            for dropoff in dropoffs
         ])
         return np.min(all_dropoff_distances, axis=0)
+
+    def _enemy_dropoff_distances(self):
+        """Step distances from all cells to the nearest enemy dropoff."""
+        dropoffs = list(enemy_dropoffs()) + list(enemy_shipyards())
+        return self._simple_dropoff_distances(dropoffs)
 
     def threat_func(self, ship, threat_costs):
         """Necessary to keep Schedule costs in sync."""
@@ -462,13 +468,24 @@ class DistanceCalculator:
 ##############################################################################
 
 
+def other_players():
+    """Generator for all other players."""
+    return (player for player in game.players.values() if player is not game.me)
+
+
 def enemy_ships():
     """Generator for all enemy ships."""
-    return (
-        enemy_ship
-        for player in game.players.values() if player is not game.me
-        for enemy_ship in player.get_ships()
-    )
+    return (ship for player in other_players() for ship in player.get_ships())
+
+
+def enemy_dropoffs():
+    """Generator for all enemy dropoffs."""
+    return (dropoff for player in other_players() for dropoff in player.get_dropoffs())
+
+
+def enemy_shipyards():
+    """Generator for all enemy shipyards."""
+    return (player.shipyard for player in other_players())
 
 
 def get_troll_indices():
