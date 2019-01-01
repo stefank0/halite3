@@ -17,9 +17,7 @@ class Scheduler:
     @classmethod
     def spawn_ghost_dropoff(cls, map_data):
         """Instantiate a ghost dropoff, save it on the class."""
-        ghost = GhostDropoff(map_data)
-        if ghost.position is not None:
-            cls.ghost = ghost
+        cls.ghost = GhostDropoff(map_data)
 
     @classmethod
     def remove_ghost_dropoff(cls):
@@ -278,6 +276,8 @@ class Scheduler:
             else:
                 if self.expected_halite > constants.DROPOFF_COST:
                     self.spawn_ghost_dropoff(self.map_data)
+            if self.ghost and self.ghost.position is None:
+                self.remove_ghost_dropoff()
         else:
             self.remove_ghost_dropoff()
         Scheduler.free_halite = self._free_halite()
@@ -297,7 +297,8 @@ class Scheduler:
         """Determine ship that creates the ghost dropoff."""
         for ship in self.ships:
             if ship.position == self.ghost.position:
-                if self.me.halite_amount < self.dropoff_cost(ship):
+                if (self.me.halite_amount < self.dropoff_cost(ship) or
+                    to_cell(to_index(ship)).has_structure):
                     return None
                 return ship
         return None
@@ -343,56 +344,58 @@ class Scheduler:
 class GhostDropoff(entity.Entity):
     """Future dropoff, already taken into account by distance calculations."""
 
-    search_radius1 = 17
-    search_radius2 = 20
+    search_radius1 = 10
+    search_radius2 = 30
 
     def __init__(self, map_data):
         self.map_data = map_data
         self.calculator = map_data.calculator
         self.position = self.spawn_position()
 
+    def _disputed_factor(self, index):
+        """Gain a strategic advantage by controlling disputed areas."""
+        d1 = self.calculator.enemy_dropoff_distances[index]
+        d2 = self.calculator.simple_dropoff_distances[index]
+        return min(1.25, max(1.0, 1.5 - 0.05 * abs(d1 - d2)))
+
     def cost(self, index):
         """Cost representing the quality of the index as a dropoff location.
 
         TODO:
-            - Add bonus for disputed areas (not clear who is going to take the
-                halite from the area) to gain a strategic advantage.
-                Use: simple_enemy_dropoff_distances
-            - Add negative bonus for regions that are already taken by the
-                enemy.
             - Add bonus when a dropoff on this location brings us closer to a
                 large amount of far away halite.
         """
-        if self.map_data.density_difference[index] < 0.0:
+        if (self.map_data.density_difference[index] < 0.0 or
+            self.map_data.halite_density[index] < 100.0 or
+            to_cell(index).has_structure):
             return 0.0
-        elif self.map_data.halite_density[index] < 100.0:
-            return 0.0
-        elif to_cell(index).has_structure:
-            return 0.0
-        else:
-            return -1.0 * self.map_data.halite_density[index]
+        disputed_factor = self._disputed_factor(index)
+        halite_density = self.map_data.halite_density[index]
+        return -1.0 * halite_density * disputed_factor
 
-    def search_path(self):
-        """Indices at the set distances from the current dropoffs."""
+    def spawn_positions(self):
+        """Indices at which to search for spawn position."""
         r1 = self.search_radius1
         r2 = self.search_radius2
         d = self.calculator.simple_dropoff_distances
-        return np.flatnonzero(np.logical_or(d == r1, d == r2)).tolist()
+        return np.flatnonzero(np.logical_and(d >= r1, d <= r2)).tolist()
 
-    def spawn_position(self):
-        """Determine a good position to 'spawn' the ghost dropoff.
+    def best_position(self, positions):
+        """Determine the best position.
 
         Note:
-            Returns None if a good location was not found. If that is the case,
+            Returns None if a good position was not found. If that is the case,
             the GhostDropoff should not be considered any further.
         """
-        search_path = self.search_path()
-        if not search_path:
-            return None
-        spawn_index = min(search_path, key=self.cost)
+        spawn_index = min(positions, key=self.cost)
         if self.cost(spawn_index) == 0.0:
             return None
         return to_cell(spawn_index).position
+
+    def spawn_position(self):
+        """Determine a good position to 'spawn' the ghost dropoff."""
+        positions = self.spawn_positions()
+        return self.best_position(positions) if positions else None
 
     def distance(self, ships):
         """Simple distance of the current position to the nearest ship."""
@@ -400,15 +403,7 @@ class GhostDropoff(entity.Entity):
         return min([simple_distance(index, to_index(ship)) for ship in ships])
 
     def move(self):
-        """Move this ghost dropoff to a more optimal nearby location.
-
-        For example:
-            Walk towards dropoffs if the neighbouring cells have too much
-            halite, forcing returning ships to walk over them and to lose a lot
-            of halite in returning.
-            Walk away from enemies.
-            Walk to a high value cell with low value neighbours (easy to get to
-            and a lot of reduction of the build cost).
-        """
-        # TODO
-        self.position = self.position
+        """Move this ghost dropoff to a more optimal nearby location."""
+        index = to_index(self)
+        positions = (index, ) + neighbours(index)
+        self.position = self.best_position(positions)
