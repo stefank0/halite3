@@ -344,8 +344,8 @@ class Scheduler:
 class GhostDropoff(entity.Entity):
     """Future dropoff, already taken into account by distance calculations."""
 
-    search_radius1 = 12
-    search_radius2 = 30
+    search_radius1 = 15
+    search_radius2 = 25
 
     def __init__(self, map_data):
         self.map_data = map_data
@@ -356,18 +356,18 @@ class GhostDropoff(entity.Entity):
         """Gain a strategic advantage by controlling disputed areas."""
         d1 = self.calculator.enemy_dropoff_distances[index]
         d2 = self.calculator.simple_dropoff_distances[index]
-        return min(1.25, max(1.0, 1.5 - 0.05 * abs(d1 - d2)))
+        return min(1.1, max(1.0, 1.2 - 0.02 * abs(d1 - d2 - 2)))
 
     def _expansion_factor(self, index):
         """Reward gradual expansion."""
         d = self.calculator.simple_dropoff_distances[index]
-        return 1.25 if 15 <= d <= 20 else 1.0
+        return max(1.0, 1.1 - 0.02 * abs(17.5 - d))
 
     def _turns(self, index):
         """Move turns uses Dijkstra distance of the second closest ship."""
         mine_turns = 10.0
         move_turns = self.calculator.ghost_distances[index]
-        return mine_turns + move_turns
+        return mine_turns + min(30.0, max(15.0, move_turns))
 
     def cost(self, index):
         """Cost representing the quality of the index as a dropoff location.
@@ -378,7 +378,7 @@ class GhostDropoff(entity.Entity):
         """
         if (self.calculator.simple_dropoff_distances[index] < self.search_radius1 or
             self.map_data.density_difference[index] < 0.0 or
-            self.map_data.halite_density[index] < 150.0 or
+            self.map_data.halite_density[index] < 100.0 or
             to_cell(index).has_structure):
             return 0.0
         modifier = self._disputed_factor(index) * self._expansion_factor(index)
