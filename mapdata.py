@@ -137,12 +137,12 @@ class LinearSum:
     _time_saving_mode = False
 
     @classmethod
-    def _add_to_cluster(cls, cluster, ship, ships):
+    def _add_to_cluster(cls, cluster, ship, ships, radius=2):
         """Add ship to cluster and search other ships for the cluster."""
         cluster.append(ship)
-        for other_ship in nearby_ships(ship, ships, 2):
+        for other_ship in nearby_ships(ship, ships, radius):
             if other_ship not in cluster:
-                cls._add_to_cluster(cluster, other_ship, ships)
+                cls._add_to_cluster(cluster, other_ship, ships, radius)
 
     @classmethod
     def _already_in_cluster(cls, clusters, ship):
@@ -161,6 +161,9 @@ class LinearSum:
                 continue
             cluster = []
             cls._add_to_cluster(cluster, ship, ships)
+            if len(cluster) > 60:
+                cluster = []
+                cls._add_to_cluster(cluster, ship, ships, radius=1)
             clusters.append(cluster)
         return clusters
 
@@ -186,9 +189,9 @@ class LinearSum:
         return row_inds, col_inds
 
     @classmethod
-    def assignment(cls, cost_matrix, ships):
+    def assignment(cls, cost_matrix, ships, cluster_mode=False):
         """Wraps linear_sum_assignment()."""
-        if cls._time_saving_mode:
+        if cls._time_saving_mode or cluster_mode:
             return cls._efficient_assignment(cost_matrix, ships)
         else:
             start = time.time()
@@ -272,7 +275,8 @@ class DistanceCalculator:
         if self._edge_data is None:
             self._initialize_edge_data()
         self.dropoffs = dropoffs
-        self.simple_dropoff_distances = self._simple_dropoff_distances()
+        self.simple_dropoff_distances = self._simple_dropoff_distances(dropoffs)
+        self.enemy_dropoff_distances = self._enemy_dropoff_distances()
 
         self._traffic_costs = self._traffic_edge_costs()
         self._movement_costs = self._movement_edge_costs(halite)
@@ -280,13 +284,28 @@ class DistanceCalculator:
         ## self._return_costs = self._return_edge_costs()
         self._dist_tuples = self._shortest_path()
 
-    def _simple_dropoff_distances(self):
+        self.ghost_distances = self._ghost_distances()
+
+    def _simple_dropoff_distances(self, dropoffs):
         """Simple step distances from all cells to the nearest dropoff."""
         all_dropoff_distances = np.array([
             all_simple_distances(to_index(dropoff))
-            for dropoff in self.dropoffs
+            for dropoff in dropoffs
         ])
         return np.min(all_dropoff_distances, axis=0)
+
+    def _enemy_dropoff_distances(self):
+        """Step distances from all cells to the nearest enemy dropoff."""
+        dropoffs = list(enemy_dropoffs()) + list(enemy_shipyards())
+        return self._simple_dropoff_distances(dropoffs)
+
+    def _ghost_distances(self):
+        """Calculate distances used in GhostDropoff, uses the second ship."""
+        distances = [self.get_distances(ship) for ship in game.me.get_ships()]
+        if len(distances) > 1:
+            return np.partition(distances, 1, 0)[1]
+        else:
+            return np.zeros(game_map.height * game_map.width)
 
     def threat_func(self, ship, threat_costs):
         """Necessary to keep Schedule costs in sync."""
@@ -459,13 +478,24 @@ class DistanceCalculator:
 ##############################################################################
 
 
+def other_players():
+    """Generator for all other players."""
+    return (player for player in game.players.values() if player is not game.me)
+
+
 def enemy_ships():
     """Generator for all enemy ships."""
-    return (
-        enemy_ship
-        for player in game.players.values() if player is not game.me
-        for enemy_ship in player.get_ships()
-    )
+    return (ship for player in other_players() for ship in player.get_ships())
+
+
+def enemy_dropoffs():
+    """Generator for all enemy dropoffs."""
+    return (dropoff for player in other_players() for dropoff in player.get_dropoffs())
+
+
+def enemy_shipyards():
+    """Generator for all enemy shipyards."""
+    return (player.shipyard for player in other_players())
 
 
 def get_troll_indices():
@@ -580,8 +610,7 @@ class MapData:
 
     def _halite_density(self):
         """Get density of halite map with radius"""
-        halite = self.halite.reshape(game_map.height, game_map.width)
-        return calc_density(radius=15, array=halite).ravel()
+        return density(self.halite, 10)
 
     def _ship_density(self, ships, radius, count_self=True):
         """Get density of ships."""
