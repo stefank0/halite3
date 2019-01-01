@@ -361,17 +361,22 @@ class GhostDropoff(entity.Entity):
     def cost(self, index):
         """Cost representing the quality of the index as a dropoff location.
 
+        Note:
+            Comparable to cost matrix of Scheduler, but with averages. This
+            ensures that destinations of ships and dropoff placement match.
         TODO:
-            - Add bonus when a dropoff on this location brings us closer to a
-                large amount of far away halite.
+            Replace simple_dropoff_distance by closest ships dijkstra distances, for example the average distance of the closest 2nd, 3th and 4th ship.
         """
-        if (self.map_data.density_difference[index] < 0.0 or
-            self.map_data.halite_density[index] < 100.0 or
+        distance = self.calculator.simple_dropoff_distances[index]
+        if (distance < self.search_radius1 or
+            self.map_data.density_difference[index] < 0.0 or
+            self.map_data.halite_density[index] < 150.0 or
             to_cell(index).has_structure):
             return 0.0
         disputed_factor = self._disputed_factor(index)
         halite_density = self.map_data.halite_density[index]
-        return -1.0 * halite_density * disputed_factor
+        turns = 5.0 + min(15, distance)
+        return -1.0 * disputed_factor * halite_density / turns
 
     def spawn_positions(self):
         """Indices at which to search for spawn position."""

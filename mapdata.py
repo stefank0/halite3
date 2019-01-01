@@ -600,8 +600,7 @@ class MapData:
 
     def _halite_density(self):
         """Get density of halite map with radius"""
-        halite = self.halite.reshape(game_map.height, game_map.width)
-        return calc_density(radius=15, array=halite).ravel()
+        return density(self.halite, 10)
 
     def _ship_density(self, ships, radius, count_self=True):
         """Get density of ships."""
