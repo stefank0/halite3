@@ -344,7 +344,7 @@ class Scheduler:
 class GhostDropoff(entity.Entity):
     """Future dropoff, already taken into account by distance calculations."""
 
-    search_radius1 = 10
+    search_radius1 = 12
     search_radius2 = 30
 
     def __init__(self, map_data):
@@ -358,25 +358,32 @@ class GhostDropoff(entity.Entity):
         d2 = self.calculator.simple_dropoff_distances[index]
         return min(1.25, max(1.0, 1.5 - 0.05 * abs(d1 - d2)))
 
+    def _expansion_factor(self, index):
+        """Reward gradual expansion."""
+        d = self.calculator.simple_dropoff_distances[index]
+        return 1.25 if 15 <= d <= 20 else 1.0
+
+    def _turns(self, index):
+        """Move turns uses Dijkstra distance of the second closest ship."""
+        mine_turns = 10.0
+        move_turns = self.calculator.ghost_distances[index]
+        return mine_turns + move_turns
+
     def cost(self, index):
         """Cost representing the quality of the index as a dropoff location.
 
         Note:
             Comparable to cost matrix of Scheduler, but with averages. This
             ensures that destinations of ships and dropoff placement match.
-        TODO:
-            Replace simple_dropoff_distance by closest ships dijkstra distances, for example the average distance of the closest 2nd, 3th and 4th ship.
         """
-        distance = self.calculator.simple_dropoff_distances[index]
-        if (distance < self.search_radius1 or
+        if (self.calculator.simple_dropoff_distances[index] < self.search_radius1 or
             self.map_data.density_difference[index] < 0.0 or
             self.map_data.halite_density[index] < 150.0 or
             to_cell(index).has_structure):
             return 0.0
-        disputed_factor = self._disputed_factor(index)
+        modifier = self._disputed_factor(index) * self._expansion_factor(index)
         halite_density = self.map_data.halite_density[index]
-        turns = 5.0 + min(15, distance)
-        return -1.0 * disputed_factor * halite_density / turns
+        return -1.0 * modifier * halite_density / self._turns(index)
 
     def spawn_positions(self):
         """Indices at which to search for spawn position."""

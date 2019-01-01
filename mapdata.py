@@ -284,6 +284,8 @@ class DistanceCalculator:
         ## self._return_costs = self._return_edge_costs()
         self._dist_tuples = self._shortest_path()
 
+        self.ghost_distances = self._ghost_distances()
+
     def _simple_dropoff_distances(self, dropoffs):
         """Simple step distances from all cells to the nearest dropoff."""
         all_dropoff_distances = np.array([
@@ -296,6 +298,14 @@ class DistanceCalculator:
         """Step distances from all cells to the nearest enemy dropoff."""
         dropoffs = list(enemy_dropoffs()) + list(enemy_shipyards())
         return self._simple_dropoff_distances(dropoffs)
+
+    def _ghost_distances(self):
+        """Calculate distances used in GhostDropoff, uses the second ship."""
+        distances = [self.get_distances(ship) for ship in game.me.get_ships()]
+        if len(distances) > 1:
+            return np.partition(distances, 1, 0)[1]
+        else:
+            return np.zeros(game_map.height * game_map.width)
 
     def threat_func(self, ship, threat_costs):
         """Necessary to keep Schedule costs in sync."""
