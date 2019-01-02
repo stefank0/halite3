@@ -1,12 +1,11 @@
 import logging, math, time
 from hlt import constants, entity
 import numpy as np
-from mapdata import to_cell, to_index, can_move, LinearSum, neighbours, simple_distance
+from mapdata import to_cell, to_index, can_move, LinearSum, neighbours, simple_distance, enemy_ships
 from schedule import Schedule
 
 
 returning_to_dropoff = set()
-nothing_to_lose = set()
 
 
 class Scheduler:
@@ -152,8 +151,9 @@ class Scheduler:
 
     def valuable(self, ship, best_average_halite):
         """True if ship is expected to add a reasonable amount of halite."""
-        expected_yield = best_average_halite.max() * self.turns_left
-        return ship.halite_amount + expected_yield > 50
+        expected_yield = best_average_halite * self.turns_left
+        return (ship.halite_amount > 100 or
+                ship.halite_amount + expected_yield > 200)
 
     def return_distances(self, ship):
         """Extra turns necessary to return to a dropoff."""
@@ -204,19 +204,39 @@ class Scheduler:
             custom_mt_halite = self.customize(mt_halite, ship)
             average_mt_halite = self.average(custom_mt_halite, ship)
             best_average_halite = np.maximum.reduce(average_mt_halite)
-            if self.valuable(ship, best_average_halite):
-                cost_matrix[i][:] = -1.0 * global_factor * best_average_halite
-            else:
-                nothing_to_lose.add(ship.id)
+            cost_matrix[i][:] = -1.0 * global_factor * best_average_halite
         return cost_matrix
+
+    def _kamikaze_cost(self, dropoff_index, ship_index, enemy_ship):
+        """Cost value used to determine which enemy ship should be attacked."""
+        i = to_index(enemy_ship)
+        return simple_distance(dropoff_index, i) + simple_distance(ship_index, i)
+
+    def assign_kamikaze(self, ship):
+        """Attack with a ship that is no longer valuable, guard dropoffs."""
+        dropoff = self.map_data.get_closest_dropoff(ship)
+        dropoff_index = to_index(dropoff)
+        ship_index = to_index(ship)
+        possible_targets = list(enemy_ships())
+        if possible_targets:
+            target = min(possible_targets, key=lambda enemy_ship:
+                self._kamikaze_cost(dropoff_index, ship_index, enemy_ship))
+            self.schedule.assign(ship, target.position)
+        else:
+            self.schedule.assign(ship, ship.position)
 
     def assignment(self, ships):
         """Assign destinations to ships using an assignment algorithm."""
         cost_matrix = self.create_cost_matrix(ships)
         row_ind, col_ind = LinearSum.assignment(cost_matrix, ships)
         for i, j in zip(row_ind, col_ind):
-            destination = to_cell(j).position
-            self.schedule.assign(ships[i], destination)
+            ship = ships[i]
+            best_average_halite = -1.0 * cost_matrix[i, j]
+            if not self.valuable(ship, best_average_halite):
+                self.assign_kamikaze(ship)
+            else:
+                destination = to_cell(j).position
+                self.schedule.assign(ship, destination)
 
     def update_returning_to_dropoff(self):
         """Update the set of ships that are returning to a dropoff."""
