@@ -161,9 +161,9 @@ class LinearSum:
                 continue
             cluster = []
             cls._add_to_cluster(cluster, ship, ships)
-            if len(cluster) > 60:
-                cluster = []
-                cls._add_to_cluster(cluster, ship, ships, radius=1)
+            #if len(cluster) > 60:
+            #    cluster = []
+            #    cls._add_to_cluster(cluster, ship, ships, radius=1)
             clusters.append(cluster)
         return clusters
 

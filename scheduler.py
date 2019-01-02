@@ -1,12 +1,11 @@
 import logging, math, time
 from hlt import constants, entity
 import numpy as np
-from mapdata import to_cell, to_index, can_move, LinearSum, neighbours, simple_distance
+from mapdata import to_cell, to_index, can_move, LinearSum, neighbours, simple_distance, enemy_ships
 from schedule import Schedule
 
 
 returning_to_dropoff = set()
-nothing_to_lose = set()
 
 
 class Scheduler:
@@ -152,8 +151,9 @@ class Scheduler:
 
     def valuable(self, ship, best_average_halite):
         """True if ship is expected to add a reasonable amount of halite."""
-        expected_yield = best_average_halite.max() * self.turns_left
-        return ship.halite_amount + expected_yield > 50
+        expected_yield = best_average_halite * self.turns_left
+        return (ship.halite_amount > 100 or
+                ship.halite_amount + expected_yield > 200)
 
     def return_distances(self, ship):
         """Extra turns necessary to return to a dropoff."""
@@ -165,7 +165,7 @@ class Scheduler:
         """Turns spent on moving."""
         distances = self.map_data.get_distances(ship)
         return_distances = self.return_distances(ship)
-        space = constants.MAX_HALITE - ship.halite_amount
+        space = max(1, constants.MAX_HALITE - ship.halite_amount)
         move_turns = distances + (halite / space) * return_distances
         move_turns[move_turns < 0.0] = 0.0
         return move_turns
@@ -204,19 +204,48 @@ class Scheduler:
             custom_mt_halite = self.customize(mt_halite, ship)
             average_mt_halite = self.average(custom_mt_halite, ship)
             best_average_halite = np.maximum.reduce(average_mt_halite)
-            if self.valuable(ship, best_average_halite):
-                cost_matrix[i][:] = -1.0 * global_factor * best_average_halite
-            else:
-                nothing_to_lose.add(ship.id)
+            cost_matrix[i][:] = -1.0 * global_factor * best_average_halite
         return cost_matrix
+
+    def _kamikaze_cost(self, dropoff_index, ship_index, enemy_ship):
+        """Cost value used to determine which enemy ship should be attacked."""
+        i = to_index(enemy_ship)
+        return simple_distance(dropoff_index, i) + simple_distance(ship_index, i)
+
+    def assign_kamikaze(self, ship):
+        """Attack with a ship that is no longer valuable, guard dropoffs."""
+        dropoff = self.map_data.get_closest_dropoff(ship)
+        dropoff_index = to_index(dropoff)
+        ship_index = to_index(ship)
+        possible_targets = list(enemy_ships())
+        if possible_targets:
+            target = min(possible_targets, key=lambda enemy_ship:
+                self._kamikaze_cost(dropoff_index, ship_index, enemy_ship))
+            self.schedule.assign(ship, target.position)
+        else:
+            self.schedule.assign(ship, ship.position)
+
+    def _return_average_halite(self, ship):
+        """Average returned halite per turn needed to return."""
+        dropoff = self.map_data.get_closest_dropoff(ship)
+        distance = self.map_data.get_entity_distance(ship, dropoff)
+        return ship.halite_amount / (2.0 * distance + 1.0)
 
     def assignment(self, ships):
         """Assign destinations to ships using an assignment algorithm."""
         cost_matrix = self.create_cost_matrix(ships)
         row_ind, col_ind = LinearSum.assignment(cost_matrix, ships)
         for i, j in zip(row_ind, col_ind):
-            destination = to_cell(j).position
-            self.schedule.assign(ships[i], destination)
+            ship = ships[i]
+            best_average_halite = -1.0 * cost_matrix[i, j]
+            if not self.valuable(ship, best_average_halite):
+                self.assign_kamikaze(ship)
+            elif (ship.halite_amount > 550 and
+                  self._return_average_halite(ship) > best_average_halite):
+                self.assign_return(ship)
+            else:
+                destination = to_cell(j).position
+                self.schedule.assign(ship, destination)
 
     def update_returning_to_dropoff(self):
         """Update the set of ships that are returning to a dropoff."""
@@ -235,13 +264,8 @@ class Scheduler:
 
     def is_returning(self, ship):
         """Determine if ship has to return to a dropoff."""
-        if ship.id in returning_to_dropoff:
-            return True
-        dropoff = self.map_data.get_closest_dropoff(ship)
-        if self.map_data.get_entity_distance(ship, dropoff) < 7:
-            return ship.halite_amount > 0.75 * constants.MAX_HALITE
-        else:
-            return ship.halite_amount > 0.95 * constants.MAX_HALITE
+        return (ship.id in returning_to_dropoff or
+                ship.halite_amount > 0.95 * constants.MAX_HALITE)
 
     def preprocess(self, ships):
         """Process some ships in a specific way."""
@@ -344,8 +368,8 @@ class Scheduler:
 class GhostDropoff(entity.Entity):
     """Future dropoff, already taken into account by distance calculations."""
 
-    search_radius1 = 12
-    search_radius2 = 30
+    search_radius1 = 15
+    search_radius2 = 25
 
     def __init__(self, map_data):
         self.map_data = map_data
@@ -356,18 +380,18 @@ class GhostDropoff(entity.Entity):
         """Gain a strategic advantage by controlling disputed areas."""
         d1 = self.calculator.enemy_dropoff_distances[index]
         d2 = self.calculator.simple_dropoff_distances[index]
-        return min(1.25, max(1.0, 1.5 - 0.05 * abs(d1 - d2)))
+        return min(1.1, max(1.0, 1.2 - 0.02 * abs(d1 - d2 - 2)))
 
     def _expansion_factor(self, index):
         """Reward gradual expansion."""
         d = self.calculator.simple_dropoff_distances[index]
-        return 1.25 if 15 <= d <= 20 else 1.0
+        return max(1.0, 1.1 - 0.02 * abs(17.5 - d))
 
     def _turns(self, index):
         """Move turns uses Dijkstra distance of the second closest ship."""
         mine_turns = 10.0
         move_turns = self.calculator.ghost_distances[index]
-        return mine_turns + move_turns
+        return mine_turns + min(30.0, max(15.0, move_turns))
 
     def cost(self, index):
         """Cost representing the quality of the index as a dropoff location.
@@ -378,7 +402,7 @@ class GhostDropoff(entity.Entity):
         """
         if (self.calculator.simple_dropoff_distances[index] < self.search_radius1 or
             self.map_data.density_difference[index] < 0.0 or
-            self.map_data.halite_density[index] < 150.0 or
+            self.map_data.halite_density[index] < 100.0 or
             to_cell(index).has_structure):
             return 0.0
         modifier = self._disputed_factor(index) * self._expansion_factor(index)
