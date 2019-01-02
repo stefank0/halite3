@@ -240,7 +240,8 @@ class Scheduler:
             best_average_halite = -1.0 * cost_matrix[i, j]
             if not self.valuable(ship, best_average_halite):
                 self.assign_kamikaze(ship)
-            elif self._return_average_halite(ship) > best_average_halite:
+            elif (ship.halite_amount > 550 and
+                  self._return_average_halite(ship) > best_average_halite):
                 self.assign_return(ship)
             else:
                 destination = to_cell(j).position
@@ -263,7 +264,8 @@ class Scheduler:
 
     def is_returning(self, ship):
         """Determine if ship has to return to a dropoff."""
-        return ship.halite_amount > 0.95 * constants.MAX_HALITE
+        return (ship.id in returning_to_dropoff or
+                ship.halite_amount > 0.95 * constants.MAX_HALITE)
 
     def preprocess(self, ships):
         """Process some ships in a specific way."""
