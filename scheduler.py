@@ -165,7 +165,7 @@ class Scheduler:
         """Turns spent on moving."""
         distances = self.map_data.get_distances(ship)
         return_distances = self.return_distances(ship)
-        space = constants.MAX_HALITE - ship.halite_amount
+        space = max(1, constants.MAX_HALITE - ship.halite_amount)
         move_turns = distances + (halite / space) * return_distances
         move_turns[move_turns < 0.0] = 0.0
         return move_turns
@@ -225,6 +225,12 @@ class Scheduler:
         else:
             self.schedule.assign(ship, ship.position)
 
+    def _return_average_halite(self, ship):
+        """Average returned halite per turn needed to return."""
+        dropoff = self.map_data.get_closest_dropoff(ship)
+        distance = self.map_data.get_entity_distance(ship, dropoff)
+        return ship.halite_amount / (2.0 * distance + 1.0)
+
     def assignment(self, ships):
         """Assign destinations to ships using an assignment algorithm."""
         cost_matrix = self.create_cost_matrix(ships)
@@ -234,6 +240,8 @@ class Scheduler:
             best_average_halite = -1.0 * cost_matrix[i, j]
             if not self.valuable(ship, best_average_halite):
                 self.assign_kamikaze(ship)
+            elif self._return_average_halite(ship) > best_average_halite:
+                self.assign_return(ship)
             else:
                 destination = to_cell(j).position
                 self.schedule.assign(ship, destination)
@@ -255,13 +263,7 @@ class Scheduler:
 
     def is_returning(self, ship):
         """Determine if ship has to return to a dropoff."""
-        if ship.id in returning_to_dropoff:
-            return True
-        dropoff = self.map_data.get_closest_dropoff(ship)
-        if self.map_data.get_entity_distance(ship, dropoff) < 7:
-            return ship.halite_amount > 0.75 * constants.MAX_HALITE
-        else:
-            return ship.halite_amount > 0.95 * constants.MAX_HALITE
+        return ship.halite_amount > 0.95 * constants.MAX_HALITE
 
     def preprocess(self, ships):
         """Process some ships in a specific way."""
