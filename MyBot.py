@@ -1,23 +1,11 @@
 #!/usr/bin/env python3
-import json, logging, time
+import logging, time
 from statistics import median
 
 from hlt import constants, Game
 from scheduler import Scheduler
+from parameters import param, load_parameters
 from mapdata import MapData, DistanceCalculator, other_players
-
-
-CALIBRATION = False
-
-
-if CALIBRATION:
-    import argparse, yaml
-
-    def get_parser():
-        """Get argumentparser and add arguments"""
-        parser = argparse.ArgumentParser('read *pars.yaml and use parameters in MyBot')
-        parser.add_argument('inputfile', type=str, help='YAML input file containing keyword arguments')
-        return parser
 
 
 def create_schedule():
@@ -56,8 +44,8 @@ def want_to_spawn():
     """Return True if we would like to spawn a new ship."""
     if _new_ships_are_all_mine():
         return False
-    is_early_game = game.turn_number <= parameters['earlygame']
-    is_late_game = game.turn_number >= (constants.MAX_TURNS - parameters['endgame'])
+    is_early_game = game.turn_number <= param['earlygame']
+    is_late_game = game.turn_number >= (constants.MAX_TURNS - param['endgame'])
     is_mid_game = (not is_early_game) and (not is_late_game)
     return is_early_game or (is_mid_game and _ship_number_falling_behind())
 
@@ -106,28 +94,13 @@ def log_profiling():
 
 # Initialize the game.
 game = Game()
+load_parameters(game)
+logging.info(param)
 game.ready("Schildpad")
 
 # Define some globals for convenience.
 me = game.me
 game_map = game.game_map
-
-
-if CALIBRATION:
-    args = get_parser().parse_args()
-    with open(args.inputfile) as y:
-        parameters = yaml.load(y)
-        parameters['inputfile'] = args.inputfile
-else:
-    number_of_players = len(game.players)
-    map_size = game.game_map.height
-    try:
-        with open('parameters.json') as f:
-            all_parameters = json.load(f)
-    except IOError:
-        with open('../parameters.json') as f:
-            all_parameters = json.load(f)
-    parameters = all_parameters[str(number_of_players)][str(map_size)]
 
 
 # Play the game.
