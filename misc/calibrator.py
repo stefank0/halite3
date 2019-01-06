@@ -56,13 +56,13 @@ class Calibrator:
         args = ['misc\halite.exe', '-vvv', '--no-logs', '--no-timeout',
                 '--replay-directory', self._dir_iteration,
                 '--width', str(self.mapsize),
-                '--height', str(self.mapsize)]
+                '--height', str(self.mapsize), '--no-timeout']
         if self.n_player == 2:
             return args + [self.get_bot(self._pars_low_file), self.get_bot(self._pars_high_file)]
         elif self.n_player == 4:
-            return args + [self.get_bot(self._pars_reference_file),
-                           self.get_bot(self._pars_default_file),
+            return args + [self.get_bot(self._pars_default_file),
                            self.get_bot(self._pars_low_file),
+                           self.get_bot(self._pars_default_file),
                            self.get_bot(self._pars_high_file)]
 
     @property
@@ -108,9 +108,9 @@ class Calibrator:
             params.append(self._pars_low[self.param])
             params.append(self._pars_high[self.param])
         elif self.n_player == 4:
-            params.append(self._pars_reference[self.param])
             params.append(self._pars_default[self.param])
             params.append(self._pars_low[self.param])
+            params.append(self._pars_default[self.param])
             params.append(self._pars_high[self.param])
         return np.array(params)
 
@@ -125,23 +125,24 @@ class Calibrator:
         logging.basicConfig(filename=os.path.join(self._dir_output, '.log'), level=logging.INFO)
 
         self.set_parameters(self._pars_default_file, self._pars_reference)
+        multiplier = 0.75 if self.n_player == 4 else 0.33
         while self.iter < self.n_iter:
             for param in self._pars_reference.keys():
                 self.param = param
                 os.mkdir(self._dir_iteration)
-                if self.iter == 0:
-                    step = self._pars_default[param] * 0.75
+                step_minus = self._pars_default[param] * multiplier
+                step_plus = self._pars_default[param] * multiplier / (1.0 - multiplier)
                 logging.info(f'param: {self.param} old: {self._pars_default[self.param]}')
-                self.set_parameter(file=self._pars_low_file, step=-step)
-                self.set_parameter(file=self._pars_high_file, step=step)
+                self.set_parameter(file=self._pars_low_file, step=-step_minus)
+                self.set_parameter(file=self._pars_high_file, step=step_plus)
                 for _ in tqdm(range(self.n_games), total=self.n_games):
                     check_output(self.args).decode("ascii")
                 self.set_parameter(
                     file=self._pars_default_file,
                     step=self.evaluate() - self._pars_default[self.param])
                 logging.info(f'param: {self.param} new: {self._pars_default[self.param]}')
-                step /= 2
             self.iter += 1
+            multiplier *= 0.9
             self.set_parameters(self._pars_default_file,
                                 self.get_parameters(self._pars_default_file.replace(f'{self.iter}_default',
                                                                                     f'{self.iter-1}_default')))
@@ -168,6 +169,7 @@ class Calibrator:
     def evaluate(self):
         """Evaluates the result of the iteration step in the calibration"""
         result = self.result()
+        result[result < result.max()] = 0
         return (self.n_player / result.sum() * result * self._params).mean()
 
     @staticmethod

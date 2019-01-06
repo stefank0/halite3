@@ -41,8 +41,10 @@ def evaluate_folder(folder):
         else:
             result.append(evaluate_file(os.path.join(folder, file_name)))
     df = pd.DataFrame(result)
-    return df.divide(df.max(axis=1), axis=0).mean()
-    
+    df = df.subtract(df.max(axis=1) - 10000, axis=0)
+    df[df < 0] = 0
+    return df.mean()
+
 
 if __name__ == '__main__':
     evaluate_folder(r'C:\dev\halite3\replays\calibrator_p4_s32_d20181223_t145403\i0_lootfactor')
