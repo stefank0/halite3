@@ -56,7 +56,7 @@ class Calibrator:
         args = ['misc\halite.exe', '-vvv', '--no-logs', '--no-timeout',
                 '--replay-directory', self._dir_iteration,
                 '--width', str(self.mapsize),
-                '--height', str(self.mapsize), '--no-timeout']
+                '--height', str(self.mapsize)]
         if self.n_player == 2:
             return args + [self.get_bot(self._pars_low_file), self.get_bot(self._pars_high_file)]
         elif self.n_player == 4:
