@@ -1,5 +1,6 @@
 import logging
 
+import click
 import yaml
 import time
 from subprocess import check_output
@@ -7,7 +8,8 @@ import os
 
 from tqdm import tqdm
 import numpy as np
-from parse import parse_replay_folder, parse_replay_file, evaluate_folder
+
+from misc.parse import evaluate_folder
 
 
 class Calibrator:
@@ -51,7 +53,7 @@ class Calibrator:
     @property
     def args(self):
         """cmd arguments to run a halite game"""
-        args = ['misc/halite.exe', '-vvv',
+        args = ['misc\halite.exe', '-vvv', '--no-logs', '--no-timeout',
                 '--replay-directory', self._dir_iteration,
                 '--width', str(self.mapsize),
                 '--height', str(self.mapsize)]
@@ -125,12 +127,10 @@ class Calibrator:
         self.set_parameters(self._pars_default_file, self._pars_reference)
         while self.iter < self.n_iter:
             for param in self._pars_reference.keys():
-                if param != 'lootfactor':
-                    continue
                 self.param = param
                 os.mkdir(self._dir_iteration)
                 if self.iter == 0:
-                    step = self._pars_default[param] * 0.5
+                    step = self._pars_default[param] * 0.75
                 logging.info(f'param: {self.param} old: {self._pars_default[self.param]}')
                 self.set_parameter(file=self._pars_low_file, step=-step)
                 self.set_parameter(file=self._pars_high_file, step=step)
@@ -183,6 +183,13 @@ class Calibrator:
             return yaml.load(f)
 
 
-if __name__ == '__main__':
-    calibrator = Calibrator(mapsize=32, n_player=2, n_games=1, n_iter=2)
+@click.command()
+@click.option('--mapsize', default=32, help='Mapsize.', type=click.Choice(['32', '40', '48', '56', '64']))
+@click.option('--n_player', default=2, help='Number of players.', type=click.Choice(['2', '4']))
+def main(mapsize, n_player):
+    calibrator = Calibrator(mapsize=int(mapsize), n_player=int(n_player), n_games=100, n_iter=5)
     calibrator.start()
+
+
+if __name__ == '__main__':
+    main()

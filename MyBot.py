@@ -7,7 +7,7 @@ from scheduler import Scheduler
 from mapdata import MapData, DistanceCalculator
 
 
-CALIBRATION = False
+CALIBRATION = True
 
 
 if CALIBRATION:
@@ -23,7 +23,7 @@ if CALIBRATION:
 def create_schedule():
     """Creates a schedule based on the current game map."""
     map_data = MapData(game, params)
-    scheduler = Scheduler(game, map_data)
+    scheduler = Scheduler(game, map_data, CALIBRATION)
     return scheduler.get_schedule()
 
 
@@ -116,6 +116,7 @@ if CALIBRATION:
     with open(args.inputfile) as y:
         params = yaml.load(y)
         params['inputfile'] = args.inputfile
+    logging.info(params)
 else:
     number_of_players = len(game.players)
     map_size = game.game_map.height
