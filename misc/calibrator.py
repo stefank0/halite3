@@ -189,7 +189,7 @@ class Calibrator:
 @click.option('--mapsize', default=32, help='Mapsize.', type=click.Choice(['32', '40', '48', '56', '64']))
 @click.option('--n_player', default=2, help='Number of players.', type=click.Choice(['2', '4']))
 def main(mapsize, n_player):
-    calibrator = Calibrator(mapsize=int(mapsize), n_player=int(n_player), n_games=100, n_iter=5)
+    calibrator = Calibrator(mapsize=int(mapsize), n_player=int(n_player), n_games=10, n_iter=10)
     calibrator.start()
 
 

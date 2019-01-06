@@ -11,11 +11,10 @@ nothing_to_lose = set() # Can be used to defend or to attack most threatening pl
 class Scheduler:
     """Creates a Schedule."""
 
-    def __init__(self, _game, map_data, calibration=False):
+    def __init__(self, _game, map_data):
         self.game = _game
         self.game_map = _game.game_map
         self.me = _game.me
-        self.calibration = calibration
         self.turn_number = _game.turn_number
         self.map_data = map_data
         self.schedule = Schedule(_game, map_data)
@@ -245,8 +244,6 @@ class Scheduler:
 
     def dropoff_time(self, ships):
         """Determine if it is time to create dropoff"""
-        if self.calibration:
-            return False
         dists = self.map_data.distance_dropoffs(ships)
         ship_per_dropoff = len(ships) / len(self.map_data.dropoffs)
         return (

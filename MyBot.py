@@ -23,7 +23,7 @@ if CALIBRATION:
 def create_schedule():
     """Creates a schedule based on the current game map."""
     map_data = MapData(game, params)
-    scheduler = Scheduler(game, map_data, CALIBRATION)
+    scheduler = Scheduler(game, map_data)
     return scheduler.get_schedule()
 
 
