@@ -9,6 +9,7 @@ __pycache__/
 *.class
 *.ipr
 *.iws
+*.csv
 .idea/*
 archive/*
 replays/*

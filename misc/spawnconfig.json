@@ -1,0 +1,56 @@
+{
+  "2": {
+    "32x32": {
+      "Intercept": -944.8039547546,
+      "turnsRemaining": 10.1454333165,
+      "availableHaliteOnInitShip": 0.012874983
+    },
+    "40x40": {
+      "Intercept": -1367.2844853646,
+      "turnsRemaining": 11.0391321498,
+      "availableHaliteOnInitShip": 0.0094038437
+    },
+    "48x48": {
+      "Intercept": -1427.326405122,
+      "turnsRemaining": 11.8564242467,
+      "availableHaliteOnInitShip": 0.0053898141
+    },
+    "56x56": {
+      "Intercept": -1715.6234109409,
+      "turnsRemaining": 11.7669185912,
+      "availableHaliteOnInitShip": 0.0048457243
+    },
+    "64x64": {
+      "Intercept": -2035.2167175879,
+      "turnsRemaining": 14.0547229255,
+      "availableHaliteOnInitShip": 0.0028045154
+    }
+  },
+  "4": {
+    "32x32": {
+      "Intercept": -1239.9328029787,
+      "turnsRemaining": 8.7372892692,
+      "availableHaliteOnInitShip": 0.0122961331
+    },
+    "40x40": {
+      "Intercept": -1472.5150708956,
+      "turnsRemaining": 10.9750777752,
+      "availableHaliteOnInitShip": 0.006541175
+    },
+    "48x48": {
+      "Intercept": -1266.3375697868,
+      "turnsRemaining": 9.8499829329,
+      "availableHaliteOnInitShip": 0.0055426507
+    },
+    "56x56": {
+      "Intercept": -1418.5324810153,
+      "turnsRemaining": 11.3162867476,
+      "availableHaliteOnInitShip": 0.0035897784
+    },
+    "64x64": {
+      "Intercept": -1460.8240216852,
+      "turnsRemaining": 12.1142623506,
+      "availableHaliteOnInitShip": 0.0024147916
+    }
+  }
+}
