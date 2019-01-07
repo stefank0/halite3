@@ -7,6 +7,7 @@ from scipy.optimize import linear_sum_assignment
 import numpy as np
 
 from hlt import Position, constants
+from parameters import param
 
 
 ##############################################################################
@@ -343,7 +344,7 @@ class DistanceCalculator:
             Therefore, moving over 1 halite corresponds to 1/750 of a turn.
         """
         halite_cost = np.floor(0.1 * halite)
-        return np.repeat(1.0 + halite_cost / 75.0, 4)
+        return np.repeat(1.0 + halite_cost / param['mean_halite'], 4)
 
     def _edge_costs(self, ship):
         """Edge costs for all edges in the graph."""
@@ -375,7 +376,7 @@ class DistanceCalculator:
     def _set_simple_distance(self, dist_matrix, indices, target_index):
         """Update dist_matrix, set simple distances for target_index."""
         for i, index in enumerate(indices):
-            distance = 10.0 + simple_distance(index, target_index)
+            distance = param['distance'] + simple_distance(index, target_index)
             dist_matrix[i][target_index] = distance
 
     def _boundary_indices(self, ship_index):
