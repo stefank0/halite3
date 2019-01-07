@@ -1,28 +1,16 @@
 #!/usr/bin/env python3
-import json, logging, time
+import logging, time
 from statistics import median
 
 from hlt import constants, Game
 from scheduler import Scheduler
-from mapdata import MapData, DistanceCalculator
-
-
-CALIBRATION = True
-
-
-if CALIBRATION:
-    import argparse, yaml
-
-    def get_parser():
-        """Get argumentparser and add arguments"""
-        parser = argparse.ArgumentParser('read *pars.yaml and use parameters in MyBot')
-        parser.add_argument('inputfile', type=str, help='YAML input file containing keyword arguments')
-        return parser
+from parameters import param, load_parameters
+from mapdata import MapData, DistanceCalculator, other_players
 
 
 def create_schedule():
     """Creates a schedule based on the current game map."""
-    map_data = MapData(game, params)
+    map_data = MapData(game, Scheduler.ghost)
     scheduler = Scheduler(game, map_data)
     return scheduler.get_schedule()
 
@@ -31,11 +19,6 @@ def add_move_commands(command_queue):
     """Add movement commands to the command queue."""
     schedule = create_schedule()
     command_queue.extend(schedule.to_commands())
-
-
-def other_players():
-    """Get a list of the other players."""
-    return [player for player in game.players.values() if player is not me]
 
 
 def number_of_ships(player):
@@ -49,20 +32,27 @@ def _ship_number_falling_behind():
     return number_of_ships(me) <= median(ship_numbers)
 
 
+def _new_ships_are_all_mine():
+    """Return True if the last spawned ships are ours."""
+    ship_ids = [ship.id for player in game.players.values() for ship in player.get_ships()]
+    if len(ship_ids) > 5 and all([me.has_ship(ship_id) for ship_id in sorted(ship_ids)[-5:]]):
+        return True
+    return False
+
+
 def want_to_spawn():
     """Return True if we would like to spawn a new ship."""
-    is_early_game = game.turn_number <= params['earlygame']
-    is_late_game = game.turn_number >= (constants.MAX_TURNS - params['endgame'])
+    if _new_ships_are_all_mine():
+        return False
+    is_early_game = game.turn_number <= param['earlygame']
+    is_late_game = game.turn_number >= (constants.MAX_TURNS - param['endgame'])
     is_mid_game = (not is_early_game) and (not is_late_game)
     return is_early_game or (is_mid_game and _ship_number_falling_behind())
 
 
 def can_spawn(command_queue):
     """Return True if it is possible to spawn a new ship."""
-    construct_dropoff = any(['c' in command for command in command_queue])
-    halite = me.halite_amount
-    if construct_dropoff:
-        halite -= constants.DROPOFF_COST
+    halite = Scheduler.free_halite
     enough_halite = halite >= constants.SHIP_COST
     shipyard_free = not game_map[me.shipyard].is_occupied
     return enough_halite and shipyard_free
@@ -104,41 +94,23 @@ def log_profiling():
 
 # Initialize the game.
 game = Game()
+load_parameters(game)
+logging.info(param)
 game.ready("Schildpad")
 
 # Define some globals for convenience.
 me = game.me
 game_map = game.game_map
 
-
-if CALIBRATION:
-    args = get_parser().parse_args()
-    with open(args.inputfile) as y:
-        params = yaml.load(y)
-        params['inputfile'] = args.inputfile
-    logging.info(params)
-else:
-    number_of_players = len(game.players)
-    map_size = game.game_map.height
-    try:
-        with open('parameters.json') as f:
-            all_parameters = json.load(f)
-    except IOError:
-        with open('../parameters.json') as f:
-            all_parameters = json.load(f)
-    params = all_parameters[str(number_of_players)][str(map_size)]
-
-
 # Play the game.
 while True:
-    logging.info(params)
     game.update_frame()
     start = time.time()
     command_queue = generate_commands()
     time_taken = time.time() - start
-    #logging.info(time_taken)
+    # logging.info(time_taken)
     if time_taken > 1.4:
-        #log_profiling()
+        # log_profiling()
         DistanceCalculator.reduce_radius()
     elif time_taken < 0.9:
         DistanceCalculator.increase_radius()

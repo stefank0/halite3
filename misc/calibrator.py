@@ -132,7 +132,8 @@ class Calibrator:
                 os.mkdir(self._dir_iteration)
                 step_minus = self._pars_default[param] * multiplier
                 step_plus = self._pars_default[param] * multiplier / (1.0 - multiplier)
-                logging.info(f'param: {self.param} old: {self._pars_default[self.param]}')
+                logging.info(f'param: {self.param} default value: {self._pars_default[self.param]}')
+                logging.info(f'param: {self.param} stepsize')
                 self.set_parameter(file=self._pars_low_file, step=-step_minus)
                 self.set_parameter(file=self._pars_high_file, step=step_plus)
                 for _ in tqdm(range(self.n_games), total=self.n_games):
@@ -140,7 +141,7 @@ class Calibrator:
                 self.set_parameter(
                     file=self._pars_default_file,
                     step=self.evaluate() - self._pars_default[self.param])
-                logging.info(f'param: {self.param} new: {self._pars_default[self.param]}')
+                logging.info(f'param: {self.param} new default value: {self._pars_default[self.param]}')
             self.iter += 1
             multiplier *= 0.9
             self.set_parameters(self._pars_default_file,

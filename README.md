@@ -1,28 +1,25 @@
 # Schildpad
-## TODO
-- [ ] TODO - Conquer or reconquer area from enemy (awareness of area)
-- [ ] TODO - Dropoff planner
-        - don't just look to current positions of ships --> plan ahead  
-        - ghost dropoff
-- [ ] TODO - Improve decision spawn ship <Turn 200 every 1000 build ship; estimated return on investment f(n_ships, halite_available, n_players, map)
-- [ ] TODO - Return edge costs. Use parameters in the calculation: Halite's left on the map, turns left. (Halite / turns left)
-- [ ] TODO - Optimise contants: 
-    - HLT parser (pip install Zstandard)
-    - Use gradient decent algorithm.
-    - Define constants per map size and players.
-    - One constant/dimension at the time, one step all together.
-    - Depending on turn number. 
-- [ ] TODO - Improve attack and enemy_threat, predict enemy movement (improve on using just mining_probability()). For enemy_threat, only predict movement for nearby enemy ships. (Machine learning?)
-- [ ] TODO - Check qualitative behaviour, check if parameters are broad enough, or that rules needs to reimplemented.
-- [ ] TODO - Improve loot:
-    - Increase aggressiveness in end game.
-    - Multiple strategies
-    - Predict success rate of an attack.
-    - Improve attack and enemy_threat, keep track of enemy collisions with our own ships and adjust our behavior depending on enemy behavior and (tit-for-tat - only for lower ranked based on mined Halite).
-- [ ] TODO - Improve returning within (dependent on closeness to dropoff in stead of hardcoded numbers
 
-## Bugs
-- [ ] Bot is currently not deterministic. 
+## TODO
+- (Stefan) Isolate parameters that should be trained.
+- (Stefan) Check qualitative behavior, check if parameters are broad enough, or that rules needs to reimplemented. Check if some features can be removed (global factor, expand_radius, ..).
+- (Stefan/Jonne/Renko) Check lost games and see what goes wrong (check mlomb for timeouts):
+    - Ship graveyards (mostly with reCurs3)(maybe let him solve it?)
+- (Renko/Jonne) Improve ship spawn decision. Estimate return_on_investment(n_turns_left, n_ships, halite_available, n_players, map). Make a fit on real data, plot measured return_on_investment vs predicted return_on_investment.
+- (Jonne) Optimize constants: Use gradient decent algorithm. One constant/dimension at the time, one step all together. Define constants per map size and players. Train parameter subset at a time? Train against fixed opponents (old versions)?
+
+## NOT TODO
+- Performance improvements (linear_sum_assignment in Cython)(simpler/faster shortest path algorithm)(PyCUDA GPU)(avoid calculations: not can_move() implies stay_still(), so no neighbour index shortest path necessary)(reuse calculations: attempt for simple_distances was probably slow because it made a slice, make python list of 1D arrays instead)(smaller clusters for linear_sum_assignment, ships in the smaller cluster cannot use all moves to avoid collisions in Schedule).
+- Improve attack and enemy_threat (Tit-for-tat, keep track of attacks on stationary ships as indication of aggressiveness)(distinction 2player and 4player: for example, attack more aggressively when you have more ships than the opponent in 2player games)(loop over enemy ships and find good targets, taking into consideration our ships and their dropoffs, pick attacking ships based on their distance/best_average_halite/ship.halite_amount and make sure there is a ship to pick up the loot)(increase aggressiveness in endgame)(find a balance with threat_edge_costs, so that it correctly supports both attacking and fleeing)
+- Predict what enemy ship will do (based on cell/ship halite, ships nearby, distance to dropoff, can_move)(use ML, possibly even predict against whom we are playing)(make a cost array like for our own ships to predict next move).
+- Better manage tanking turns for ships with very low cargo.
+- Make sure you never end up with slightly less than 1000 halite when you need 1000 to create a ship.
+- Estimate investment return for dropoffs.
+- Do more with ships that have nothing to lose: Troll/attack the enemy base. Protect full ships.
+- Time dependent parameters (parameters such as those in threat_edge_costs, because losing a ship at the beginning of the game is much worse than at the end)(a+(b-a)(t/T) if t<T else b+(c-b)(t-T)/(Tmax-T))(instead of depending on time/turnnumber, let a parameter depend on available halite on the map, or something else)(find patterns in training data to determine what the parameters should depend on)
+- Try to get bonus without giving the opponent a bonus (Encourage spreading of ships when near the enemy).
+- Avoid going to high halite cells with ships that are nearly full (only mine cells that you can mine to the bottom).
+- Calculate cost array for fake ship on dropoff, to be used in the return to dropoff decision (estimate average halite for even more turns, including dropping off halite at a dropoff).
 
 # Halite III
 General information from Halite III adjusted to our project.

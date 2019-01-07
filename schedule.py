@@ -2,7 +2,7 @@ import logging, math, time
 import numpy as np
 
 from hlt import Direction, constants
-from mapdata import to_cell, to_index, can_move, neighbours, LinearSum, target
+from mapdata import to_cell, to_index, can_move, neighbours, LinearSum, target, packing_fraction
 
 
 class Assignment:
@@ -65,6 +65,8 @@ class Schedule:
         """Costs (0.0 - 0.1) for a wasted turn. Also breaks some symmetry."""
         if to_index(ship) == target_index:
             return 0.0
+        elif game_map[ship].has_structure:
+            return 9999.0
         else:
             cargo_space = constants.MAX_HALITE - ship.halite_amount
             mining_potential = math.ceil(0.25 * game_map[ship].halite_amount)
@@ -126,7 +128,7 @@ class Schedule:
         # Assignment of next move.
         cost_matrix = self.create_cost_matrix()
         ships = [assignment.ship for assignment in self.assignments]
-        row_ind, col_ind = LinearSum.assignment(cost_matrix, ships)
+        row_ind, col_ind = LinearSum.assignment(cost_matrix, ships, cluster_mode=True)
         for k, i in zip(row_ind, col_ind):
             assignment = self.assignments[k]
             target = to_cell(i)

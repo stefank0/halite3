@@ -70,6 +70,19 @@ def neighbourhood(index, radius):
     )
 
 
+def circle(index, radius):
+    """Get indices at a circle around an index."""
+    h = game_map.height
+    w = game_map.width
+    x = index % w
+    y = index // w
+    return [
+        ((x + dx) % w) + (w * ((y + dy) % h))
+        for dx in range(-radius, radius + 1)
+        for dy in {-radius + abs(dx), radius - abs(dx)}
+    ]
+
+
 def calc_density(radius, array, count_self=True):
     """Calculate a density map based on a radius (sum of density and array remain the same)."""
     density = np.zeros(array.shape)
@@ -124,12 +137,12 @@ class LinearSum:
     _time_saving_mode = False
 
     @classmethod
-    def _add_to_cluster(cls, cluster, ship, ships):
+    def _add_to_cluster(cls, cluster, ship, ships, radius=2):
         """Add ship to cluster and search other ships for the cluster."""
         cluster.append(ship)
-        for other_ship in nearby_ships(ship, ships, 2):
+        for other_ship in nearby_ships(ship, ships, radius):
             if other_ship not in cluster:
-                cls._add_to_cluster(cluster, other_ship, ships)
+                cls._add_to_cluster(cluster, other_ship, ships, radius)
 
     @classmethod
     def _already_in_cluster(cls, clusters, ship):
@@ -148,12 +161,22 @@ class LinearSum:
                 continue
             cluster = []
             cls._add_to_cluster(cluster, ship, ships)
+            # if len(cluster) > 60:
+            #    cluster = []
+            #    cls._add_to_cluster(cluster, ship, ships, radius=1)
             clusters.append(cluster)
         return clusters
 
     @classmethod
     def _efficient_assignment(cls, cost_matrix, ships):
-        """Cluster ships and solve multiple linear sum assigments."""
+        """Cluster ships and solve multiple linear sum assigments.
+
+        Note:
+            The Hungarian algorithm has complexity n^3, so it is much more
+            efficient to solve several small problems than it is to solve one
+            large problem. The ships are split into groups in such a way that
+            the assignment in Schedule has exactly the same result.
+        """
         clusters = cls._get_clusters(ships)
         row_inds = []
         col_inds = []
@@ -166,9 +189,9 @@ class LinearSum:
         return row_inds, col_inds
 
     @classmethod
-    def assignment(cls, cost_matrix, ships):
+    def assignment(cls, cost_matrix, ships, cluster_mode=False):
         """Wraps linear_sum_assignment()."""
-        if cls._time_saving_mode:
+        if cls._time_saving_mode or cluster_mode:
             return cls._efficient_assignment(cost_matrix, ships)
         else:
             start = time.time()
@@ -248,26 +271,40 @@ class DistanceCalculator:
         row = np.repeat(np.arange(m), 4)
         cls._edge_data = (row, col)
 
-    def __init__(self, dropoffs, halite, enemy_threat, _params):
+    def __init__(self, dropoffs, halite, enemy_threat):
         if self._edge_data is None:
             self._initialize_edge_data()
         self.dropoffs = dropoffs
-        self.simple_dropoff_distances = self._simple_dropoff_distances()
-        self.params = _params
-
+        self.simple_dropoff_distances = self._simple_dropoff_distances(dropoffs)
+        self.enemy_dropoff_distances = self._enemy_dropoff_distances()
         self._traffic_costs = self._traffic_edge_costs()
         self._movement_costs = self._movement_edge_costs(halite)
         self._threat_costs = self._threat_edge_costs(enemy_threat)
         ## self._return_costs = self._return_edge_costs()
         self._dist_tuples = self._shortest_path()
 
-    def _simple_dropoff_distances(self):
+        self.ghost_distances = self._ghost_distances()
+
+    def _simple_dropoff_distances(self, dropoffs):
         """Simple step distances from all cells to the nearest dropoff."""
         all_dropoff_distances = np.array([
             all_simple_distances(to_index(dropoff))
-            for dropoff in self.dropoffs
+            for dropoff in dropoffs
         ])
         return np.min(all_dropoff_distances, axis=0)
+
+    def _enemy_dropoff_distances(self):
+        """Step distances from all cells to the nearest enemy dropoff."""
+        dropoffs = list(enemy_dropoffs()) + list(enemy_shipyards())
+        return self._simple_dropoff_distances(dropoffs)
+
+    def _ghost_distances(self):
+        """Calculate distances used in GhostDropoff, uses the second ship."""
+        distances = [self.get_distances(ship) for ship in game.me.get_ships()]
+        if len(distances) > 1:
+            return np.partition(distances, 1, 0)[1]
+        else:
+            return np.zeros(game_map.height * game_map.width)
 
     def threat_func(self, ship, threat_costs):
         """Necessary to keep Schedule costs in sync."""
@@ -306,7 +343,7 @@ class DistanceCalculator:
             Therefore, moving over 1 halite corresponds to 1/750 of a turn.
         """
         halite_cost = np.floor(0.1 * halite)
-        return np.repeat(1.0 + halite_cost / self.params['mean_halite'], 4)
+        return np.repeat(1.0 + halite_cost / 75.0, 4)
 
     def _edge_costs(self, ship):
         """Edge costs for all edges in the graph."""
@@ -338,21 +375,13 @@ class DistanceCalculator:
     def _set_simple_distance(self, dist_matrix, indices, target_index):
         """Update dist_matrix, set simple distances for target_index."""
         for i, index in enumerate(indices):
-            distance = self.params["distance"] + simple_distance(index, target_index)
+            distance = 10.0 + simple_distance(index, target_index)
             dist_matrix[i][target_index] = distance
 
     def _boundary_indices(self, ship_index):
         """Boundary indices of the region that received costs by dijkstra."""
-        h = game_map.height
-        w = game_map.width
-        x = ship_index % w
-        y = ship_index // w
         boundary_radius = self._dijkstra_radius + 1
-        return np.array([
-            ((x + dx) % w) + (w * ((y + dy) % h))
-            for dx in range(-boundary_radius, boundary_radius + 1)
-            for dy in {-boundary_radius + abs(dx), boundary_radius - abs(dx)}
-        ])
+        return np.array(circle(ship_index, boundary_radius))
 
     def _expand_indices(self, ship_index, dist_matrix):
         """Indices that receive costs by expansion in postprocessing."""
@@ -448,13 +477,24 @@ class DistanceCalculator:
 ##############################################################################
 
 
+def other_players():
+    """Generator for all other players."""
+    return (player for player in game.players.values() if player is not game.me)
+
+
 def enemy_ships():
     """Generator for all enemy ships."""
-    return (
-        enemy_ship
-        for player in game.players.values() if player is not game.me
-        for enemy_ship in player.get_ships()
-    )
+    return (ship for player in other_players() for ship in player.get_ships())
+
+
+def enemy_dropoffs():
+    """Generator for all enemy dropoffs."""
+    return (dropoff for player in other_players() for dropoff in player.get_dropoffs())
+
+
+def enemy_shipyards():
+    """Generator for all enemy shipyards."""
+    return (player.shipyard for player in other_players())
 
 
 def get_troll_indices():
@@ -542,16 +582,16 @@ def _mining_probability(halite, ship):
 class MapData:
     """Analyzes the gamemap and provides useful data/statistics."""
 
-    def __init__(self, _game, _params):
+    def __init__(self, _game, ghost_dropoff):
         global game, game_map
         game = _game
         game_map = game.game_map
-        self.params = _params
         self.halite = self._halite()
         self.dropoffs = [game.me.shipyard] + game.me.get_dropoffs()
         self.enemy_threat = enemy_threat()
         self.in_bonus_range = enemies_in_bonus_range()
-        self.calculator = DistanceCalculator(self.dropoffs, self.halite, self.enemy_threat, self.params)
+        self.all_dropoffs = self.dropoffs + [ghost_dropoff] if ghost_dropoff else self.dropoffs
+        self.calculator = DistanceCalculator(self.all_dropoffs, self.halite, self.enemy_threat)
         self.halite_density = self._halite_density()
         self.density_difference = self._ship_density_difference()
         self.global_factor = self._global_factor()
@@ -569,8 +609,7 @@ class MapData:
 
     def _halite_density(self):
         """Get density of halite map with radius"""
-        halite = self.halite.reshape(game_map.height, game_map.width)
-        return calc_density(radius=15, array=halite).ravel()
+        return density(self.halite, 10)
 
     def _ship_density(self, ships, radius, count_self=True):
         """Get density of ships."""
@@ -585,14 +624,9 @@ class MapData:
         self.hostile_density = self._ship_density(enemy_ships(), 5)
         return friendly_density - self.hostile_density
 
-    def distance_dropoffs(self, ships):
-        """Get a list of distances to the nearest dropoff for all ships."""
-        dropoff_dists = self.calculator.simple_dropoff_distances
-        return np.array([dropoff_dists[to_index(ship)] for ship in ships])
-
     def get_closest_dropoff(self, ship):
         """Get the dropoff that is closest to the ship."""
-        return self.calculator.get_closest(ship, self.dropoffs)
+        return self.calculator.get_closest(ship, self.all_dropoffs)
 
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""
@@ -608,6 +642,10 @@ class MapData:
     def get_distance(self, ship, index):
         """Get the perturbed distance from a ship an index (a cell)."""
         return self.calculator.get_distance(ship, index)
+
+    def get_entity_distance(self, ship, entity):
+        """"Get the perturbed distance from a ship to an Entity."""
+        return self.calculator.get_entity_distance(ship, entity)
 
     def _global_factor(self):
         """Calculate a factor to win the race for halite."""
@@ -647,4 +685,4 @@ class MapData:
                     for index in neighbours(enemy_index):
                         if dropoff_dists[index] > dropoff_dists[enemy_index]:
                             loot[index] += dhalite
-        return self.params['lootfactor'] * loot  # Factor 0.25 to keep the same relative cost as before.
+        return 0.25 * loot  # Factor 0.25 to keep the same relative cost as before.
