@@ -46,7 +46,9 @@ def want_to_spawn():
     """Return True if we would like to spawn a new ship."""
     turnremain = constants.MAX_TURNS - game.turn_number
     haliteremain = map_data.halite.sum()
-    return param['spawn_intercept'] + param['spawn_turnremain'] * turnremain + param['spawn_haliteremain'] * haliteremain > 1000
+    return (param['spawn_intercept'] +
+            param['spawn_turnremain'] * turnremain +
+            param['spawn_haliteremain'] * haliteremain) > 1000
 
 
 # def want_to_spawn():

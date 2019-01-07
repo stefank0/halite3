@@ -127,13 +127,18 @@ class Calibrator:
         self.set_parameters(self._pars_default_file, self._pars_reference)
         multiplier = 0.75 if self.n_player == 4 else 0.33
         while self.iter < self.n_iter:
+            logging.info(f'iter: {self.iter:02d}')
             for param in self._pars_reference.keys():
+                logging.info(f'iter: {self.iter:02d} param: {param}')
+                if 'game' in param or 'spawn' in param:
+                    continue
                 self.param = param
                 os.mkdir(self._dir_iteration)
                 step_minus = self._pars_default[param] * multiplier
                 step_plus = self._pars_default[param] * multiplier / (1.0 - multiplier)
-                logging.info(f'param: {self.param} default value: {self._pars_default[self.param]}')
-                logging.info(f'param: {self.param} stepsize')
+                logging.info(f'iter: {self.iter:02d} param: {param} default value: {self._pars_default[self.param]}')
+                logging.info(f'iter: {self.iter:02d} param: {param} stepsize plus: {step_plus}')
+                logging.info(f'iter: {self.iter:02d} param: {param} default value: stepsize minus {step_minus}')
                 self.set_parameter(file=self._pars_low_file, step=-step_minus)
                 self.set_parameter(file=self._pars_high_file, step=step_plus)
                 for _ in tqdm(range(self.n_games), total=self.n_games):
@@ -141,7 +146,6 @@ class Calibrator:
                 self.set_parameter(
                     file=self._pars_default_file,
                     step=self.evaluate() - self._pars_default[self.param])
-                logging.info(f'param: {self.param} new default value: {self._pars_default[self.param]}')
             self.iter += 1
             multiplier *= 0.9
             self.set_parameters(self._pars_default_file,

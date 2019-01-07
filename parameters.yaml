@@ -1,5 +1,11 @@
+earlygame: 200
+endgame: 100
+spawn_intercept: -1266.3375697868
+spawn_turnremain: 9.8499829329
+spawn_haliteremain: 0.0055426507
+
 # Factor of aggresiveness
-lootfactor: 0.75
+lootfactor: 0.25
 
 # Estimation of average halite collection per turn (can also be calculated)
 mean_halite: 75.0
