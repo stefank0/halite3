@@ -1,5 +1,0 @@
-start cmd /k "cd .. && python misc\calibrator.py --mapsize=32 --n_player=2"
-start cmd /k "cd .. && python misc\calibrator.py --mapsize=40 --n_player=2"
-start cmd /k "cd .. && python misc\calibrator.py --mapsize=48 --n_player=2"
-start cmd /k "cd .. && python misc\calibrator.py --mapsize=56 --n_player=2"
-start cmd /k "cd .. && python misc\calibrator.py --mapsize=64 --n_player=2"

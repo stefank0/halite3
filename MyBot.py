@@ -10,7 +10,9 @@ from mapdata import MapData, DistanceCalculator, other_players
 
 def create_schedule():
     """Creates a schedule based on the current game map."""
-    map_data = MapData(game, Scheduler.ghost)
+    # TODO: map_data as global?
+    global haliteremain
+
     scheduler = Scheduler(game, map_data)
     return scheduler.get_schedule()
 
@@ -42,12 +44,19 @@ def _new_ships_are_all_mine():
 
 def want_to_spawn():
     """Return True if we would like to spawn a new ship."""
-    if _new_ships_are_all_mine():
-        return False
-    is_early_game = game.turn_number <= param['earlygame']
-    is_late_game = game.turn_number >= (constants.MAX_TURNS - param['endgame'])
-    is_mid_game = (not is_early_game) and (not is_late_game)
-    return is_early_game or (is_mid_game and _ship_number_falling_behind())
+    turnremain = constants.MAX_TURNS - game.turn_number
+    haliteremain = map_data.halite.sum()
+    return param['spawn_intercept'] + param['spawn_turnremain'] * turnremain + param['spawn_haliteremain'] * haliteremain > 1000
+
+
+# def want_to_spawn():
+#     """Return True if we would like to spawn a new ship."""
+#     if _new_ships_are_all_mine():
+#         return False
+#     is_early_game = game.turn_number <= param['earlygame']
+#     is_late_game = game.turn_number >= (constants.MAX_TURNS - param['endgame'])
+#     is_mid_game = (not is_early_game) and (not is_late_game)
+#     return is_early_game or (is_mid_game and _ship_number_falling_behind())
 
 
 def can_spawn(command_queue):
@@ -106,6 +115,7 @@ game_map = game.game_map
 while True:
     game.update_frame()
     start = time.time()
+    map_data = MapData(game, Scheduler.ghost)
     command_queue = generate_commands()
     time_taken = time.time() - start
     # logging.info(time_taken)
