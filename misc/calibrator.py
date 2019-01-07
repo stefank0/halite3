@@ -62,8 +62,8 @@ class Calibrator:
         elif self.n_player == 4:
             return args + [self.get_bot(self._pars_default_file),
                            self.get_bot(self._pars_low_file),
-                           self.get_bot(self._pars_default_file),
-                           self.get_bot(self._pars_high_file)]
+                           self.get_bot(self._pars_high_file),
+                           self.get_bot(self._pars_default_file)]
 
     @property
     def _pars_default_file(self):

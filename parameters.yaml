@@ -7,8 +7,3 @@ mean_halite: 75.0
 # Distance to be added when enemy is nearby
 distance: 10.0
 
-# Defines end of early game by #turns
-earlygame: 200
-
-# Defines start of endgame by #turns left
-endgame: 100
