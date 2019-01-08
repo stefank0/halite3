@@ -46,7 +46,7 @@ class Calibrator:
         if self.iter == 0:
             os.mkdir(self._dir_output)
             os.mkdir(self._dir_pars)
-            with open(self._log, 'w') as f:
+            with open(self._log, 'w'):
                 pass
             self.set_parameters(self._pars_default_file, self._pars_reference)
         logging.basicConfig(filename=os.path.join(self._dir_output, '.log'),
@@ -131,8 +131,8 @@ class Calibrator:
         elif self.n_player == 4:
             params.append(self._pars_default[self.param])
             params.append(self._pars_low[self.param])
-            params.append(self._pars_default[self.param])
             params.append(self._pars_high[self.param])
+            params.append(self._pars_default[self.param])
         return np.array(params)
 
     def get_bot(self, pars):
