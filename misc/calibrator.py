@@ -1,13 +1,11 @@
 import re
 import logging
-
 import click
 import yaml
 import time
 from subprocess import check_output
 import os
 
-from tqdm import tqdm
 import numpy as np
 
 from misc.parse import evaluate_folder
@@ -44,6 +42,20 @@ class Calibrator:
         self._dir_pars = os.path.join(self._dir_output, 'pars')
         self._pars_reference_file = pars_reference
         self._pars_reference = self.get_parameters(self._pars_reference_file)
+        self._log = os.path.join(self._dir_output, '.log')
+        if self.iter == 0:
+            os.mkdir(self._dir_output)
+            os.mkdir(self._dir_pars)
+            with open(self._log, 'w') as f:
+                pass
+            self.set_parameters(self._pars_default_file, self._pars_reference)
+        logging.basicConfig(filename=os.path.join(self._dir_output, '.log'),
+                            level=logging.INFO,
+                            format='%(asctime)s %(levelname)-8s %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S',
+                            filemode='a+')
+        if self.iter > 0:
+            logging.info('-----load and continue-----')
 
     def __repr__(self):
         """Representation of Calibrator object"""
@@ -129,14 +141,6 @@ class Calibrator:
 
     def start(self):
         """Run game from commandline"""
-        if self.iter == 0:
-            os.mkdir(self._dir_output)
-            os.mkdir(self._dir_pars)
-            logging.basicConfig(filename=os.path.join(self._dir_output, '.log'), level=logging.INFO)
-            self.set_parameters(self._pars_default_file, self._pars_reference)
-        else:
-            logging.basicConfig(filename=os.path.join(self._dir_output, '.log'), filemode='a', level=logging.INFO)
-            logging.info('-----load and continue-----')
         while self.iter < self.n_iter:
             logging.info(f'iter: {self.iter:02d}')
             if self.isload:
@@ -169,7 +173,8 @@ class Calibrator:
             logging.info(f'iter: {self.iter:02d} param: {param} default value: stepsize minus {step_minus}')
             self.set_parameter(file=self._pars_low_file, step=-step_minus)
             self.set_parameter(file=self._pars_high_file, step=step_plus)
-            for _ in tqdm(range(self.n_games), total=self.n_games):
+            while len(os.listdir(self._dir_iteration)) <= self.n_games:
+                logging.info(f'iter: {self.iter:02d} param: {param} game: {len(os.listdir(self._dir_iteration))}')
                 check_output(self.args).decode("ascii")
             self.set_parameter(file=self._pars_default_file, step=self.evaluate() - self._pars_default[self.param])
 
@@ -208,7 +213,6 @@ class Calibrator:
         """Evaluates the result of the iteration step in the calibration"""
         result = self.result()
         result[result < result.max()] = 0
-        result[result == result.max()] = 1
         return (self.n_player / result.sum() * result * self._params).mean()
 
     @staticmethod

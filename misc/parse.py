@@ -39,7 +39,10 @@ def evaluate_folder(folder):
         if not file_name.endswith(".hlt"):
             continue
         else:
-            result.append(evaluate_file(os.path.join(folder, file_name)))
+            try:
+                result.append(evaluate_file(os.path.join(folder, file_name)))
+            except zstd.Error:
+                continue
     df = pd.DataFrame(result)
     df = df.subtract(df.max(axis=1) - 10000, axis=0)
     df[df < 0] = 0
