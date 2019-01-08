@@ -10,9 +10,6 @@ from mapdata import MapData, DistanceCalculator, other_players
 
 def create_schedule():
     """Creates a schedule based on the current game map."""
-    # TODO: map_data as global?
-    global haliteremain
-
     scheduler = Scheduler(game, map_data)
     return scheduler.get_schedule()
 
@@ -48,7 +45,7 @@ def want_to_spawn():
     haliteremain = map_data.halite.sum()
     return (param['spawn_intercept'] +
             param['spawn_turnremain'] * turnremain +
-            param['spawn_haliteremain'] * haliteremain) > 1000
+            param['spawn_haliteremain'] * haliteremain) > 750
 
 
 # def want_to_spawn():
