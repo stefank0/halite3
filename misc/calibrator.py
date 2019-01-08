@@ -20,12 +20,13 @@ class Calibrator:
     dir     --> directory
     """
 
-    def __init__(self, mapsize=None, n_player=None, n_games=None, n_iter=None,
+    def __init__(self, mapsize=None, n_player=None, n_games=None, n_iter=None, convergance=0.9,
                  pars_reference='parameters.yaml', dir_replay=r'replays', bot_path=r'MyBot.py', dir_output=None):
         self.n_iter = n_iter
         self.n_games = n_games
         self.bot_path = bot_path
         self._dir_replay = dir_replay
+        self.convergence = convergance
 
         if dir_output:
             self._dir_output = dir_output
@@ -151,7 +152,7 @@ class Calibrator:
             else:
                 self.param_step(self._pars_reference.keys())
             self.iter += 1
-            self.multiplier *= 0.9
+            self.multiplier *= self.convergence
             self.set_parameters(self._pars_default_file,
                                 self.get_parameters(self._pars_default_file.replace(f'{self.iter}_default',
                                                                                     f'{self.iter-1}_default')))
@@ -186,7 +187,7 @@ class Calibrator:
         self.n_player = int(re.findall('p\d', self._dir_output)[0][1:])
         self.multiplier = 0.75 if self.n_player == 4 else 0.33
         for i in range(self.iter):
-            self.multiplier *= 0.9
+            self.multiplier *= self.convergence
 
     @property
     def lastest_iter(self):
