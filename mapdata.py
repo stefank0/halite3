@@ -362,7 +362,8 @@ class DistanceCalculator:
         m = game_map.height * game_map.width
         edge_costs = self._edge_costs(ship)
         row, col = self._edge_data
-        edge_costs, row, col = self._nearby_edges(ship, edge_costs, row, col)
+        if game_map.width > 40:
+            edge_costs, row, col = self._nearby_edges(ship, edge_costs, row, col)
         return csr_matrix((edge_costs, (row, col)), shape=(m, m))
 
     def _set_simple_distance(self, dist_matrix, indices, target_index):
@@ -429,7 +430,8 @@ class DistanceCalculator:
         graph = self._graph(ship)
         indices = self._indices(ship)
         dist_matrix = dijkstra(graph, indices=indices)
-        self._postprocess(dist_matrix, indices)
+        if game_map.width > 40:
+            self._postprocess(dist_matrix, indices)
         return dist_matrix, indices
 
     def _shortest_path(self):
