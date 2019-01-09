@@ -154,7 +154,7 @@ class LinearSum:
         return False
 
     @classmethod
-    def _get_clusters(cls, ships):
+    def _get_clusters(cls, ships, cluster_mode):
         """Create the ship clusters."""
         clusters = []
         for ship in ships:
@@ -162,14 +162,14 @@ class LinearSum:
                 continue
             cluster = []
             cls._add_to_cluster(cluster, ship, ships)
-            # if len(cluster) > 60:
-            #    cluster = []
-            #    cls._add_to_cluster(cluster, ship, ships, radius=1)
+            if not cluster_mode and len(cluster) > 30:
+                cluster = []
+                cls._add_to_cluster(cluster, ship, ships, radius=1)
             clusters.append(cluster)
         return clusters
 
     @classmethod
-    def _efficient_assignment(cls, cost_matrix, ships):
+    def _efficient_assignment(cls, cost_matrix, ships, cluster_mode):
         """Cluster ships and solve multiple linear sum assigments.
 
         Note:
@@ -178,7 +178,7 @@ class LinearSum:
             large problem. The ships are split into groups in such a way that
             the assignment in Schedule has exactly the same result.
         """
-        clusters = cls._get_clusters(ships)
+        clusters = cls._get_clusters(ships, cluster_mode)
         row_inds = []
         col_inds = []
         for cluster in clusters:
@@ -193,12 +193,12 @@ class LinearSum:
     def assignment(cls, cost_matrix, ships, cluster_mode=False):
         """Wraps linear_sum_assignment()."""
         if cls._time_saving_mode or cluster_mode:
-            return cls._efficient_assignment(cost_matrix, ships)
+            return cls._efficient_assignment(cost_matrix, ships, cluster_mode)
         else:
             start = time.time()
             row_ind, col_ind = linear_sum_assignment(cost_matrix)
             stop = time.time()
-            if stop - start > 0.5:
+            if stop - start > 0.25:
                 cls._time_saving_mode = True
                 logging.info("Switching to time saving mode.")
             return row_ind, col_ind
