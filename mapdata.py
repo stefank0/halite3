@@ -281,7 +281,6 @@ class DistanceCalculator:
         self._traffic_costs = self._traffic_edge_costs()
         self._movement_costs = self._movement_edge_costs(halite)
         self._threat_costs = self._threat_edge_costs(enemy_threat)
-        ## self._return_costs = self._return_edge_costs()
         self._dist_tuples = self._shortest_path()
 
         self.ghost_distances = self._ghost_distances()
@@ -316,12 +315,6 @@ class DistanceCalculator:
         _row, col = self._edge_data
         return enemy_threat[col]
 
-    ## def _return_edge_costs(self):
-    ##    """Edge costs describing turns necessary to return to a dropoff."""
-    ##    dropoff_distances = self.simple_dropoff_distances
-    ##    row, col = self._edge_data
-    ##    return 0.5 * (dropoff_distances[col] - dropoff_distances[row] + 1.0)
-
     def _traffic_edge_costs(self):
         """Edge costs describing avoiding or waiting for traffic."""
         m = game_map.height * game_map.width
@@ -348,7 +341,6 @@ class DistanceCalculator:
 
     def _edge_costs(self, ship):
         """Edge costs for all edges in the graph."""
-        # return_costs = packing_fraction(ship) * self._return_costs
         threat_costs = self.threat_func(ship, self._threat_costs)
         return self._movement_costs + self._traffic_costs + threat_costs
 
@@ -376,7 +368,7 @@ class DistanceCalculator:
     def _set_simple_distance(self, dist_matrix, indices, target_index):
         """Update dist_matrix, set simple distances for target_index."""
         for i, index in enumerate(indices):
-            distance = param['distance'] + simple_distance(index, target_index)
+            distance = 999.9 + simple_distance(index, target_index)
             dist_matrix[i][target_index] = distance
 
     def _boundary_indices(self, ship_index):
