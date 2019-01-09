@@ -9,7 +9,3 @@ lootfactor: 0.25
 
 # Estimation of average halite collection per turn (can also be calculated)
 mean_halite: 75.0
-
-# Distance to be added when enemy is nearby
-distance: 10.0
-
