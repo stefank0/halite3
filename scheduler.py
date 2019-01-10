@@ -183,10 +183,7 @@ class Scheduler:
     def customize(self, mt_halite, ship):
         """Customize multiple_turn_halite for a specific ship."""
         space = constants.MAX_HALITE - ship.halite_amount
-        custom_halite = [np.minimum(halite, space) for halite in mt_halite]
-        loot = self.map_data.loot(ship)
-        custom_halite[0] = np.maximum(custom_halite[0], loot)
-        return custom_halite
+        return [np.minimum(halite, space) for halite in mt_halite]
 
     def initialize_cost_matrix(self, ships):
         """Ïnitialize the cost matrix with the correct shape."""
@@ -203,7 +200,9 @@ class Scheduler:
             custom_mt_halite = self.customize(mt_halite, ship)
             average_mt_halite = self.average(custom_mt_halite, ship)
             best_average_halite = np.maximum.reduce(average_mt_halite)
-            cost_matrix[i][:] = -1.0 * global_factor * best_average_halite
+            loot = self.map_data.loot(ship)
+            cost = -1.0 * global_factor * np.maximum(best_average_halite, loot)
+            cost_matrix[i][:] = cost
         return cost_matrix
 
     def _kamikaze_cost(self, dropoff_index, ship_index, enemy_ship):

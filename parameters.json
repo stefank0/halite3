@@ -3,7 +3,6 @@
     "32": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -944.8039547546,
       "spawn_turnremain": 10.1454333165,
@@ -12,7 +11,6 @@
     "40": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1367.2844853646,
       "spawn_turnremain": 11.0391321498,
@@ -21,7 +19,6 @@
     "48": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1427.326405122,
       "spawn_turnremain": 11.8564242467,
@@ -30,7 +27,6 @@
     "56": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1715.6234109409,
       "spawn_turnremain": 11.7669185912,
@@ -39,7 +35,6 @@
     "64": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -2035.2167175879,
       "spawn_turnremain": 14.0547229255,
@@ -50,7 +45,6 @@
     "32": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1239.9328029787,
       "spawn_turnremain": 8.7372892692,
@@ -59,7 +53,6 @@
     "40": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1472.5150708956,
       "spawn_turnremain": 10.9750777752,
@@ -68,7 +61,6 @@
     "48": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1266.3375697868,
       "spawn_turnremain": 9.8499829329,
@@ -77,7 +69,6 @@
     "56": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1418.5324810153,
       "spawn_turnremain": 11.3162867476,
@@ -86,7 +77,6 @@
     "64": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1460.8240216852,
       "spawn_turnremain": 12.1142623506,
