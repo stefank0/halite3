@@ -162,7 +162,7 @@ class LinearSum:
                 continue
             cluster = []
             cls._add_to_cluster(cluster, ship, ships)
-            if not cluster_mode and len(cluster) > 30:
+            if not cluster_mode and len(cluster) > 30 and game_map.width > 32:
                 cluster = []
                 cls._add_to_cluster(cluster, ship, ships, radius=1)
             clusters.append(cluster)
