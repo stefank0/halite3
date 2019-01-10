@@ -84,22 +84,6 @@ def circle(index, radius):
     ]
 
 
-def calc_density(radius, array, count_self=True):
-    """Calculate a density map based on a radius (sum of density and array remain the same)."""
-    density = np.zeros(array.shape)
-    if count_self:
-        density = array.copy() / (radius + 1)
-    for dist in range(1, radius + 1):
-        x = dist
-        while x >= 1:
-            density += np.roll(np.roll(array, dist - x, 0), x, 1) / ((radius + 1) * dist * 4)  # southeast
-            density += np.roll(np.roll(array, dist - x, 1), -x, 0) / ((radius + 1) * dist * 4)  # northeast
-            density += np.roll(np.roll(array, -dist + x, 0), -x, 1) / ((radius + 1) * dist * 4)  # northwest
-            density += np.roll(np.roll(array, -dist + x, 1), x, 0) / ((radius + 1) * dist * 4)  # southwest
-            x += -1
-    return density
-
-
 def density(base_density, radius):
     """Smooth/distribute a base density over a region."""
     base_density_sum = base_density.sum()
@@ -606,16 +590,16 @@ class MapData:
         """Get density of halite map with radius"""
         return density(self.halite, 10)
 
-    def _ship_density(self, ships, radius, count_self=True):
+    def _ship_density(self, ships, radius):
         """Get density of ships."""
-        density = np.zeros(game_map.height * game_map.width)
+        ship_density = np.zeros(game_map.height * game_map.width)
         ship_indices = [to_index(ship) for ship in ships]
-        density[ship_indices] = 1
-        return calc_density(radius, density.reshape(game_map.height, game_map.width), count_self).ravel()
+        ship_density[ship_indices] = 1
+        return density(ship_density, radius)
 
     def _ship_density_difference(self):
         """Get density of friendly - hostile ships"""
-        friendly_density = self._ship_density(game.me.get_ships(), 5, count_self=False)
+        friendly_density = self._ship_density(game.me.get_ships(), 5)
         self.hostile_density = self._ship_density(enemy_ships(), 5)
         return friendly_density - self.hostile_density
 
