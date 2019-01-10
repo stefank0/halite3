@@ -1,4 +1,3 @@
-earlygame: 200
 endgame: 100
 spawn_intercept: -1266.3375697868
 spawn_turnremain: 9.8499829329
@@ -9,3 +8,10 @@ lootfactor: 0.25
 
 # Estimation of average halite collection per turn (can also be calculated)
 mean_halite: 75.0
+
+extra_bonus: 1.0
+traffic_factor: 0.8
+return_distance_factor: 1.0
+neighbour_profit_factor: 2.0
+return_factor: 1.0
+expand_edge_cost: 2.0

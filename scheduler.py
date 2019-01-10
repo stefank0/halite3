@@ -3,6 +3,7 @@ from hlt import constants, entity
 import numpy as np
 from mapdata import to_cell, to_index, can_move, LinearSum, neighbours, simple_distance, enemy_ships
 from schedule import Schedule
+from parameters import param
 
 returning_to_dropoff = set()
 
@@ -70,9 +71,9 @@ class Scheduler:
         key = lambda index: profit_mining_once[index]
         best_neighbours = [max(neighbours(i), key=key) for i in range(m)]
         return [
-            np.minimum(profit[0][best_neighbours], 2 * profit[0]),
-            np.minimum(profit[1][best_neighbours], 2 * profit[1]),
-            np.minimum(profit[2][best_neighbours], 2 * profit[2])
+            np.minimum(profit[0][best_neighbours], param['neighbour_profit_factor'] * profit[0]),
+            np.minimum(profit[1][best_neighbours], param['neighbour_profit_factor'] * profit[1]),
+            np.minimum(profit[2][best_neighbours], param['neighbour_profit_factor'] * profit[2])
         ]
 
     def multiple_turn_halite(self):
@@ -100,7 +101,7 @@ class Scheduler:
                              <maximum gathered halite after 2 turns>, ..]
         """
         halite = self.map_data.halite
-        bonus_factor = 1 + 2 * (self.map_data.in_bonus_range > 1)
+        bonus_factor = 1 + (1 + param['extra_bonus']) * (self.map_data.in_bonus_range > 1)
         bonussed_halite = bonus_factor * halite
         profit = self.mining_profit(bonussed_halite)
         move_cost = self.move_cost(halite)
@@ -165,7 +166,7 @@ class Scheduler:
         distances = self.map_data.get_distances(ship)
         return_distances = self.return_distances(ship)
         space = max(1, constants.MAX_HALITE - ship.halite_amount)
-        move_turns = distances + (halite / space) * return_distances
+        move_turns = distances + param['return_distance_factor'] * (halite / space) * return_distances
         move_turns[move_turns < 0.0] = 0.0
         return move_turns
 
@@ -227,7 +228,7 @@ class Scheduler:
         """Average returned halite per turn needed to return."""
         dropoff = self.map_data.get_closest_dropoff(ship)
         distance = self.map_data.get_entity_distance(ship, dropoff)
-        return ship.halite_amount / (2.0 * distance + 1.0)
+        return param['return_factor'] * ship.halite_amount / (2.0 * distance + 1.0)
 
     def assignment(self, ships):
         """Assign destinations to ships using an assignment algorithm."""

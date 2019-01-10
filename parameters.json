@@ -6,7 +6,13 @@
       "endgame": 100,
       "spawn_intercept": -944.8039547546,
       "spawn_turnremain": 10.1454333165,
-      "spawn_haliteremain": 0.012874983
+      "spawn_haliteremain": 0.012874983,
+      "extra_bonus": 1.0,
+      "traffic_factor": 0.8,
+      "return_distance_factor": 1.0,
+      "neighbour_profit_factor": 2.0,
+      "return_factor": 1.0,
+      "expand_edge_cost": 2.0
     },
     "40": {
       "lootfactor": 0.25,
@@ -14,7 +20,13 @@
       "endgame": 100,
       "spawn_intercept": -1367.2844853646,
       "spawn_turnremain": 11.0391321498,
-      "spawn_haliteremain": 0.0094038437
+      "spawn_haliteremain": 0.0094038437,
+      "extra_bonus": 1.0,
+      "traffic_factor": 0.8,
+      "return_distance_factor": 1.0,
+      "neighbour_profit_factor": 2.0,
+      "return_factor": 1.0,
+      "expand_edge_cost": 2.0
     },
     "48": {
       "lootfactor": 0.25,
@@ -22,7 +34,13 @@
       "endgame": 100,
       "spawn_intercept": -1427.326405122,
       "spawn_turnremain": 11.8564242467,
-      "spawn_haliteremain": 0.0053898141
+      "spawn_haliteremain": 0.0053898141,
+      "extra_bonus": 1.0,
+      "traffic_factor": 0.8,
+      "return_distance_factor": 1.0,
+      "neighbour_profit_factor": 2.0,
+      "return_factor": 1.0,
+      "expand_edge_cost": 2.0
     },
     "56": {
       "lootfactor": 0.25,
@@ -30,7 +48,13 @@
       "endgame": 100,
       "spawn_intercept": -1715.6234109409,
       "spawn_turnremain": 11.7669185912,
-      "spawn_haliteremain": 0.0048457243
+      "spawn_haliteremain": 0.0048457243,
+      "extra_bonus": 1.0,
+      "traffic_factor": 0.8,
+      "return_distance_factor": 1.0,
+      "neighbour_profit_factor": 2.0,
+      "return_factor": 1.0,
+      "expand_edge_cost": 2.0
     },
     "64": {
       "lootfactor": 0.25,
@@ -38,7 +62,13 @@
       "endgame": 100,
       "spawn_intercept": -2035.2167175879,
       "spawn_turnremain": 14.0547229255,
-      "spawn_haliteremain": 0.0028045154
+      "spawn_haliteremain": 0.0028045154,
+      "extra_bonus": 1.0,
+      "traffic_factor": 0.8,
+      "return_distance_factor": 1.0,
+      "neighbour_profit_factor": 2.0,
+      "return_factor": 1.0,
+      "expand_edge_cost": 2.0
     }
   },
   "4": {
@@ -48,7 +78,13 @@
       "endgame": 100,
       "spawn_intercept": -1239.9328029787,
       "spawn_turnremain": 8.7372892692,
-      "spawn_haliteremain": 0.0122961331
+      "spawn_haliteremain": 0.0122961331,
+      "extra_bonus": 1.0,
+      "traffic_factor": 0.8,
+      "return_distance_factor": 1.0,
+      "neighbour_profit_factor": 2.0,
+      "return_factor": 1.0,
+      "expand_edge_cost": 2.0
     },
     "40": {
       "lootfactor": 0.25,
@@ -56,7 +92,13 @@
       "endgame": 100,
       "spawn_intercept": -1472.5150708956,
       "spawn_turnremain": 10.9750777752,
-      "spawn_haliteremain": 0.006541175
+      "spawn_haliteremain": 0.006541175,
+      "extra_bonus": 1.0,
+      "traffic_factor": 0.8,
+      "return_distance_factor": 1.0,
+      "neighbour_profit_factor": 2.0,
+      "return_factor": 1.0,
+      "expand_edge_cost": 2.0
     },
     "48": {
       "lootfactor": 0.25,
@@ -64,7 +106,13 @@
       "endgame": 100,
       "spawn_intercept": -1266.3375697868,
       "spawn_turnremain": 9.8499829329,
-      "spawn_haliteremain": 0.0055426507
+      "spawn_haliteremain": 0.0055426507,
+      "extra_bonus": 1.0,
+      "traffic_factor": 0.8,
+      "return_distance_factor": 1.0,
+      "neighbour_profit_factor": 2.0,
+      "return_factor": 1.0,
+      "expand_edge_cost": 2.0
     },
     "56": {
       "lootfactor": 0.25,
@@ -72,7 +120,13 @@
       "endgame": 100,
       "spawn_intercept": -1418.5324810153,
       "spawn_turnremain": 11.3162867476,
-      "spawn_haliteremain": 0.0035897784
+      "spawn_haliteremain": 0.0035897784,
+      "extra_bonus": 1.0,
+      "traffic_factor": 0.8,
+      "return_distance_factor": 1.0,
+      "neighbour_profit_factor": 2.0,
+      "return_factor": 1.0,
+      "expand_edge_cost": 2.0
     },
     "64": {
       "lootfactor": 0.25,
@@ -80,7 +134,13 @@
       "endgame": 100,
       "spawn_intercept": -1460.8240216852,
       "spawn_turnremain": 12.1142623506,
-      "spawn_haliteremain": 0.0024147916
+      "spawn_haliteremain": 0.0024147916,
+      "extra_bonus": 1.0,
+      "traffic_factor": 0.8,
+      "return_distance_factor": 1.0,
+      "neighbour_profit_factor": 2.0,
+      "return_factor": 1.0,
+      "expand_edge_cost": 2.0
     }
   }
 }

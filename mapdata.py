@@ -306,7 +306,7 @@ class DistanceCalculator:
             to_cell(j).is_occupied
             for i in range(m) for j in neighbours(i)
         ])
-        return 0.8 * occupation
+        return min(0.99, param['traffic_factor']) * occupation
 
     def _movement_edge_costs(self, halite):
         """Edge costs describing basic movement.
@@ -386,7 +386,7 @@ class DistanceCalculator:
         boundary_indices = self._boundary_indices(ship_index)
         expand_indices = self._expand_indices(ship_index, dist_matrix)
         dists = np.array([
-            2.0 * simple_distances(index, expand_indices)
+            param['expand_edge_cost'] * simple_distances(index, expand_indices)
             for index in boundary_indices
         ])
         for i in range(len(indices)):

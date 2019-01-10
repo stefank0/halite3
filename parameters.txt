@@ -1,0 +1,35 @@
+Test and remove before sunday:
+3 and 0.25 in _global_factor()
+15/30 for dijkstra_radius/expanded_radius
+
+
+EdgeCost/Halite parameters:
+mean_halite ------------- 75.0 in movement_edge_costs()
+extra_bonus ------------- 1.0 in bonus_factor in multiple_turn_halite()
+traffic_factor ---------- 0.8 in _traffic_edge_costs()
+return_distance_factor -- 1.0 in move_turns()
+neighbour_profit_factor - 2.0 in _neighbour_profit()
+return_factor ----------- 1.0 in _return_average_halite()
+expand_edge_cost -------- 2.0 in _expand()
+
+
+Dropoff parameters:
+5 in _ship_density_difference()
+10 in _halite_density()
+1.1 in disputed_factor, expansion_factor
+search_radius in GhostDropoff
+0, 100.0 in GhostDropoff.cost()
+10, 15, 30 in GhostDropoff.turns()
+10, 0.8 in expected_halite
+parameters in is_dropoff_time()
+
+
+Attack/flee parameters:
+500 in _halite()
+TODO
+
+
+Tweak in final day:
+1.4/0.9 compared to time_taken
+5, 2 in allow_dropoff_collisions/update_returning_to_dropoff
+100, 200 in valuable()
