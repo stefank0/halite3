@@ -20,7 +20,7 @@ class Calibrator:
     dir     --> directory
     """
 
-    def __init__(self, mapsize=None, n_player=None, n_games=None, n_iter=None, convergence=0.9,
+    def __init__(self, mapsize=None, n_player=None, n_games=None, n_iter=None, convergence=0.8,
                  pars_reference='parameters.yaml', dir_replay=r'replays', bot_path=r'MyBot.py', dir_output=None):
         self.n_iter = n_iter
         self.n_games = n_games
@@ -234,11 +234,11 @@ class Calibrator:
 @click.option('--n_player', default='2', help='Number of players.', type=click.Choice(['2', '4']))
 @click.option('--n_games', default='10', help='Number of games in a iteration step.')
 @click.option('--n_iter', default='10', help='Number of iterations.')
-@click.option('--convergance', default='0.8', help='Convergance rate.')
+@click.option('--convergence', default='0.8', help='Convergance rate.')
 @click.option('--dir_output', help='Folder of previous calibration in case you want to continue a calibration.')
-def main(mapsize, n_player, n_games, n_iter, dir_output, convergance):
+def main(mapsize, n_player, n_games, n_iter, dir_output, convergence):
     calibrator = Calibrator(mapsize=int(mapsize), n_player=int(n_player),  n_games=int(n_games), n_iter=int(n_iter),
-                            convergance=float(convergance), dir_output=dir_output)
+                            convergence=float(convergence), dir_output=dir_output)
     calibrator.start()
 
 
