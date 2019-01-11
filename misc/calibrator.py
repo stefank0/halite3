@@ -171,7 +171,7 @@ class Calibrator:
             step_plus = self._pars_default[param] * self.multiplier / (1.0 - self.multiplier)
             logging.info(f'iter: {self.iter:02d} param: {param} default value: {self._pars_default[self.param]}')
             logging.info(f'iter: {self.iter:02d} param: {param} stepsize plus: {step_plus}')
-            logging.info(f'iter: {self.iter:02d} param: {param} default value: stepsize minus {step_minus}')
+            logging.info(f'iter: {self.iter:02d} param: {param} stepsize minus: {step_minus}')
             self.set_parameter(file=self._pars_low_file, step=-step_minus)
             self.set_parameter(file=self._pars_high_file, step=step_plus)
             while len(os.listdir(self._dir_iteration)) < self.n_games:
