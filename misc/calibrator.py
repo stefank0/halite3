@@ -174,8 +174,8 @@ class Calibrator:
             logging.info(f'iter: {self.iter:02d} param: {param} default value: stepsize minus {step_minus}')
             self.set_parameter(file=self._pars_low_file, step=-step_minus)
             self.set_parameter(file=self._pars_high_file, step=step_plus)
-            while len(os.listdir(self._dir_iteration)) <= self.n_games:
-                logging.info(f'iter: {self.iter:02d} param: {param} game: {len(os.listdir(self._dir_iteration))}')
+            while len(os.listdir(self._dir_iteration)) < self.n_games:
+                logging.info(f'iter: {self.iter:02d} param: {param} game: {len(os.listdir(self._dir_iteration))+1}')
                 check_output(self.args).decode("ascii")
             self.set_parameter(file=self._pars_default_file, step=self.evaluate() - self._pars_default[self.param])
 
@@ -213,6 +213,9 @@ class Calibrator:
     def evaluate(self):
         """Evaluates the result of the iteration step in the calibration"""
         result = self.result()
+        for i in range(len(result)):
+            logging.info(
+                f'iter: {self.iter:02d} param: {self.param} value: {self._params[i]:.2f} result: {result[i]:.0f}')
         result[result < result.max()] = 0
         return (self.n_player / result.sum() * result * self._params).mean()
 
@@ -237,7 +240,7 @@ class Calibrator:
 @click.option('--convergence', default='0.8', help='Convergance rate.')
 @click.option('--dir_output', help='Folder of previous calibration in case you want to continue a calibration.')
 def main(mapsize, n_player, n_games, n_iter, dir_output, convergence):
-    calibrator = Calibrator(mapsize=int(mapsize), n_player=int(n_player),  n_games=int(n_games), n_iter=int(n_iter),
+    calibrator = Calibrator(mapsize=int(mapsize), n_player=int(n_player), n_games=int(n_games), n_iter=int(n_iter),
                             convergence=float(convergence), dir_output=dir_output)
     calibrator.start()
 
