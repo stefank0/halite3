@@ -162,7 +162,7 @@ class Calibrator:
         """Run a single iteration of a list of parameters"""
         for param in params:
             logging.info(f'iter: {self.iter:02d} param: {param}')
-            if 'game' in param or 'spawn' in param:
+            if 'mean_halite' not in param:
                 continue
             self.param = param
             if not os.path.exists(self._dir_iteration):
@@ -232,9 +232,13 @@ class Calibrator:
 @click.command()
 @click.option('--mapsize', default='32', help='Mapsize.', type=click.Choice(['32', '40', '48', '56', '64']))
 @click.option('--n_player', default='2', help='Number of players.', type=click.Choice(['2', '4']))
-@click.option('--dir_output', help='Folder of previous calibration')
-def main(mapsize, n_player, dir_output):
-    calibrator = Calibrator(mapsize=int(mapsize), n_player=int(n_player), dir_output=dir_output, n_games=10, n_iter=10)
+@click.option('--n_games', default='10', help='Number of games in a iteration step.')
+@click.option('--n_iter', default='10', help='Number of iterations.')
+@click.option('--convergance', default='0.8', help='Convergance rate.')
+@click.option('--dir_output', help='Folder of previous calibration in case you want to continue a calibration.')
+def main(mapsize, n_player, n_games, n_iter, dir_output, convergance):
+    calibrator = Calibrator(mapsize=int(mapsize), n_player=int(n_player),  n_games=int(n_games), n_iter=int(n_iter),
+                            convergance=float(convergance), dir_output=dir_output)
     calibrator.start()
 
 
