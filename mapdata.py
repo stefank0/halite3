@@ -573,7 +573,9 @@ class MapData:
         self.calculator = DistanceCalculator(self.all_dropoffs, self.halite, self.enemy_threat)
         self.halite_density = self._halite_density()
         self.density_difference = self._ship_density_difference()
-        self.global_factor = self._global_factor()
+        hostile_density3 = ship_density(enemy_ships(), 3)
+        friendly_density3 = ship_density(game.me.get_ships(), 3)
+        self.density_difference3 = friendly_density3 - hostile_density3
 
     def _halite(self):
         """Get an array of available halite on the map."""
@@ -625,20 +627,6 @@ class MapData:
     def get_entity_distance(self, ship, entity):
         """"Get the perturbed distance from a ship to an Entity."""
         return self.calculator.get_entity_distance(ship, entity)
-
-    def _global_factor(self):
-        """Calculate a factor to win the race for halite."""
-        hostile_density3 = ship_density(enemy_ships(), 3)
-        friendly_density3 = ship_density(game.me.get_ships(), 3)
-        self.density_difference3 = friendly_density3 - hostile_density3
-
-        enemy_territory = np.logical_and(
-            friendly_density3 == 0.0,
-            hostile_density3 > 0.0
-        )
-        enemy_territory_factor = 1.0 - 0.75 * enemy_territory
-
-        return enemy_territory_factor
 
     def loot(self, ship):
         """Calculate enemy halite near a ship that can be stolen.

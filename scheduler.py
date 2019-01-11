@@ -193,7 +193,6 @@ class Scheduler:
 
     def create_cost_matrix(self, ships):
         """Cost matrix for linear_sum_assignment() to determine destinations."""
-        global_factor = self.map_data.global_factor
         mt_halite = self.multiple_turn_halite()
 
         cost_matrix = self.initialize_cost_matrix(ships)
@@ -202,7 +201,7 @@ class Scheduler:
             average_mt_halite = self.average(custom_mt_halite, ship)
             best_average_halite = np.maximum.reduce(average_mt_halite)
             loot = self.map_data.loot(ship)
-            cost = -1.0 * global_factor * np.maximum(best_average_halite, loot)
+            cost = -1.0 * np.maximum(best_average_halite, loot)
             cost_matrix[i][:] = cost
         return cost_matrix
 
