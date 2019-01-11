@@ -217,7 +217,7 @@ class Calibrator:
             logging.info(
                 f'iter: {self.iter:02d} param: {self.param} value: {self._params[i]:.2f} result: {result[i]:.0f}')
         result[result < result.max()] = 0
-        return (self.n_player / result.sum() * result * self._params).mean()
+        return float((self.n_player / result.sum() * result * self._params).mean())
 
     @staticmethod
     def set_parameters(file, pars):
