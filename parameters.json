@@ -3,7 +3,6 @@
     "32": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "distance": 10.0,
       "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -944.8039547546,
@@ -13,7 +12,6 @@
     "40": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "distance": 10.0,
       "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1367.2844853646,
@@ -23,7 +21,6 @@
     "48": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "distance": 10.0,
       "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1427.326405122,
@@ -33,7 +30,6 @@
     "56": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "distance": 10.0,
       "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1715.6234109409,
@@ -43,7 +39,6 @@
     "64": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "distance": 10.0,
       "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -2035.2167175879,
@@ -55,7 +50,6 @@
     "32": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "distance": 10.0,
       "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1239.9328029787,
@@ -65,7 +59,6 @@
     "40": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "distance": 10.0,
       "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1472.5150708956,
@@ -75,7 +68,6 @@
     "48": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "distance": 10.0,
       "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1266.3375697868,
@@ -85,7 +77,6 @@
     "56": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "distance": 10.0,
       "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1418.5324810153,
@@ -95,7 +86,6 @@
     "64": {
       "lootfactor": 0.25,
       "mean_halite": 75.0,
-      "distance": 10.0,
       "earlygame": 200,
       "endgame": 100,
       "spawn_intercept": -1460.8240216852,

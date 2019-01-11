@@ -20,13 +20,13 @@ class Calibrator:
     dir     --> directory
     """
 
-    def __init__(self, mapsize=None, n_player=None, n_games=None, n_iter=None, convergance=0.9,
+    def __init__(self, mapsize=None, n_player=None, n_games=None, n_iter=None, convergence=0.9,
                  pars_reference='parameters.yaml', dir_replay=r'replays', bot_path=r'MyBot.py', dir_output=None):
         self.n_iter = n_iter
         self.n_games = n_games
         self.bot_path = bot_path
         self._dir_replay = dir_replay
-        self.convergence = convergance
+        self.convergence = convergence
 
         if dir_output:
             self._dir_output = dir_output
@@ -181,8 +181,8 @@ class Calibrator:
 
     def load(self):
         """Load a calibration state"""
-        self.param = re.findall('i\d.+', self.lastest_iter)[0][3:]
-        self.iter = int(re.findall('i\d', self.lastest_iter)[0][1:])
+        self.param = re.findall('i\d.+', self.latest_iter)[0][3:]
+        self.iter = int(re.findall('i\d', self.latest_iter)[0][1:])
         self.mapsize = int(re.findall('s\d{2}', self._dir_output)[0][1:])
         self.n_player = int(re.findall('p\d', self._dir_output)[0][1:])
         self.multiplier = 0.75 if self.n_player == 4 else 0.33
@@ -190,7 +190,7 @@ class Calibrator:
             self.multiplier *= self.convergence
 
     @property
-    def lastest_iter(self):
+    def latest_iter(self):
         """Load latest iteration folder to continue later on"""
         files = os.listdir(self._dir_output)
         paths = [os.path.join(self._dir_output, basename) for basename in files]
