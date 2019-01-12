@@ -20,13 +20,15 @@ class Calibrator:
     dir     --> directory
     """
 
-    def __init__(self, mapsize=None, n_player=None, n_games=None, n_iter=None, convergence=0.9,
-                 pars_reference='parameters.yaml', dir_replay=r'replays', bot_path=r'MyBot.py', dir_output=None):
+    def __init__(self, parameters: list, mapsize=None, n_player=None, n_games=None, n_iter=None, convergence=0.8,
+                 pars_reference='parameters.yaml', dir_replay=r'replays', bot_path=r'MyBot.py', dir_output=None
+                 ):
         self.n_iter = n_iter
         self.n_games = n_games
         self.bot_path = bot_path
         self._dir_replay = dir_replay
         self.convergence = convergence
+        self._parameters = parameters
 
         if dir_output:
             self._dir_output = dir_output
@@ -144,13 +146,7 @@ class Calibrator:
         """Run game from commandline"""
         while self.iter < self.n_iter:
             logging.info(f'iter: {self.iter:02d}')
-            if self.isload:
-                params = list(self._pars_reference.keys())
-                params = params[[i for i, x in enumerate(params) if x == self.param][0]:]
-                self.param_step(params)
-                self.isload = False
-            else:
-                self.param_step(self._pars_reference.keys())
+            self.param_step()
             self.iter += 1
             self.multiplier *= self.convergence
             self.set_parameters(self._pars_default_file,
@@ -158,12 +154,10 @@ class Calibrator:
                                                                                     f'{self.iter-1}_default')))
         return 0
 
-    def param_step(self, params):
+    def param_step(self):
         """Run a single iteration of a list of parameters"""
-        for param in params:
+        for param in self._parameters:
             logging.info(f'iter: {self.iter:02d} param: {param}')
-            if 'game' in param or 'spawn' in param:
-                continue
             self.param = param
             if not os.path.exists(self._dir_iteration):
                 os.mkdir(self._dir_iteration)
@@ -171,11 +165,11 @@ class Calibrator:
             step_plus = self._pars_default[param] * self.multiplier / (1.0 - self.multiplier)
             logging.info(f'iter: {self.iter:02d} param: {param} default value: {self._pars_default[self.param]}')
             logging.info(f'iter: {self.iter:02d} param: {param} stepsize plus: {step_plus}')
-            logging.info(f'iter: {self.iter:02d} param: {param} default value: stepsize minus {step_minus}')
+            logging.info(f'iter: {self.iter:02d} param: {param} stepsize minus: {step_minus}')
             self.set_parameter(file=self._pars_low_file, step=-step_minus)
             self.set_parameter(file=self._pars_high_file, step=step_plus)
-            while len(os.listdir(self._dir_iteration)) <= self.n_games:
-                logging.info(f'iter: {self.iter:02d} param: {param} game: {len(os.listdir(self._dir_iteration))}')
+            while len(os.listdir(self._dir_iteration)) < self.n_games:
+                logging.info(f'iter: {self.iter:02d} param: {param} game: {len(os.listdir(self._dir_iteration))+1}')
                 check_output(self.args).decode("ascii")
             self.set_parameter(file=self._pars_default_file, step=self.evaluate() - self._pars_default[self.param])
 
@@ -213,8 +207,11 @@ class Calibrator:
     def evaluate(self):
         """Evaluates the result of the iteration step in the calibration"""
         result = self.result()
+        for i in range(len(result)):
+            logging.info(
+                f'iter: {self.iter:02d} param: {self.param} value: {self._params[i]:.2f} result: {result[i]:.0f}')
         result[result < result.max()] = 0
-        return (self.n_player / result.sum() * result * self._params).mean()
+        return float((self.n_player / result.sum() * result * self._params).mean())
 
     @staticmethod
     def set_parameters(file, pars):
@@ -232,9 +229,14 @@ class Calibrator:
 @click.command()
 @click.option('--mapsize', default='32', help='Mapsize.', type=click.Choice(['32', '40', '48', '56', '64']))
 @click.option('--n_player', default='2', help='Number of players.', type=click.Choice(['2', '4']))
-@click.option('--dir_output', help='Folder of previous calibration')
-def main(mapsize, n_player, dir_output):
-    calibrator = Calibrator(mapsize=int(mapsize), n_player=int(n_player), dir_output=dir_output, n_games=10, n_iter=10)
+@click.option('--n_games', default='10', help='Number of games in a iteration step.')
+@click.option('--n_iter', default='10', help='Number of iterations.')
+@click.option('--convergence', default='0.8', help='Convergance rate.')
+@click.option('--dir_output', help='Folder of previous calibration in case you want to continue a calibration.')
+def main(mapsize, n_player, n_games, n_iter, dir_output, convergence):
+    calibrator = Calibrator(parameters=['mean_halite'],
+                            mapsize=int(mapsize), n_player=int(n_player), n_games=int(n_games), n_iter=int(n_iter),
+                            convergence=float(convergence), dir_output=dir_output)
     calibrator.start()
 
 
