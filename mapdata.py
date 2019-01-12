@@ -146,9 +146,9 @@ class LinearSum:
                 continue
             cluster = []
             cls._add_to_cluster(cluster, ship, ships)
-            if not cluster_mode and len(cluster) > 30 and game_map.width > 32:
-                cluster = []
-                cls._add_to_cluster(cluster, ship, ships, radius=1)
+            #if not cluster_mode and len(cluster) > 30 and game_map.width > 32:
+            #    cluster = []
+            #    cls._add_to_cluster(cluster, ship, ships, radius=1)
             clusters.append(cluster)
         return clusters
 
@@ -182,7 +182,7 @@ class LinearSum:
             start = time.time()
             row_ind, col_ind = linear_sum_assignment(cost_matrix)
             stop = time.time()
-            if stop - start > 0.25:
+            if stop - start > 0.5:
                 cls._time_saving_mode = True
                 logging.info("Switching to time saving mode.")
             return row_ind, col_ind
