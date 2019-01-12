@@ -621,7 +621,15 @@ class MapData:
 
     def get_closest_dropoff(self, ship):
         """Get the dropoff that is closest to the ship."""
-        return self.calculator.get_closest(ship, self.all_dropoffs)
+        dists = []
+        for dropoff in self.all_dropoffs:
+            if dropoff.id == -1:
+                dists.append(self.get_entity_distance(ship, dropoff) + 5)
+            else:
+                dists.append(self.get_entity_distance(ship, dropoff))
+        idx = dists.index(min(dists))
+        logging.info(self.all_dropoffs[idx])
+        return self.all_dropoffs[idx]
 
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""

@@ -25,6 +25,7 @@ class Scheduler:
     def __init__(self, game, map_data):
         self.game_map = game.game_map
         self.me = game.me
+        self.turn_number = game.turn_number
         self.turns_left = constants.MAX_TURNS - game.turn_number
         self.ships = self.me.get_ships()
         self.map_data = map_data
@@ -308,7 +309,9 @@ class Scheduler:
     def is_dropoff_time(self):
         """Determine if it is time to create a dropoff."""
         end_game = self.turns_left < 0.2 * constants.MAX_TURNS
-        return self.ships_per_dropoff > 15 and not end_game
+        early_game = self.turn_number < 100
+        return ((early_game and self.ships_per_dropoff > 10) or
+                (not end_game and self.ships_per_dropoff > 15))
 
     def dropoff_cost(self, ship):
         """Cost of building a dropoff, taking into account reductions."""
@@ -371,6 +374,7 @@ class GhostDropoff(entity.Entity):
     search_radius2 = 25
 
     def __init__(self, map_data):
+        self.id = 999
         self.map_data = map_data
         self.calculator = map_data.calculator
         self.position = self.spawn_position()
