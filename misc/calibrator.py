@@ -69,17 +69,11 @@ class Calibrator:
 
     def __repr__(self):
         """Representation of Calibrator object"""
-        return f'Calibrator(mapsize={self.mapsize}, n_player={self.n_player}, n_games={self.n_games}, ' \
-               f'n_iter={self.n_iter}, dir_output=r"{self._dir_output}")'
+        return 'Calibrator(mapsize={}, n_player={}, n_games={}, n_iter={}, dir_output=r"{}")'.format(self.mapsize, self.n_player, self.n_games, self.n_iter, self._dir_output)
 
     def set_dir_output(self):
         """Folder where the hlt and errorlogs will be written"""
-        return os.path.join(self._dir_replay,
-                            f'calibrator_'
-                            f'd{time.strftime("%Y%m%d")}_'
-                            f't{time.strftime("%H%M%S")}_'
-                            f'p{self.n_player}_'
-                            f's{self.mapsize}')
+        return os.path.join(self._dir_replay, 'calibrator_d{}_t{}_p{}_s{}'.format(time.strftime("%Y%m%d"), time.strftime("%H%M%S"), self.n_player, self.mapsize))
 
     @property
     def args(self):
@@ -99,22 +93,22 @@ class Calibrator:
     @property
     def _pars_default_file(self):
         """File with the default parameters, which update each iteration based on the gradients per parameter"""
-        return os.path.join(self._dir_pars, f'parameters_{self.iter}_default.yaml')
+        return os.path.join(self._dir_pars, 'parameters_{}_default.yaml'.format(self.iter))
 
     @property
     def _pars_high_file(self):
         """File with the parameters and a parameter with one high step"""
-        return os.path.join(self._dir_pars, f'parameters_{self.iter}_high_{self.param}.yaml')
+        return os.path.join(self._dir_pars, 'parameters_{}_high_{}.yaml'.format(self.iter, self.param))
 
     @property
     def _pars_low_file(self):
         """File with the parameters and a parameter with one low step"""
-        return os.path.join(self._dir_pars, f'parameters_{self.iter}_low_{self.param}.yaml')
+        return os.path.join(self._dir_pars, 'parameters_{}_low_{}.yaml'.format(self.iter, self.param))
 
     @property
     def _dir_iteration(self):
         """Folder for replay and error files for an iteration"""
-        return os.path.join(self._dir_output, f'i{self.iter}_{self.param}')
+        return os.path.join(self._dir_output, 'i{}_{}'.format(self.iter, self.param))
 
     @property
     def _pars_default(self):
@@ -147,36 +141,36 @@ class Calibrator:
 
     def get_bot(self, pars):
         """cmd argument to the a single bot with certain parameters in a yaml file"""
-        return f'python {self.bot_path} {pars}'
+        return 'python {} {}'.format(self.bot_path, pars)
 
     def start(self):
         """Run game from commandline"""
         while self.iter < self.n_iter:
-            logging.info(f'iter: {self.iter:02d}')
+            logging.info('iter: {:02d}'.format(self.iter))
             self.param_step()
             self.iter += 1
             self.multiplier *= self.convergence
             self.set_parameters(self._pars_default_file,
-                                self.get_parameters(self._pars_default_file.replace(f'{self.iter}_default',
-                                                                                    f'{self.iter-1}_default')))
+                                self.get_parameters(self._pars_default_file.replace('{}_default'.format(self.iter),
+                                                                                    '{}_default'.format(self.iter-1))))
         return 0
 
     def param_step(self):
         """Run a single iteration of a list of parameters"""
         for param in self._parameters:
-            logging.info(f'iter: {self.iter:02d} param: {param}')
+            logging.info('iter: {:02d} param: {}'.format(self.iter, param))
             self.param = param
             if not os.path.exists(self._dir_iteration):
                 os.mkdir(self._dir_iteration)
             step_minus = self._pars_default[param] * self.multiplier
             step_plus = self._pars_default[param] * self.multiplier / (1.0 - self.multiplier)
-            logging.info(f'iter: {self.iter:02d} param: {param} default value: {self._pars_default[self.param]}')
-            logging.info(f'iter: {self.iter:02d} param: {param} stepsize plus: {step_plus}')
-            logging.info(f'iter: {self.iter:02d} param: {param} stepsize minus: {step_minus}')
+            logging.info('iter: {:02d} param: {} default value: {}'.format(self.iter, param, self._pars_default[self.param]))
+            logging.info('iter: {:02d} param: {} stepsize plus: {}'.format(self.iter, param, step_plus))
+            logging.info('iter: {:02d} param: {} stepsize minus: {}'.format(self.iter, param, step_minus))
             self.set_parameter(file=self._pars_low_file, step=-step_minus)
             self.set_parameter(file=self._pars_high_file, step=step_plus)
             while len(os.listdir(self._dir_iteration)) < self.n_games:
-                logging.info(f'iter: {self.iter:02d} param: {param} game: {len(os.listdir(self._dir_iteration))+1}')
+                logging.info('iter: {:02d} param: {} game: {}'.format(self.iter, param, len(os.listdir(self._dir_iteration))+1))
                 check_output(self.args).decode("ascii")
             self.set_parameter(file=self._pars_default_file, step=self.evaluate() - self._pars_default[self.param])
 
@@ -216,7 +210,7 @@ class Calibrator:
         result = self.result()
         for i in range(len(result)):
             logging.info(
-                f'iter: {self.iter:02d} param: {self.param} value: {self._params[i]:.2f} result: {result[i]:.0f}')
+                'iter: {:02d} param: {} value: {:.2f} result: {:.0f}'.format(self.iter, self.param, self._params[i], result[i]))
         result[result < result.max()] = 0
         return float((self.n_player / result.sum() * result * self._params).mean())
 
