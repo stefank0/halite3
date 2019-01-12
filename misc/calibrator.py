@@ -1,4 +1,4 @@
-import re
+import re, sys
 import logging
 import click
 import yaml
@@ -8,7 +8,14 @@ import os
 
 import numpy as np
 
+sys.path.append('../')
+sys.path.append('')
+
 from misc.parse import evaluate_folder
+from parameters import CALIBRATION
+
+if not CALIBRATION:
+    raise Exception('parameters.CALIBRATION is set to False.')
 
 
 class Calibrator:

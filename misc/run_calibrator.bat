@@ -1,1 +1,1 @@
-start cmd /k "cd .. && python misc\calibrator.py --mapsize=48 --n_player=4"
+start cmd /k "cd .. && python misc\calibrator.py --mapsize=48 --n_player=4 --n_games=20 --n_iter=10"

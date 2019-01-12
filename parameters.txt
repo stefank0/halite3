@@ -1,5 +1,4 @@
 Live tests:
-get back to 97 (by reverting changes)
 1000 mean_halite parameter
 with/without expand_radius
 train end_game parameter
