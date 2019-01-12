@@ -43,13 +43,10 @@ def _new_ships_are_all_mine():
 
 def old_want_to_spawn():
     """Old implementation of want_to_spawn()."""
-    if _new_ships_are_all_mine():
-        return False
-    is_early_game = game.turn_number <= param['earlygame']
     is_late_game = game.turn_number >= (constants.MAX_TURNS - param['endgame'])
-    is_mid_game = (not is_early_game) and (not is_late_game)
-    return is_early_game or (is_mid_game and _ship_number_falling_behind())
-
+    if _new_ships_are_all_mine() or is_late_game:
+        return False
+    return _ship_number_falling_behind()
 
 def new_want_to_spawn():
     """New implementation of want_to_spawn()."""
@@ -59,15 +56,12 @@ def new_want_to_spawn():
     haliteremain = halite.sum()
     return (param['spawn_intercept'] +
             param['spawn_turnremain'] * turnremain +
-            param['spawn_haliteremain'] * haliteremain) > 1000
+            param['spawn_haliteremain'] * haliteremain) > 2000
 
 
 def want_to_spawn():
     """Return True if we would like to spawn a new ship."""
-    if len(game.players) == 4:
-        return new_want_to_spawn()
-    else:
-        return new_want_to_spawn()
+    return new_want_to_spawn() or old_want_to_spawn()
 
 
 def can_spawn(command_queue):

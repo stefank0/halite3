@@ -3,6 +3,7 @@ from hlt import constants, entity
 import numpy as np
 from mapdata import to_cell, to_index, can_move, LinearSum, neighbours, simple_distance, enemy_ships
 from schedule import Schedule
+from parameters import param
 
 returning_to_dropoff = set()
 
@@ -70,9 +71,9 @@ class Scheduler:
         key = lambda index: profit_mining_once[index]
         best_neighbours = [max(neighbours(i), key=key) for i in range(m)]
         return [
-            np.minimum(profit[0][best_neighbours], 2 * profit[0]),
-            np.minimum(profit[1][best_neighbours], 2 * profit[1]),
-            np.minimum(profit[2][best_neighbours], 2 * profit[2])
+            np.minimum(profit[0][best_neighbours], param['neighbour_profit_factor'] * profit[0]),
+            np.minimum(profit[1][best_neighbours], param['neighbour_profit_factor'] * profit[1]),
+            np.minimum(profit[2][best_neighbours], param['neighbour_profit_factor'] * profit[2])
         ]
 
     def multiple_turn_halite(self):
@@ -100,7 +101,7 @@ class Scheduler:
                              <maximum gathered halite after 2 turns>, ..]
         """
         halite = self.map_data.halite
-        bonus_factor = 1 + 2 * (self.map_data.in_bonus_range > 1)
+        bonus_factor = 1 + (1 + param['extra_bonus']) * (self.map_data.in_bonus_range > 1)
         bonussed_halite = bonus_factor * halite
         profit = self.mining_profit(bonussed_halite)
         move_cost = self.move_cost(halite)
@@ -165,7 +166,7 @@ class Scheduler:
         distances = self.map_data.get_distances(ship)
         return_distances = self.return_distances(ship)
         space = max(1, constants.MAX_HALITE - ship.halite_amount)
-        move_turns = distances + (halite / space) * return_distances
+        move_turns = distances + param['return_distance_factor'] * (halite / space) * return_distances
         move_turns[move_turns < 0.0] = 0.0
         return move_turns
 
@@ -183,10 +184,7 @@ class Scheduler:
     def customize(self, mt_halite, ship):
         """Customize multiple_turn_halite for a specific ship."""
         space = constants.MAX_HALITE - ship.halite_amount
-        custom_halite = [np.minimum(halite, space) for halite in mt_halite]
-        loot = self.map_data.loot(ship)
-        custom_halite[0] = np.maximum(custom_halite[0], loot)
-        return custom_halite
+        return [np.minimum(halite, space) for halite in mt_halite]
 
     def initialize_cost_matrix(self, ships):
         """Ïnitialize the cost matrix with the correct shape."""
@@ -195,7 +193,6 @@ class Scheduler:
 
     def create_cost_matrix(self, ships):
         """Cost matrix for linear_sum_assignment() to determine destinations."""
-        global_factor = self.map_data.global_factor
         mt_halite = self.multiple_turn_halite()
 
         cost_matrix = self.initialize_cost_matrix(ships)
@@ -203,7 +200,9 @@ class Scheduler:
             custom_mt_halite = self.customize(mt_halite, ship)
             average_mt_halite = self.average(custom_mt_halite, ship)
             best_average_halite = np.maximum.reduce(average_mt_halite)
-            cost_matrix[i][:] = -1.0 * global_factor * best_average_halite
+            loot = self.map_data.loot(ship)
+            cost = -1.0 * np.maximum(best_average_halite, loot)
+            cost_matrix[i][:] = cost
         return cost_matrix
 
     def _kamikaze_cost(self, dropoff_index, ship_index, enemy_ship):
@@ -228,7 +227,7 @@ class Scheduler:
         """Average returned halite per turn needed to return."""
         dropoff = self.map_data.get_closest_dropoff(ship)
         distance = self.map_data.get_entity_distance(ship, dropoff)
-        return ship.halite_amount / (2.0 * distance + 1.0)
+        return param['return_factor'] * ship.halite_amount / (2.0 * distance + 1.0)
 
     def assignment(self, ships):
         """Assign destinations to ships using an assignment algorithm."""
