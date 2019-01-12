@@ -609,7 +609,7 @@ class MapData:
         """Get the dropoff that is closest to the ship."""
         dists = []
         for dropoff in self.all_dropoffs:
-            if (dropoff.id == -1) and (not game.turn_number < 0.75 * constants.MAX_TURNS):
+            if (dropoff.id == -1) and (game.turn_number < 0.5 * constants.MAX_TURNS):
                 dists.append(self.get_entity_distance(ship, dropoff) + 5)
             else:
                 dists.append(self.get_entity_distance(ship, dropoff))

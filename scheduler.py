@@ -288,6 +288,7 @@ class Scheduler:
     def dropoff_planning(self, remaining_ships):
         """Handle dropoff planning and placement."""
         if self.is_dropoff_time():
+            logging.info('is dropoff time')
             if self.ghost:
                 ship = self.dropoff_ship()
                 if ship:
@@ -309,8 +310,9 @@ class Scheduler:
     def is_dropoff_time(self):
         """Determine if it is time to create a dropoff."""
         end_game = self.turns_left < 0.2 * constants.MAX_TURNS
-        early_game = self.turn_number < 100
-        return (not end_game and self.ships_per_dropoff > 15)
+        early_game = self.turn_number < 150
+        return ((not end_game and self.ships_per_dropoff > 15) and
+                (early_game and self.ships_per_dropoff > 10))
 
     def dropoff_cost(self, ship):
         """Cost of building a dropoff, taking into account reductions."""
