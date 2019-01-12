@@ -84,22 +84,6 @@ def circle(index, radius):
     ]
 
 
-def calc_density(radius, array, count_self=True):
-    """Calculate a density map based on a radius (sum of density and array remain the same)."""
-    density = np.zeros(array.shape)
-    if count_self:
-        density = array.copy() / (radius + 1)
-    for dist in range(1, radius + 1):
-        x = dist
-        while x >= 1:
-            density += np.roll(np.roll(array, dist - x, 0), x, 1) / ((radius + 1) * dist * 4)  # southeast
-            density += np.roll(np.roll(array, dist - x, 1), -x, 0) / ((radius + 1) * dist * 4)  # northeast
-            density += np.roll(np.roll(array, -dist + x, 0), -x, 1) / ((radius + 1) * dist * 4)  # northwest
-            density += np.roll(np.roll(array, -dist + x, 1), x, 0) / ((radius + 1) * dist * 4)  # southwest
-            x += -1
-    return density
-
-
 def density(base_density, radius):
     """Smooth/distribute a base density over a region."""
     base_density_sum = base_density.sum()
@@ -162,9 +146,9 @@ class LinearSum:
                 continue
             cluster = []
             cls._add_to_cluster(cluster, ship, ships)
-            if not cluster_mode and len(cluster) > 30 and game_map.width > 32:
-                cluster = []
-                cls._add_to_cluster(cluster, ship, ships, radius=1)
+            #if not cluster_mode and len(cluster) > 30 and game_map.width > 32:
+            #    cluster = []
+            #    cls._add_to_cluster(cluster, ship, ships, radius=1)
             clusters.append(cluster)
         return clusters
 
@@ -198,7 +182,7 @@ class LinearSum:
             start = time.time()
             row_ind, col_ind = linear_sum_assignment(cost_matrix)
             stop = time.time()
-            if stop - start > 0.25:
+            if stop - start > 0.5:
                 cls._time_saving_mode = True
                 logging.info("Switching to time saving mode.")
             return row_ind, col_ind
@@ -322,7 +306,7 @@ class DistanceCalculator:
             to_cell(j).is_occupied
             for i in range(m) for j in neighbours(i)
         ])
-        return 0.8 * occupation
+        return min(0.99, param['traffic_factor']) * occupation
 
     def _movement_edge_costs(self, halite):
         """Edge costs describing basic movement.
@@ -402,7 +386,7 @@ class DistanceCalculator:
         boundary_indices = self._boundary_indices(ship_index)
         expand_indices = self._expand_indices(ship_index, dist_matrix)
         dists = np.array([
-            2.0 * simple_distances(index, expand_indices)
+            param['expand_edge_cost'] * simple_distances(index, expand_indices)
             for index in boundary_indices
         ])
         for i in range(len(indices)):
@@ -589,7 +573,9 @@ class MapData:
         self.calculator = DistanceCalculator(self.all_dropoffs, self.halite, self.enemy_threat)
         self.halite_density = self._halite_density()
         self.density_difference = self._ship_density_difference()
-        self.global_factor = self._global_factor()
+        hostile_density3 = ship_density(enemy_ships(), 3)
+        friendly_density3 = ship_density(game.me.get_ships(), 3)
+        self.density_difference3 = friendly_density3 - hostile_density3
 
     def _halite(self):
         """Get an array of available halite on the map."""
@@ -606,16 +592,16 @@ class MapData:
         """Get density of halite map with radius"""
         return density(self.halite, 10)
 
-    def _ship_density(self, ships, radius, count_self=True):
+    def _ship_density(self, ships, radius):
         """Get density of ships."""
-        density = np.zeros(game_map.height * game_map.width)
+        ship_density = np.zeros(game_map.height * game_map.width)
         ship_indices = [to_index(ship) for ship in ships]
-        density[ship_indices] = 1
-        return calc_density(radius, density.reshape(game_map.height, game_map.width), count_self).ravel()
+        ship_density[ship_indices] = 1
+        return density(ship_density, radius)
 
     def _ship_density_difference(self):
         """Get density of friendly - hostile ships"""
-        friendly_density = self._ship_density(game.me.get_ships(), 5, count_self=False)
+        friendly_density = self._ship_density(game.me.get_ships(), 5)
         self.hostile_density = self._ship_density(enemy_ships(), 5)
         return friendly_density - self.hostile_density
 
@@ -650,20 +636,6 @@ class MapData:
         """"Get the perturbed distance from a ship to an Entity."""
         return self.calculator.get_entity_distance(ship, entity)
 
-    def _global_factor(self):
-        """Calculate a factor to win the race for halite."""
-        hostile_density3 = ship_density(enemy_ships(), 3)
-        friendly_density3 = ship_density(game.me.get_ships(), 3)
-        self.density_difference3 = friendly_density3 - hostile_density3
-
-        enemy_territory = np.logical_and(
-            friendly_density3 == 0.0,
-            hostile_density3 > 0.0
-        )
-        enemy_territory_factor = 1.0 - 0.75 * enemy_territory
-
-        return enemy_territory_factor
-
     def loot(self, ship):
         """Calculate enemy halite near a ship that can be stolen.
 
@@ -676,8 +648,8 @@ class MapData:
         dropoff_dists = self.calculator.simple_dropoff_distances
         loot = np.zeros(m)
 
-        # if len(game.players) == 4 and game.turn_number < 0.75 * constants.MAX_TURNS:
-        #     return loot
+        if len(game.players) == 4 and game.turn_number < 0.75 * constants.MAX_TURNS:
+            return loot
 
         for enemy_ship in _nearby_enemy_ships(ship):
             enemy_index = to_index(enemy_ship)
