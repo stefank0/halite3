@@ -1,12 +1,10 @@
 # Schildpad
 
 ## TODO
-- (Stefan) Isolate parameters that should be trained.
-- (Stefan) Check qualitative behavior, check if parameters are broad enough, or that rules needs to reimplemented. Check if some features can be removed (global factor, expand_radius, ..).
-- (Stefan/Jonne/Renko) Check lost games and see what goes wrong (check mlomb for timeouts):
-    - Ship graveyards (mostly with reCurs3)(maybe let him solve it?)
-- (Renko/Jonne) Improve ship spawn decision. Estimate return_on_investment(n_turns_left, n_ships, halite_available, n_players, map). Make a fit on real data, plot measured return_on_investment vs predicted return_on_investment.
-- (Jonne) Optimize constants: Use gradient decent algorithm. One constant/dimension at the time, one step all together. Define constants per map size and players. Train parameter subset at a time? Train against fixed opponents (old versions)?
+- Train parameters (parameters.txt)
+- Reimplement dropoff_time()
+- Reimplement/reparameterize attack/flee
+- Check lost games and see what goes wrong (check mlomb for timeouts)
 
 ## NOT TODO
 - Performance improvements (linear_sum_assignment in Cython)(simpler/faster shortest path algorithm)(PyCUDA GPU)(avoid calculations: not can_move() implies stay_still(), so no neighbour index shortest path necessary)(reuse calculations: attempt for simple_distances was probably slow because it made a slice, make python list of 1D arrays instead)(smaller clusters for linear_sum_assignment, ships in the smaller cluster cannot use all moves to avoid collisions in Schedule).

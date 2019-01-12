@@ -1,5 +1,11 @@
+Live tests:
+get back to 97 (by reverting changes)
+1000 mean_halite parameter
+with/without expand_radius
+train end_game parameter
+
+
 Test and remove before sunday:
-3 and 0.25 in _global_factor()
 15/30 for dijkstra_radius/expanded_radius
 
 
