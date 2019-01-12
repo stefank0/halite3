@@ -640,8 +640,8 @@ class MapData:
         dropoff_dists = self.calculator.simple_dropoff_distances
         loot = np.zeros(m)
 
-        # if len(game.players) == 4 and game.turn_number < 0.75 * constants.MAX_TURNS:
-        #     return loot
+        if len(game.players) == 4 and game.turn_number < 0.75 * constants.MAX_TURNS:
+            return loot
 
         for enemy_ship in _nearby_enemy_ships(ship):
             enemy_index = to_index(enemy_ship)
