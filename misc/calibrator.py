@@ -185,7 +185,7 @@ class Calibrator:
             logging.info('iter: {:02d} param: {} stepsize minus: {}'.format(self.iter, param, step_minus))
             self.set_parameter(file=self._pars_low_file, step=-step_minus)
             self.set_parameter(file=self._pars_high_file, step=step_plus)
-            while len(os.listdir(self._dir_iteration)) < self.n_games:
+            while len(glob.glob(os.path.join(self._dir_iteration, '*.hlt'))) < self.n_games:
                 logging.info('iter: {:02d} param: {} game: {}'.format(self.iter, param, len(os.listdir(self._dir_iteration))+1))
                 check_output(self.args).decode("ascii")
             self.set_parameter(file=self._pars_default_file, step=self.evaluate() - self._pars_default[self.param])
