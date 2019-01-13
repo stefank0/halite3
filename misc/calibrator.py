@@ -9,6 +9,8 @@ from subprocess import check_output
 import os
 
 import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
 
 sys.path.append('../')
 sys.path.append('')
@@ -30,7 +32,7 @@ class Calibrator:
     """
 
     def __init__(self, parameters: list, mapsize=None, n_player=None, n_games=None, n_iter=None, convergence=0.8,
-                 pars_reference='parameters.yaml', dir_replay=r'replays', bot_path=r'MyBot.py', dir_output=None
+                 pars_reference='parameters.json', dir_replay=r'replays', bot_path=r'MyBot.py', dir_output=None
                  ):
         self.n_iter = n_iter
         self.n_games = n_games
@@ -53,13 +55,14 @@ class Calibrator:
             self.isload = False
         self._dir_pars = os.path.join(self._dir_output, 'pars')
         self._pars_reference_file = pars_reference
-        self._pars_reference = self.get_parameters(self._pars_reference_file)
+        self._pars_reference = self.get_parameters_ref()
         self._log = os.path.join(self._dir_output, '.log')
         if self.iter == 0:
             os.mkdir(self._dir_output)
             os.mkdir(self._dir_pars)
             with open(self._log, 'w'):
                 pass
+            self.set_parameters(self._pars_default_start_file, self._pars_reference)
             self.set_parameters(self._pars_default_file, self._pars_reference)
         logging.basicConfig(filename=os.path.join(self._dir_output, '.log'),
                             level=logging.INFO,
@@ -91,6 +94,11 @@ class Calibrator:
                            self.get_bot(self._pars_low_file),
                            self.get_bot(self._pars_high_file),
                            self.get_bot(self._pars_default_file)]
+
+    @property
+    def _pars_default_start_file(self):
+        """File with the default parameters, which update each iteration based on the gradients per parameter"""
+        return os.path.join(self._dir_pars, 'parameters_default_start.yaml')
 
     @property
     def _pars_default_file(self):
