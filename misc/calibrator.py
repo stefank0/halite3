@@ -78,7 +78,8 @@ class Calibrator:
     @property
     def args(self):
         """cmd arguments to run a halite game"""
-        args = ['misc\halite.exe', '-vvv', '--no-logs', '--no-timeout',
+        exe = 'misc/halite' if sys.platform == 'linux' else 'misc\halite.exe'
+        args = [exe, '-vvv', '--no-logs', '--no-timeout',
                 '--replay-directory', self._dir_iteration,
                 '--width', str(self.mapsize),
                 '--height', str(self.mapsize)]
@@ -141,7 +142,10 @@ class Calibrator:
 
     def get_bot(self, pars):
         """cmd argument to the a single bot with certain parameters in a yaml file"""
-        return 'python {} {}'.format(self.bot_path, pars)
+        if sys.platform == 'linux':
+            return 'python3 {} {}'.format(self.bot_path, pars)
+        else:
+            return 'python {} {}'.format(self.bot_path, pars)
 
     def start(self):
         """Run game from commandline"""
