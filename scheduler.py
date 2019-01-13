@@ -19,9 +19,10 @@ class Scheduler:
         cls.ghost = GhostDropoff(map_data)
 
     @classmethod
-    def remove_ghost_dropoff(cls):
+    def remove_ghost_dropoff(cls, map_data):
         """Remove the ghost dropoff from the class."""
         cls.ghost = None
+        map_data.all_dropoffs = map_data.dropoffs
 
     def __init__(self, game, map_data):
         self.game_map = game.game_map
@@ -295,16 +296,16 @@ class Scheduler:
                     self.schedule.dropoff(ship)
                     self.map_data.dropoffs.append(ship)
                     remaining_ships.remove(ship)
-                    self.remove_ghost_dropoff()
+                    self.remove_ghost_dropoff(self.map_data)
                 else:
                     self.ghost.move()
             else:
                 if self.expected_halite > constants.DROPOFF_COST:
                     self.spawn_ghost_dropoff(self.map_data)
             if self.ghost and self.ghost.position is None:
-                self.remove_ghost_dropoff()
+                self.remove_ghost_dropoff(self.map_data)
         else:
-            self.remove_ghost_dropoff()
+            self.remove_ghost_dropoff(self.map_data)
         Scheduler.free_halite = self._free_halite()
 
     def is_dropoff_time(self):

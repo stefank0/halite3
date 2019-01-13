@@ -10,7 +10,11 @@ ARBITRARY_ID = -1
 
 def parse_replay_file(file):
     with open(file, 'rb') as f:
-        return json.loads(zstd.loads(f.read()))
+        content = zstd.loads(f.read())
+        try:
+            return json.loads(content)
+        except TypeError:
+            return json.loads(content.decode('utf-8'))
 
 
 def parse_replay_folder(folder, max_files=None):

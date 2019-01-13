@@ -83,7 +83,8 @@ class Calibrator:
     @property
     def args(self):
         """cmd arguments to run a halite game"""
-        args = ['misc\halite.exe', '-vvv', '--no-logs', '--no-timeout',
+        exe = 'misc/halite' if sys.platform == 'linux' else 'misc\halite.exe'
+        args = [exe, '-vvv', '--no-logs', '--no-timeout',
                 '--replay-directory', self._dir_iteration,
                 '--width', str(self.mapsize),
                 '--height', str(self.mapsize)]
@@ -151,7 +152,10 @@ class Calibrator:
 
     def get_bot(self, pars):
         """cmd argument to the a single bot with certain parameters in a yaml file"""
-        return 'python {} {}'.format(self.bot_path, pars)
+        if sys.platform == 'linux':
+            return 'python3 {} {}'.format(self.bot_path, pars)
+        else:
+            return 'python {} {}'.format(self.bot_path, pars)
 
     def start(self):
         """Run game from commandline"""
@@ -281,7 +285,7 @@ class Calibrator:
 @click.option('--n_player', default='2', help='Number of players.', type=click.Choice(['2', '4']))
 @click.option('--n_games', default='10', help='Number of games in a iteration step.')
 @click.option('--n_iter', default='10', help='Number of iterations.')
-@click.option('--convergence', default='0.8', help='Convergance rate.')
+@click.option('--convergence', default='0.8', help='Convergence rate.')
 @click.option('--dir_output', help='Folder of previous calibration in case you want to continue a calibration.')
 def main(mapsize, n_player, n_games, n_iter, dir_output, convergence):
     calibrator = Calibrator(parameters=['extra_bonus', 'lootfactor'],
