@@ -2,7 +2,7 @@ CALIBRATION = False
 
 
 try:
-    with open('parameters.yaml') as f:
+    with open('CALIBRATION.txt') as f:
         CALIBRATION = True
 except:
     pass

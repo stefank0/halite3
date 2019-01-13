@@ -7,6 +7,7 @@ from scipy.optimize import linear_sum_assignment
 import numpy as np
 
 from hlt import Position, constants
+from hlt.entity import Shipyard
 from parameters import param
 
 
@@ -605,16 +606,17 @@ class MapData:
         self.hostile_density = self._ship_density(enemy_ships(), 5)
         return friendly_density - self.hostile_density
 
+    def _perturbed_dropoff_distance(self, ship, dropoff):
+        """Higher Shipyard distance to encourage moving to dropoffs."""
+        is_shipyard = isinstance(dropoff, Shipyard)
+        is_early = game.turn_number < 0.5 * constants.MAX_TURNS
+        distance = self.get_entity_distance(ship, dropoff)
+        return distance + 5 if (is_shipyard and is_early) else distance
+
     def get_closest_dropoff(self, ship):
         """Get the dropoff that is closest to the ship."""
-        dists = []
-        for dropoff in self.all_dropoffs:
-            if (dropoff.id == -1) and (game.turn_number < 0.5 * constants.MAX_TURNS):
-                dists.append(self.get_entity_distance(ship, dropoff) + 5)
-            else:
-                dists.append(self.get_entity_distance(ship, dropoff))
-        idx = dists.index(min(dists))
-        return self.all_dropoffs[idx]
+        key = lambda dropoff: self._perturbed_dropoff_distance(ship, dropoff)
+        return min(self.all_dropoffs, key=key)
 
     def free_turns(self, ship):
         """Get the number of turns that the ship can move freely."""
