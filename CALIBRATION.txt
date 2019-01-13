@@ -1,0 +1,1 @@
+If present, parameters.CALIBRATION is set to True.

@@ -376,7 +376,6 @@ class GhostDropoff(entity.Entity):
     search_radius2 = 25
 
     def __init__(self, map_data):
-        self.id = 999
         self.map_data = map_data
         self.calculator = map_data.calculator
         self.position = self.spawn_position()
