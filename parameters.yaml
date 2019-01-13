@@ -7,9 +7,9 @@ spawn_haliteremain: 0.0055426507
 lootfactor: 0.25
 
 # Estimation of average halite collection per turn (can also be calculated)
-mean_halite: 75.0
+mean_halite: 150.0
 
-extra_bonus: 1.0
+extra_bonus: 0.5
 traffic_factor: 0.8
 return_distance_factor: 1.0
 neighbour_profit_factor: 2.0
