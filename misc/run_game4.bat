@@ -1,1 +1,1 @@
-halite.exe --replay-directory ../replays/ -vvv -n 4 "python ../MyBot.py ../parameters.yaml" "python ../MyBot.py ../parameters.yaml" "python ../MyBot.py ../parameters.yaml" "python ../MyBot.py ../parameters.yaml"
+halite.exe --replay-directory ../replays/ -vvv -n 4 "python ../MyBot.py" "python ../MyBot.py" "python ../MyBot.py" "python ../MyBot.py"
