@@ -1,3 +1,5 @@
+import glob
+import json
 import re, sys
 import logging
 import click
@@ -93,22 +95,22 @@ class Calibrator:
     @property
     def _pars_default_file(self):
         """File with the default parameters, which update each iteration based on the gradients per parameter"""
-        return os.path.join(self._dir_pars, 'parameters_{}_default.yaml'.format(self.iter))
+        return os.path.join(self._dir_pars, 'parameters_{:02d}_default.yaml'.format(self.iter))
 
     @property
     def _pars_high_file(self):
         """File with the parameters and a parameter with one high step"""
-        return os.path.join(self._dir_pars, 'parameters_{}_high_{}.yaml'.format(self.iter, self.param))
+        return os.path.join(self._dir_pars, 'parameters_{:02d}_high_{}.yaml'.format(self.iter, self.param))
 
     @property
     def _pars_low_file(self):
         """File with the parameters and a parameter with one low step"""
-        return os.path.join(self._dir_pars, 'parameters_{}_low_{}.yaml'.format(self.iter, self.param))
+        return os.path.join(self._dir_pars, 'parameters_{:02d}_low_{}.yaml'.format(self.iter, self.param))
 
     @property
     def _dir_iteration(self):
         """Folder for replay and error files for an iteration"""
-        return os.path.join(self._dir_output, 'i{}_{}'.format(self.iter, self.param))
+        return os.path.join(self._dir_output, 'i{:02d}_{}'.format(self.iter, self.param))
 
     @property
     def _pars_default(self):
@@ -150,10 +152,12 @@ class Calibrator:
             self.param_step()
             self.iter += 1
             self.multiplier *= self.convergence
+            if self.iter == self.n_iter:
+                self.report()
+                return 0
             self.set_parameters(self._pars_default_file,
-                                self.get_parameters(self._pars_default_file.replace('{}_default'.format(self.iter),
-                                                                                    '{}_default'.format(self.iter-1))))
-        return 0
+                                self.get_parameters(self._pars_default_file.replace('{:02d}_default'.format(self.iter),
+                                                                                    '{:02d}_default'.format(self.iter-1))))
 
     def param_step(self):
         """Run a single iteration of a list of parameters"""
@@ -173,11 +177,12 @@ class Calibrator:
                 logging.info('iter: {:02d} param: {} game: {}'.format(self.iter, param, len(os.listdir(self._dir_iteration))+1))
                 check_output(self.args).decode("ascii")
             self.set_parameter(file=self._pars_default_file, step=self.evaluate() - self._pars_default[self.param])
+        return 0
 
     def load(self):
         """Load a calibration state"""
         self.param = re.findall('i\d.+', self.latest_iter)[0][3:]
-        self.iter = int(re.findall('i\d', self.latest_iter)[0][1:])
+        self.iter = int(re.findall('i\d{2}', self.latest_iter)[0][1:])
         self.mapsize = int(re.findall('s\d{2}', self._dir_output)[0][1:])
         self.n_player = int(re.findall('p\d', self._dir_output)[0][1:])
         self.multiplier = 0.75 if self.n_player == 4 else 0.33
@@ -214,17 +219,53 @@ class Calibrator:
         result[result < result.max()] = 0
         return float((self.n_player / result.sum() * result * self._params).mean())
 
+    def report(self):
+        files = glob.glob(os.path.join(self._dir_pars, '*default.yaml'))
+        for param in self._parameters:
+            with open(self._pars_default_start_file) as f:
+                params = yaml.load(f)
+            result = {param: [params[param]], param + '_low': [np.nan], param + '_high': [np.nan]}
+            for file in files:
+                with open(file.replace('default', 'low_{}'.format(param))) as f:
+                    params = yaml.load(f)
+                result[param + '_low'].append(params[param])
+                with open(file.replace('default', 'high_{}'.format(param))) as f:
+                    params = yaml.load(f)
+                result[param + '_high'].append(params[param])
+                with open(file) as f:
+                    params = yaml.load(f)
+                result[param].append(params[param])
+            df = pd.DataFrame(result)
+            fig, ax = plt.subplots()
+            df.plot(ax=ax)
+            ax.set_xlabel('n_iter')
+            ax.set_ylabel(param)
+            ax.set_title(param)
+            ax.grid()
+            fig.savefig(os.path.join(self._dir_pars, 'report_{}'.format(param)))
+
     @staticmethod
     def set_parameters(file, pars):
         """Set a dict of parameters to be calibrated to file"""
         with open(file, 'w') as f:
             return yaml.dump(pars, f, default_flow_style=False)
 
+    def get_parameters_ref(self):
+        """Load mapsize/#players specific parameters from json file."""
+        parameters = self.get_parameters_json(self._pars_reference_file)
+        return parameters[str(self.n_player)][str(self.mapsize)]
+
     @staticmethod
     def get_parameters(file):
         """Get a dict of parameters to be calibrated"""
         with open(file) as f:
             return yaml.load(f)
+
+    @staticmethod
+    def get_parameters_json(filename):
+        """Load content of a json file."""
+        with open(filename) as f:
+            return json.load(f)
 
 
 @click.command()
@@ -235,7 +276,7 @@ class Calibrator:
 @click.option('--convergence', default='0.8', help='Convergance rate.')
 @click.option('--dir_output', help='Folder of previous calibration in case you want to continue a calibration.')
 def main(mapsize, n_player, n_games, n_iter, dir_output, convergence):
-    calibrator = Calibrator(parameters=['mean_halite'],
+    calibrator = Calibrator(parameters=['extra_bonus', 'lootfactor'],
                             mapsize=int(mapsize), n_player=int(n_player), n_games=int(n_games), n_iter=int(n_iter),
                             convergence=float(convergence), dir_output=dir_output)
     calibrator.start()
