@@ -1,5 +1,13 @@
 CALIBRATION = False
 
+
+try:
+    with open('parameters.yaml') as f:
+        CALIBRATION = True
+except:
+    pass
+
+
 if CALIBRATION:
     import argparse, yaml
 
