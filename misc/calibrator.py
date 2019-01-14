@@ -253,9 +253,9 @@ class Calibrator:
             df.plot(ax=ax)
             ax.set_xlabel('n_iter')
             ax.set_ylabel(param)
-            ax.set_title(param)
+            ax.set_title('{}_p{}_s{}'.format(param, self.n_player, self.mapsize))
             ax.grid()
-            fig.savefig(os.path.join(self._dir_pars, 'report_{}'.format(param)))
+            fig.savefig(os.path.join(self._dir_pars, 'report_{}_p{}_s{}'.format(param, self.n_player, self.mapsize)))
 
     @staticmethod
     def set_parameters(file, pars):
