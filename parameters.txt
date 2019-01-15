@@ -4,13 +4,13 @@ train end_game parameter
 
 
 Dropoff parameters:
-5 in _ship_density_difference()
-10 in _halite_density()
+5 in _ship_density_difference() --> too low effect?
+10 in _halite_density() --> too low effect?
 1.1 in disputed_factor, expansion_factor
-search_radius in GhostDropoff
+search_radius in GhostDropoff  --> only relevant for mapsize 32 4p between 10-20?
 0, 100.0 in GhostDropoff.cost()
 10, 15, 30 in GhostDropoff.turns()
-10, 0.8 in expected_halite
+10, 0.8 in expected_halite --> too low effect?
 parameters in is_dropoff_time()
 
 
