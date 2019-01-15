@@ -13,7 +13,9 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 1.0
+      "threat": 1.0,
+      "search_radius1": 15,
+      "search_radius2": 25
     },
     "40": {
       "lootfactor": 0.25,
@@ -28,7 +30,9 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 1.0
+      "threat": 1.0,
+      "search_radius1": 15,
+      "search_radius2": 25
     },
     "48": {
       "lootfactor": 0.25,
@@ -43,7 +47,9 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 1.0
+      "threat": 1.0,
+      "search_radius1": 15,
+      "search_radius2": 25
     },
     "56": {
       "lootfactor": 0.25,
@@ -58,7 +64,9 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 1.0
+      "threat": 1.0,
+      "search_radius1": 15,
+      "search_radius2": 25
     },
     "64": {
       "lootfactor": 0.25,
@@ -73,7 +81,9 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 1.0
+      "threat": 1.0,
+      "search_radius1": 15,
+      "search_radius2": 25
     }
   },
   "4": {
@@ -90,7 +100,9 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0
+      "threat": 5.0,
+      "search_radius1": 10,
+      "search_radius2": 20
     },
     "40": {
       "lootfactor": 0.25,
@@ -105,7 +117,9 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0
+      "threat": 5.0,
+      "search_radius1": 15,
+      "search_radius2": 25
     },
     "48": {
       "lootfactor": 0.25,
@@ -120,7 +134,9 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0
+      "threat": 5.0,
+      "search_radius1": 15,
+      "search_radius2": 25
     },
     "56": {
       "lootfactor": 0.25,
@@ -135,7 +151,9 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0
+      "threat": 5.0,
+      "search_radius1": 15,
+      "search_radius2": 25
     },
     "64": {
       "lootfactor": 0.25,
@@ -150,7 +168,9 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0
+      "threat": 5.0,
+      "search_radius1": 15,
+      "search_radius2": 25
     }
   }
 }
