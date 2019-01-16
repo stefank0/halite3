@@ -290,7 +290,8 @@ class Calibrator:
 @click.option('--param', default='', help='Parameter to be trained.')
 @click.option('--dir_output', help='Folder of previous calibration in case you want to continue a calibration.')
 def main(mapsize, n_player, n_games, n_iter, dir_output, convergence, param):
-    parameters = [param] if param else ["draw_from_shipyard", "expansion_factor", "dropoff_halite_density"]
+    parameters = [param] if param else ["search_radius1", "draw_from_shipyard", "expansion_factor",
+                                        "dropoff_halite_density2"]
     calibrator = Calibrator(parameters=parameters,
                             mapsize=int(mapsize), n_player=int(n_player), n_games=int(n_games), n_iter=int(n_iter),
                             convergence=float(convergence), dir_output=dir_output)
