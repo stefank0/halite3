@@ -15,7 +15,7 @@
       "expand_edge_cost": 2.0,
       "threat": 1.0,
 
-      "search_radius1": 15,
+      "search_radius1": 5,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
@@ -44,7 +44,7 @@
       "expand_edge_cost": 2.0,
       "threat": 1.0,
 
-      "search_radius1": 15,
+      "search_radius1": 5,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
@@ -73,7 +73,7 @@
       "expand_edge_cost": 2.0,
       "threat": 1.0,
 
-      "search_radius1": 15,
+      "search_radius1": 5,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
@@ -102,7 +102,7 @@
       "expand_edge_cost": 2.0,
       "threat": 1.0,
 
-      "search_radius1": 15,
+      "search_radius1": 5,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
@@ -131,7 +131,7 @@
       "expand_edge_cost": 2.0,
       "threat": 1.0,
 
-      "search_radius1": 15,
+      "search_radius1": 5,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
@@ -162,7 +162,7 @@
       "expand_edge_cost": 2.0,
       "threat": 1000.0,
 
-      "search_radius1": 10,
+      "search_radius1": 5,
       "search_radius2": 20,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
@@ -191,7 +191,7 @@
       "expand_edge_cost": 2.0,
       "threat": 1000.0,
 
-      "search_radius1": 15,
+      "search_radius1": 5,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
@@ -220,7 +220,7 @@
       "expand_edge_cost": 2.0,
       "threat": 1000.0,
 
-      "search_radius1": 15,
+      "search_radius1": 5,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
@@ -249,7 +249,7 @@
       "expand_edge_cost": 2.0,
       "threat": 1000.0,
 
-      "search_radius1": 15,
+      "search_radius1": 5,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
@@ -278,7 +278,7 @@
       "expand_edge_cost": 2.0,
       "threat": 1000.0,
 
-      "search_radius1": 15,
+      "search_radius1": 5,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,

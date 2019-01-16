@@ -381,8 +381,6 @@ class GhostDropoff(entity.Entity):
         self.map_data = map_data
         self.calculator = map_data.calculator
         self.position = self.spawn_position()
-        self.search_radius1 = param["search_radius1"]
-        self.search_radius2 = self.search_radius1 + 10
 
     def _disputed_factor(self, index):
         """Gain a strategic advantage by controlling disputed areas."""
@@ -410,7 +408,7 @@ class GhostDropoff(entity.Entity):
             Comparable to cost matrix of Scheduler, but with averages. This
             ensures that destinations of ships and dropoff placement match.
         """
-        if (self.calculator.simple_dropoff_distances[index] < param['search_radius1'] or
+        if (self.calculator.simple_dropoff_distances[index] < 10 + param['search_radius1'] or
                 self.map_data.density_difference[index] < param['dropoff_density_difference'] or
                 self.map_data.halite_density[index] < param['dropoff_halite_density1'] + self.map_data.turn_number / constants.MAX_TURNS * param['dropoff_halite_density2'] or
                 to_cell(index).has_structure):
@@ -421,8 +419,8 @@ class GhostDropoff(entity.Entity):
 
     def spawn_positions(self):
         """Indices at which to search for spawn position."""
-        r1 = param['search_radius1']
-        r2 = param['search_radius1'] + 10
+        r1 = 10 + param['search_radius1']
+        r2 = 10 + param['search_radius1'] + 10
         d = self.calculator.simple_dropoff_distances
         return np.flatnonzero(np.logical_and(d >= r1, d <= r2)).tolist()
 
