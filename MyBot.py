@@ -43,7 +43,7 @@ def _new_ships_are_all_mine():
 
 def old_want_to_spawn():
     """Old implementation of want_to_spawn()."""
-    is_late_game = game.turn_number >= (constants.MAX_TURNS - param['endgame'])
+    is_late_game = game.turn_number > 0.75 * constants.MAX_TURNS
     if _new_ships_are_all_mine() or is_late_game:
         return False
     return _ship_number_falling_behind()

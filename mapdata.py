@@ -293,7 +293,7 @@ class DistanceCalculator:
 
     def threat_func(self, ship, threat_costs):
         """Necessary to keep Schedule costs in sync."""
-        return 10.0 * packing_fraction(ship) * threat_costs
+        return (0.1 + 20 * packing_fraction(ship)**3) * threat_costs
 
     def _threat_edge_costs(self, enemy_threat):
         """Edge costs describing avoiding enemies (fleeing)."""
@@ -497,10 +497,20 @@ def enemy_threat():
         ship_index = to_index(ship)
         if ship_index in troll_indices:
             continue
-        threat[ship_index] += param['threat'] - packing_fraction(ship)
+        mining_probability = _mining_probability(ship)
+        packing_factor = 0.1 + 20 * (1.0 - packing_fraction(ship))**3
+        threat[ship_index] += packing_factor * mining_probability
         for index in neighbours(ship_index):
-            threat[index] += 1.0 - packing_fraction(ship)
-    return threat
+            cell = to_cell(index)
+            attack_factor = 1.0
+            ship_on_index = cell.ship if (cell.is_occupied and cell.ship.owner == game.me.id) else None
+            if ship_on_index:
+                d = ship_on_index.halite_amount - ship.halite_amount
+                attack_factor = 100.0 if d > 200.0 else 0.01
+            threat[ship_index] += packing_factor * attack_factor * 0.25 * (1.0 - mining_probability)
+    if game.turn_number > 0.75 * constants.MAX_TURNS:
+        threat *= 0.1
+    return param['threat'] * threat
 
 
 def _bonus_neighbourhood(ship):
@@ -540,16 +550,20 @@ def _nearby_enemy_ships(ship):
     ]
 
 
-def _mining_probability(halite, ship):
+def _mining_probability(ship):
     """Estimate the probability that a ship will mine the next turn."""
     if not can_move(ship):
         return 1.0
-    ship_index = to_index(ship)
-    simple_cost = halite / (all_simple_distances(ship_index) + 1.0)
-    mining_cost = simple_cost[ship_index]
-    moving_cost = np.delete(simple_cost, ship_index).max()
-    cargo_factor = min(1.0, 10.0 * (1.0 - packing_fraction(ship)))
-    return cargo_factor * mining_cost / (mining_cost + moving_cost)
+    else:
+        cargo_space = constants.MAX_HALITE - ship.halite_amount
+        mining_potential = math.ceil(0.25 * game_map[ship].halite_amount)
+        mining_profit = min(cargo_space, mining_potential)
+        if mining_profit > 100:
+            return 0.9
+        elif mining_profit > 5:
+            return 0.5
+        else:
+            return 0.1
 
 
 ##############################################################################

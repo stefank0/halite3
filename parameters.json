@@ -140,7 +140,7 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0,
+      "threat": 1000.0,
 
       "search_radius1": 10,
       "search_radius2": 20,
@@ -165,7 +165,7 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0,
+      "threat": 1000.0,
 
       "search_radius1": 15,
       "search_radius2": 25,
@@ -190,7 +190,7 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0,
+      "threat": 1000.0,
 
       "search_radius1": 15,
       "search_radius2": 25,
@@ -215,7 +215,7 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0,
+      "threat": 1000.0,
 
       "search_radius1": 15,
       "search_radius2": 25,
@@ -240,7 +240,7 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0,
+      "threat": 1000.0,
 
       "search_radius1": 15,
       "search_radius2": 25,
