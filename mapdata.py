@@ -508,7 +508,7 @@ def enemy_threat():
                 attack_factor = param['attack_factor1'] if d > param['attack_factor_threshold'] else param['attack_factor2']
             else:
                 attack_factor = 1.0
-            threat[ship_index] += packing_factor * attack_factor * 0.25 * (1.0 - mining_probability)
+            threat[index] += packing_factor * attack_factor * 0.25 * (1.0 - mining_probability)
     if game.turn_number > 0.75 * constants.MAX_TURNS:
         threat *= 0.1
     return param['threat'] * threat
