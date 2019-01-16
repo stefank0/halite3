@@ -497,9 +497,9 @@ def enemy_threat():
         ship_index = to_index(ship)
         if ship_index in troll_indices:
             continue
-        threat[ship_index] += 1.0 - packing_fraction(ship)
+        threat[ship_index] += param['threat'] - packing_fraction(ship)
         for index in neighbours(ship_index):
-            threat[index] += 1.0 - packing_fraction(ship)
+            threat[index] += 0.5 + param['threat'] * 0.5 - packing_fraction(ship)
     return threat
 
 

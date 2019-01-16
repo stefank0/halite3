@@ -311,7 +311,7 @@ class Scheduler:
     def is_dropoff_time(self):
         """Determine if it is time to create a dropoff."""
         end_game = self.turns_left < 0.2 * constants.MAX_TURNS
-        ships_per_dropoff = (len(self.ships) + 5) / len(self.map_data.dropoffs)
+        ships_per_dropoff = (len(self.ships) + param['draw_from_shipyard']) / len(self.map_data.dropoffs)
         return not end_game and ships_per_dropoff >= 15
 
     def dropoff_cost(self, ship):
@@ -383,7 +383,7 @@ class GhostDropoff(entity.Entity):
         """Gain a strategic advantage by controlling disputed areas."""
         d1 = self.calculator.enemy_dropoff_distances[index]
         d2 = self.calculator.simple_dropoff_distances[index]
-        return min(1.1, max(1.0, 1.2 - 0.02 * abs(d1 - d2 - 2)))
+        return min(param['expansion_factor'], max(1.0, 1.2 - 0.02 * abs(d1 - d2 - 2)))
 
     def _expansion_factor(self, index):
         """Reward gradual expansion."""
@@ -405,7 +405,7 @@ class GhostDropoff(entity.Entity):
         """
         if (self.calculator.simple_dropoff_distances[index] < self.search_radius1 or
                 self.map_data.density_difference[index] < 0.0 or
-                self.map_data.halite_density[index] < 100.0 or
+                self.map_data.halite_density[index] < param['dropoff_halite_density'] or
                 to_cell(index).has_structure):
             return 0.0
         modifier = self._disputed_factor(index) * self._expansion_factor(index)

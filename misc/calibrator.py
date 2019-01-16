@@ -253,9 +253,9 @@ class Calibrator:
             df.plot(ax=ax)
             ax.set_xlabel('n_iter')
             ax.set_ylabel(param)
-            ax.set_title(param)
+            ax.set_title('{}_p{}_s{}'.format(param, self.n_player, self.mapsize))
             ax.grid()
-            fig.savefig(os.path.join(self._dir_pars, 'report_{}'.format(param)))
+            fig.savefig(os.path.join(self._dir_pars, 'report_{}_p{}_s{}'.format(param, self.n_player, self.mapsize)))
 
     @staticmethod
     def set_parameters(file, pars):
@@ -290,7 +290,7 @@ class Calibrator:
 @click.option('--param', default='', help='Parameter to be trained.')
 @click.option('--dir_output', help='Folder of previous calibration in case you want to continue a calibration.')
 def main(mapsize, n_player, n_games, n_iter, dir_output, convergence, param):
-    parameters = [param] if param else ['return_distance_factor', 'neighbour_profit_factor', 'return_factor', 'expand_edge_cost']
+    parameters = [param] if param else ["draw_from_shipyard", "expansion_factor", "dropoff_halite_density"]
     calibrator = Calibrator(parameters=parameters,
                             mapsize=int(mapsize), n_player=int(n_player), n_games=int(n_games), n_iter=int(n_iter),
                             convergence=float(convergence), dir_output=dir_output)
