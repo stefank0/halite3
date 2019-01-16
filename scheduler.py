@@ -31,9 +31,9 @@ class Scheduler:
         self.turns_left = constants.MAX_TURNS - game.turn_number
         self.ships = self.me.get_ships()
         self.map_data = map_data
-        if self.ghost:
-            self.ghost.map_data = map_data
-            self.ghost.calculator = map_data.calculator
+        #if self.ghost:
+        #    self.ghost.map_data = map_data
+        #    self.ghost.calculator = map_data.calculator
         self.schedule = Schedule(game, map_data)
         self.ships_per_dropoff = len(self.ships) / len(map_data.dropoffs)
         self.update_returning_to_dropoff()
