@@ -31,6 +31,9 @@ class Scheduler:
         self.turns_left = constants.MAX_TURNS - game.turn_number
         self.ships = self.me.get_ships()
         self.map_data = map_data
+        if self.ghost:
+            self.ghost.map_data = map_data
+            self.ghost.calculator = map_data.calculator
         self.schedule = Schedule(game, map_data)
         self.ships_per_dropoff = len(self.ships) / len(map_data.dropoffs)
         self.update_returning_to_dropoff()
@@ -312,7 +315,7 @@ class Scheduler:
         """Determine if it is time to create a dropoff."""
         end_game = self.turns_left < 0.2 * constants.MAX_TURNS
         ships_per_dropoff = (len(self.ships) + param['draw_from_shipyard']) / len(self.map_data.dropoffs)
-        return not end_game and ships_per_dropoff >= 15
+        return not end_game and ships_per_dropoff >= param['is_dropoff_time']
 
     def dropoff_cost(self, ship):
         """Cost of building a dropoff, taking into account reductions."""
@@ -383,12 +386,14 @@ class GhostDropoff(entity.Entity):
         """Gain a strategic advantage by controlling disputed areas."""
         d1 = self.calculator.enemy_dropoff_distances[index]
         d2 = self.calculator.simple_dropoff_distances[index]
-        return min(param['expansion_factor'], max(1.0, 1.2 - 0.02 * abs(d1 - d2 - 2)))
+        df = (param['disputed_factor'] - 1.0) / 5.0
+        return max(1.0, param['disputed_factor'] - df * abs(d1 - d2 - 2))
 
     def _expansion_factor(self, index):
         """Reward gradual expansion."""
         d = self.calculator.simple_dropoff_distances[index]
-        return max(1.0, 1.1 - 0.02 * abs(17.5 - d))
+        df = (param['expansion_factor'] - 1.0) / 5.0
+        return max(1.0, param['expansion_factor'] - df * abs(17.5 - d))
 
     def _turns(self, index):
         """Move turns uses Dijkstra distance of the second closest ship."""
@@ -404,8 +409,8 @@ class GhostDropoff(entity.Entity):
             ensures that destinations of ships and dropoff placement match.
         """
         if (self.calculator.simple_dropoff_distances[index] < self.search_radius1 or
-                self.map_data.density_difference[index] < 0.0 or
-                self.map_data.halite_density[index] < param['dropoff_halite_density'] or
+                self.map_data.density_difference[index] < param['dropoff_density_difference'] or
+                self.map_data.halite_density[index] < param['dropoff_halite_density1'] + self.map_data.turn_number / constants.MAX_TURNS * param['dropoff_halite_density2'] or
                 to_cell(index).has_structure):
             return 0.0
         modifier = self._disputed_factor(index) * self._expansion_factor(index)

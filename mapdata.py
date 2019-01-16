@@ -566,6 +566,7 @@ class MapData:
         global game, game_map
         game = _game
         game_map = game.game_map
+        self.turn_number = game.turn_number
         self.halite = self._halite()
         self.dropoffs = [game.me.shipyard] + game.me.get_dropoffs()
         self.enemy_threat = enemy_threat()
@@ -602,8 +603,8 @@ class MapData:
 
     def _ship_density_difference(self):
         """Get density of friendly - hostile ships"""
-        friendly_density = self._ship_density(game.me.get_ships(), 5)
-        self.hostile_density = self._ship_density(enemy_ships(), 5)
+        friendly_density = self._ship_density(game.me.get_ships(), 8)
+        self.hostile_density = self._ship_density(enemy_ships(), 8)
         return friendly_density - self.hostile_density
 
     def _perturbed_dropoff_distance(self, ship, dropoff):
