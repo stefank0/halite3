@@ -20,8 +20,8 @@
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
       "disputed_factor": 1.1,
-      "dropoff_halite_density1": 50.0,
-      "dropoff_halite_density2": 200.0,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
       "is_dropoff_time": 15.0
     },
@@ -45,8 +45,8 @@
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
       "disputed_factor": 1.1,
-      "dropoff_halite_density1": 50.0,
-      "dropoff_halite_density2": 200.0,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
       "is_dropoff_time": 15.0
     },
@@ -70,8 +70,8 @@
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
       "disputed_factor": 1.1,
-      "dropoff_halite_density1": 50.0,
-      "dropoff_halite_density2": 200.0,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
       "is_dropoff_time": 15.0
     },
@@ -95,8 +95,8 @@
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
       "disputed_factor": 1.1,
-      "dropoff_halite_density1": 50.0,
-      "dropoff_halite_density2": 200.0,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
       "is_dropoff_time": 15.0
     },
@@ -120,8 +120,8 @@
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
       "disputed_factor": 1.1,
-      "dropoff_halite_density1": 50.0,
-      "dropoff_halite_density2": 200.0,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
       "is_dropoff_time": 15.0
     }
@@ -147,8 +147,8 @@
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
       "disputed_factor": 1.1,
-      "dropoff_halite_density1": 50.0,
-      "dropoff_halite_density2": 200.0,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
       "is_dropoff_time": 15.0
     },
@@ -172,8 +172,8 @@
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
       "disputed_factor": 1.1,
-      "dropoff_halite_density1": 50.0,
-      "dropoff_halite_density2": 200.0,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
       "is_dropoff_time": 15.0
     },
@@ -197,8 +197,8 @@
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
       "disputed_factor": 1.1,
-      "dropoff_halite_density1": 50.0,
-      "dropoff_halite_density2": 200.0,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
       "is_dropoff_time": 15.0
     },
@@ -222,8 +222,8 @@
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
       "disputed_factor": 1.1,
-      "dropoff_halite_density1": 50.0,
-      "dropoff_halite_density2": 200.0,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
       "is_dropoff_time": 15.0
     },
@@ -247,8 +247,8 @@
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
       "disputed_factor": 1.1,
-      "dropoff_halite_density1": 50.0,
-      "dropoff_halite_density2": 200.0,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
       "is_dropoff_time": 15.0
     }
