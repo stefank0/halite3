@@ -502,11 +502,12 @@ def enemy_threat():
         threat[ship_index] += packing_factor * mining_probability
         for index in neighbours(ship_index):
             cell = to_cell(index)
-            attack_factor = 1.0
             ship_on_index = cell.ship if (cell.is_occupied and cell.ship.owner == game.me.id) else None
             if ship_on_index:
                 d = ship_on_index.halite_amount - ship.halite_amount
-                attack_factor = 100.0 if d > 200.0 else 0.01
+                attack_factor = param['attack_factor1'] if d > param['attack_factor_threshold'] else param['attack_factor2']
+            else:
+                attack_factor = 1.0
             threat[ship_index] += packing_factor * attack_factor * 0.25 * (1.0 - mining_probability)
     if game.turn_number > 0.75 * constants.MAX_TURNS:
         threat *= 0.1
@@ -601,7 +602,7 @@ class MapData:
             cell = to_cell(i)
             if cell.is_occupied and cell.ship.owner != game.me.id:
                 # Halite is already gathered by enemy.
-                halite[i] = max(halite[i] - 500, 0)
+                halite[i] = max(halite[i] - param['halite_subtract'], 0)
         return halite
 
     def _halite_density(self):
