@@ -499,7 +499,7 @@ def enemy_threat():
             continue
         threat[ship_index] += param['threat'] - packing_fraction(ship)
         for index in neighbours(ship_index):
-            threat[index] += param['threat'] - packing_fraction(ship)
+            threat[index] += 0.5 + param['threat'] * 0.5 - packing_fraction(ship)
     return threat
 
 
