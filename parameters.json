@@ -23,7 +23,11 @@
       "dropoff_halite_density1": 100.0,
       "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
-      "is_dropoff_time": 15.0
+      "is_dropoff_time": 15.0,
+      "halite_subtract": 500,
+      "attack_factor1": 100.0,
+      "attack_factor2": 0.01,
+      "attack_factor_threshold": 200.0
     },
     "40": {
       "lootfactor": 0.25,
@@ -48,7 +52,11 @@
       "dropoff_halite_density1": 100.0,
       "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
-      "is_dropoff_time": 15.0
+      "is_dropoff_time": 15.0,
+      "halite_subtract": 500,
+      "attack_factor1": 100.0,
+      "attack_factor2": 0.01,
+      "attack_factor_threshold": 200.0
     },
     "48": {
       "lootfactor": 0.25,
@@ -73,7 +81,11 @@
       "dropoff_halite_density1": 100.0,
       "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
-      "is_dropoff_time": 15.0
+      "is_dropoff_time": 15.0,
+      "halite_subtract": 500,
+      "attack_factor1": 100.0,
+      "attack_factor2": 0.01,
+      "attack_factor_threshold": 200.0
     },
     "56": {
       "lootfactor": 0.25,
@@ -98,7 +110,11 @@
       "dropoff_halite_density1": 100.0,
       "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
-      "is_dropoff_time": 15.0
+      "is_dropoff_time": 15.0,
+      "halite_subtract": 500,
+      "attack_factor1": 100.0,
+      "attack_factor2": 0.01,
+      "attack_factor_threshold": 200.0
     },
     "64": {
       "lootfactor": 0.25,
@@ -123,7 +139,11 @@
       "dropoff_halite_density1": 100.0,
       "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
-      "is_dropoff_time": 15.0
+      "is_dropoff_time": 15.0,
+      "halite_subtract": 500,
+      "attack_factor1": 100.0,
+      "attack_factor2": 0.01,
+      "attack_factor_threshold": 200.0
     }
   },
   "4": {
@@ -150,7 +170,11 @@
       "dropoff_halite_density1": 100.0,
       "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
-      "is_dropoff_time": 15.0
+      "is_dropoff_time": 15.0,
+      "halite_subtract": 500,
+      "attack_factor1": 100.0,
+      "attack_factor2": 0.01,
+      "attack_factor_threshold": 200.0
     },
     "40": {
       "lootfactor": 0.25,
@@ -175,7 +199,11 @@
       "dropoff_halite_density1": 100.0,
       "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
-      "is_dropoff_time": 15.0
+      "is_dropoff_time": 15.0,
+      "halite_subtract": 500,
+      "attack_factor1": 100.0,
+      "attack_factor2": 0.01,
+      "attack_factor_threshold": 200.0
     },
     "48": {
       "lootfactor": 0.25,
@@ -200,7 +228,11 @@
       "dropoff_halite_density1": 100.0,
       "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
-      "is_dropoff_time": 15.0
+      "is_dropoff_time": 15.0,
+      "halite_subtract": 500,
+      "attack_factor1": 100.0,
+      "attack_factor2": 0.01,
+      "attack_factor_threshold": 200.0
     },
     "56": {
       "lootfactor": 0.25,
@@ -225,7 +257,11 @@
       "dropoff_halite_density1": 100.0,
       "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
-      "is_dropoff_time": 15.0
+      "is_dropoff_time": 15.0,
+      "halite_subtract": 500,
+      "attack_factor1": 100.0,
+      "attack_factor2": 0.01,
+      "attack_factor_threshold": 200.0
     },
     "64": {
       "lootfactor": 0.25,
@@ -250,7 +286,11 @@
       "dropoff_halite_density1": 100.0,
       "dropoff_halite_density2": 0.0,
       "dropoff_density_difference": 0.0,
-      "is_dropoff_time": 15.0
+      "is_dropoff_time": 15.0,
+      "halite_subtract": 500,
+      "attack_factor1": 100.0,
+      "attack_factor2": 0.01,
+      "attack_factor_threshold": 200.0
     }
   }
 }
