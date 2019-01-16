@@ -19,7 +19,11 @@
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
-      "dropoff_halite_density": 100
+      "disputed_factor": 1.1,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
+      "dropoff_density_difference": 0.0,
+      "is_dropoff_time": 15.0
     },
     "40": {
       "lootfactor": 0.25,
@@ -40,7 +44,11 @@
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
-      "dropoff_halite_density": 100
+      "disputed_factor": 1.1,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
+      "dropoff_density_difference": 0.0,
+      "is_dropoff_time": 15.0
     },
     "48": {
       "lootfactor": 0.25,
@@ -61,7 +69,11 @@
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
-      "dropoff_halite_density": 100
+      "disputed_factor": 1.1,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
+      "dropoff_density_difference": 0.0,
+      "is_dropoff_time": 15.0
     },
     "56": {
       "lootfactor": 0.25,
@@ -82,7 +94,11 @@
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
-      "dropoff_halite_density": 100
+      "disputed_factor": 1.1,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
+      "dropoff_density_difference": 0.0,
+      "is_dropoff_time": 15.0
     },
     "64": {
       "lootfactor": 0.25,
@@ -103,7 +119,11 @@
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
-      "dropoff_halite_density": 100
+      "disputed_factor": 1.1,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
+      "dropoff_density_difference": 0.0,
+      "is_dropoff_time": 15.0
     }
   },
   "4": {
@@ -120,10 +140,17 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0,
+      "threat": 1000.0,
 
       "search_radius1": 10,
-      "search_radius2": 20
+      "search_radius2": 20,
+      "draw_from_shipyard": 5,
+      "expansion_factor": 1.1,
+      "disputed_factor": 1.1,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
+      "dropoff_density_difference": 0.0,
+      "is_dropoff_time": 15.0
     },
     "40": {
       "lootfactor": 0.25,
@@ -138,13 +165,17 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0,
+      "threat": 1000.0,
 
       "search_radius1": 15,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
-      "dropoff_halite_density": 100
+      "disputed_factor": 1.1,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
+      "dropoff_density_difference": 0.0,
+      "is_dropoff_time": 15.0
     },
     "48": {
       "lootfactor": 0.25,
@@ -159,13 +190,17 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0,
+      "threat": 1000.0,
 
       "search_radius1": 15,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
-      "dropoff_halite_density": 100
+      "disputed_factor": 1.1,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
+      "dropoff_density_difference": 0.0,
+      "is_dropoff_time": 15.0
     },
     "56": {
       "lootfactor": 0.25,
@@ -180,13 +215,17 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0,
+      "threat": 1000.0,
 
       "search_radius1": 15,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
-      "dropoff_halite_density": 100
+      "disputed_factor": 1.1,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
+      "dropoff_density_difference": 0.0,
+      "is_dropoff_time": 15.0
     },
     "64": {
       "lootfactor": 0.25,
@@ -201,13 +240,17 @@
       "neighbour_profit_factor": 2.0,
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
-      "threat": 5.0,
+      "threat": 1000.0,
 
       "search_radius1": 15,
       "search_radius2": 25,
       "draw_from_shipyard": 5,
       "expansion_factor": 1.1,
-      "dropoff_halite_density": 100
+      "disputed_factor": 1.1,
+      "dropoff_halite_density1": 100.0,
+      "dropoff_halite_density2": 0.0,
+      "dropoff_density_difference": 0.0,
+      "is_dropoff_time": 15.0
     }
   }
 }
