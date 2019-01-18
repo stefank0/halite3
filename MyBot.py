@@ -30,7 +30,7 @@ def number_of_ships(player):
 def _ship_number_falling_behind():
     """Return True if our ship number isn't high compared to the others."""
     ship_numbers = [number_of_ships(player) for player in other_players()]
-    return number_of_ships(me) <= median(ship_numbers)
+    return number_of_ships(me) <= min(ship_numbers)
 
 
 def _new_ships_are_all_mine():
