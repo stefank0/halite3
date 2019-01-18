@@ -318,7 +318,7 @@ class Scheduler:
         """Determine if it is time to create a dropoff."""
         end_game = self.turns_left < 0.2 * constants.MAX_TURNS
         ships_required = param['draw_from_shipyard'] + param['is_dropoff_time'] * len(self.map_data.dropoffs)
-        return not end_game and ships_required >= len(self.ships)
+        return not end_game and len(self.ships) >= ships_required
 
     def dropoff_cost(self, ship):
         """Cost of building a dropoff, taking into account reductions."""
