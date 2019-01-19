@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import logging, time
-from statistics import median
 import numpy as np
 
 from hlt import constants, Game
 from scheduler import Scheduler
 from parameters import param, load_parameters
-from mapdata import MapData, DistanceCalculator, other_players, to_cell
+from mapdata import MapData, DistanceCalculator, to_cell, ship_number_falling_behind
 
 
 def create_schedule():
@@ -22,17 +21,6 @@ def add_move_commands(command_queue):
     command_queue.extend(schedule.to_commands())
 
 
-def number_of_ships(player):
-    """Get the number of ships of a player."""
-    return len(player.get_ships())
-
-
-def _ship_number_falling_behind():
-    """Return True if our ship number isn't high compared to the others."""
-    ship_numbers = [number_of_ships(player) for player in other_players()]
-    return number_of_ships(me) <= min(ship_numbers)
-
-
 def _new_ships_are_all_mine():
     """Return True if the last spawned ships are ours."""
     ship_ids = [ship.id for player in game.players.values() for ship in player.get_ships()]
@@ -46,7 +34,8 @@ def old_want_to_spawn():
     is_late_game = game.turn_number > 0.75 * constants.MAX_TURNS
     if _new_ships_are_all_mine() or is_late_game:
         return False
-    return _ship_number_falling_behind()
+    return ship_number_falling_behind()
+
 
 def new_want_to_spawn():
     """New implementation of want_to_spawn()."""

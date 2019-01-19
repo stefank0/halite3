@@ -80,8 +80,7 @@ class Schedule:
         origin_index = to_index(ship)
 
         # Partial costs for the first turn (stay still).
-        origin_threat = self.map_data.enemy_threat[origin_index]
-        threat_cost = self.calculator.threat_func(ship, origin_threat)
+        threat_cost = self.map_data.calculator.threat_to_self(ship)
         wasted_cost = self.wasted_turn_cost(ship, target_index)
 
         # Update cost matrix.

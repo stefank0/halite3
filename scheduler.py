@@ -168,11 +168,9 @@ class Scheduler:
 
     def move_turns(self, ship, halite):
         """Turns spent on moving."""
-        origin_index = to_index(ship)
-        origin_threat = self.map_data.enemy_threat[origin_index]
-        threat_cost = self.map_data.calculator.threat_func(ship, origin_threat)
         distances = self.map_data.get_distances(ship)
-        distances[origin_index] += threat_cost
+        index = to_index(ship)
+        distances[index] += self.map_data.calculator.threat_to_self(ship)
         return_distances = self.return_distances(ship)
         space = max(1, constants.MAX_HALITE - ship.halite_amount)
         move_turns = distances + param['return_distance_factor'] * (halite / space) * return_distances
