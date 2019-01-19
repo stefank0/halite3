@@ -261,6 +261,7 @@ class DistanceCalculator:
     def __init__(self, dropoffs, halite):
         if self._edge_data is None:
             self._initialize_edge_data()
+        self.collision_area = self._collision_area()
         self.dropoffs = dropoffs
         self.troll_indices = self._troll_indices()
         self.simple_dropoff_distances = self._simple_dropoff_distances(dropoffs)
@@ -271,8 +272,6 @@ class DistanceCalculator:
         self._dist_tuples = self._shortest_path()
 
         self.ghost_distances = self._ghost_distances()
-        self.second_distances = self.second_ship_distances(game.me.get_ships())
-        self.second_enemy_distances = self.second_ship_distances(enemy_ships())
 
     def _simple_dropoff_distances(self, dropoffs):
         """Simple step distances from all cells to the nearest dropoff."""
@@ -291,6 +290,14 @@ class DistanceCalculator:
         """Calculate distances used in GhostDropoff, uses the second ship."""
         distances = [self.get_distances(ship) for ship in game.me.get_ships()]
         return self._second_distances(distances)
+
+    def _collision_area(self):
+        """Determine area in which collisions are OK."""
+        my_ships = game.me.get_ships()
+        ships_with_space = (s for s in my_ships if s.halite_amount < 500)
+        second_distances = self.second_ship_distances(ships_with_space)
+        second_enemy_distances = self.second_ship_distances(enemy_ships())
+        return second_enemy_distances > second_distances
 
     def second_ship_distances(self, ships):
         """Calculate the distance of the second closest ship for all cells."""
@@ -322,16 +329,17 @@ class DistanceCalculator:
         if enemy_ships:
             d = max(ship.halite_amount - s.halite_amount for s in enemy_ships)
             if d > param['self_threat_threshold']:
-                return self.threat_factor * 2.0 ** (d / 75.0)
+                return self.threat_factor[index] * 2.0 ** (d / 75.0)
         return 0.0
 
     def _threat_factor(self):
         """Factor common to all threat_edge_costs()."""
-        is_4_player = len(game.players) == 4
+        is_4player = len(game.players) == 4
         is_endgame = game.turn_number > 0.75 * constants.MAX_TURNS
-        if (is_4_player and not is_endgame) or ship_number_falling_behind():
-            return 10.0 * param['threat']
-        return param['threat']
+        factor = param['threat'] * (10.0 - 9.0 * self.collision_area)
+        if (is_4player and not is_endgame) or ship_number_falling_behind():
+            return 10.0 * factor
+        return factor
 
     def _threat_edge_costs(self, ship):
         """Edge costs describing avoiding enemies (fleeing)."""
@@ -348,8 +356,9 @@ class DistanceCalculator:
             if can_move(enemy_ship):
                 for i in neighbours(enemy_index):
                     threat[i] += threat_value
+        threat *= self.threat_factor
         _row, col = self._edge_data
-        return self.threat_factor * threat[col]
+        return threat[col]
 
     def _traffic_edge_costs(self):
         """Edge costs describing avoiding or waiting for traffic."""
@@ -559,25 +568,6 @@ def enemies_in_bonus_range():
     return in_bonus_range
 
 
-def _nearby_enemy_ships(ship):
-    """Return a list of nearby enemy ships."""
-    h = game_map.height
-    w = game_map.width
-    x = ship.position.x
-    y = ship.position.y
-    nearby_cells = (
-        game_map._cells[(y + dy) % h][(x + dx) % w]
-        for dx in range(-2, 3)
-        for dy in range(-2 + abs(dx), 3 - abs(dx))
-        if not dx == dy == 0
-    )
-    return [
-        cell.ship
-        for cell in nearby_cells
-        if cell.is_occupied and cell.ship.owner != game.me.id
-    ]
-
-
 ##############################################################################
 #
 # MapData, the main class
@@ -603,6 +593,7 @@ class MapData:
         hostile_density3 = ship_density(enemy_ships(), 3)
         friendly_density3 = ship_density(game.me.get_ships(), 3)
         self.density_difference3 = friendly_density3 - hostile_density3
+        self.base_loot = self._base_loot()
 
     def _halite(self):
         """Get an array of available halite on the map."""
@@ -663,6 +654,20 @@ class MapData:
         """"Get the perturbed distance from a ship to an Entity."""
         return self.calculator.get_entity_distance(ship, entity)
 
+    def _base_loot(self):
+        """Define a base loot to be used in loot()."""
+        base_loot = np.zeros(game_map.height * game_map.width)
+        dropoff_dists = self.calculator.simple_dropoff_distances
+        for enemy_ship in enemy_ships():
+            enemy_index = to_index(enemy_ship)
+            loot = enemy_ship.halite_amount
+            if self.calculator.collision_area[enemy_index]:
+                base_loot[enemy_index] = max(base_loot[enemy_index], loot)
+                for index in neighbours(enemy_index):
+                    if dropoff_dists[index] > dropoff_dists[enemy_index]:
+                        base_loot[index] = max(base_loot[index], loot)
+        return base_loot
+
     def loot(self, ship):
         """Calculate enemy halite near a ship that can be stolen.
 
@@ -671,20 +676,8 @@ class MapData:
             - Keep track of how and to whom you lost your own ships.
             - Flee/attack more aggresively for aggresive players (tit-for-tat).
         """
-        m = game_map.height * game_map.width
-        dropoff_dists = self.calculator.simple_dropoff_distances
-        loot = np.zeros(m)
-
-        if len(game.players) == 4 and game.turn_number < 0.75 * constants.MAX_TURNS:
-            return loot
-
-        for enemy_ship in _nearby_enemy_ships(ship):
-            enemy_index = to_index(enemy_ship)
-            if self.density_difference3[enemy_index] > 0:
-                dhalite = enemy_ship.halite_amount - ship.halite_amount
-                if dhalite > 100:
-                    loot[enemy_index] += dhalite
-                    for index in neighbours(enemy_index):
-                        if dropoff_dists[index] > dropoff_dists[enemy_index]:
-                            loot[index] += dhalite
-        return 0.25 * loot  # Factor 0.25 to keep the same relative cost as before.
+        is_4player = len(game.players) == 4
+        is_endgame = game.turn_number > 0.75 * constants.MAX_TURNS
+        if is_4player and not is_endgame:
+            return np.zeros(game_map.height * game_map.width)
+        return param['lootfactor'] * (self.base_loot - ship.halite_amount)
