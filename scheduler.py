@@ -296,7 +296,6 @@ class Scheduler:
     def dropoff_planning(self, remaining_ships):
         """Handle dropoff planning and placement."""
         if self.is_dropoff_time():
-            logging.info('is dropoff time')
             if self.ghost:
                 ship = self.dropoff_ship()
                 if ship:
@@ -318,8 +317,8 @@ class Scheduler:
     def is_dropoff_time(self):
         """Determine if it is time to create a dropoff."""
         end_game = self.turns_left < 0.2 * constants.MAX_TURNS
-        ships_per_dropoff = (len(self.ships) + param['draw_from_shipyard']) / len(self.map_data.dropoffs)
-        return not end_game and ships_per_dropoff >= param['is_dropoff_time']
+        ships_required = param['draw_from_shipyard'] + param['is_dropoff_time'] * (len(self.map_data.dropoffs) - 1)
+        return not end_game and len(self.ships) >= ships_required
 
     def dropoff_cost(self, ship):
         """Cost of building a dropoff, taking into account reductions."""
@@ -378,9 +377,6 @@ class Scheduler:
 class GhostDropoff(entity.Entity):
     """Future dropoff, already taken into account by distance calculations."""
 
-    search_radius1 = 15
-    search_radius2 = 25
-
     def __init__(self, map_data):
         self.map_data = map_data
         self.calculator = map_data.calculator
@@ -412,7 +408,7 @@ class GhostDropoff(entity.Entity):
             Comparable to cost matrix of Scheduler, but with averages. This
             ensures that destinations of ships and dropoff placement match.
         """
-        if (self.calculator.simple_dropoff_distances[index] < self.search_radius1 or
+        if (self.calculator.simple_dropoff_distances[index] < 10 + param['search_radius1'] or
                 self.map_data.density_difference[index] < param['dropoff_density_difference'] or
                 self.map_data.halite_density[index] < param['dropoff_halite_density1'] + self.map_data.turn_number / constants.MAX_TURNS * param['dropoff_halite_density2'] or
                 to_cell(index).has_structure):
@@ -423,8 +419,8 @@ class GhostDropoff(entity.Entity):
 
     def spawn_positions(self):
         """Indices at which to search for spawn position."""
-        r1 = self.search_radius1
-        r2 = self.search_radius2
+        r1 = 10 + param['search_radius1']
+        r2 = 10 + param['search_radius1'] + 10
         d = self.calculator.simple_dropoff_distances
         return np.flatnonzero(np.logical_and(d >= r1, d <= r2)).tolist()
 

@@ -625,7 +625,7 @@ class MapData:
     def _perturbed_dropoff_distance(self, ship, dropoff):
         """Higher Shipyard distance to encourage moving to dropoffs."""
         is_shipyard = isinstance(dropoff, Shipyard)
-        is_early = game.turn_number < 0.5 * constants.MAX_TURNS
+        is_early = game.turn_number < 0.4 * constants.MAX_TURNS
         distance = self.get_entity_distance(ship, dropoff)
         return distance + 5 if (is_shipyard and is_early) else distance
 
