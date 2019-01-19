@@ -14,6 +14,7 @@
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
       "threat": 1.0,
+      "self_threat_threshold": 100,
 
       "search_radius1": 0,
       "expansion_factor": 1.1,
@@ -42,6 +43,7 @@
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
       "threat": 1.0,
+      "self_threat_threshold": 100,
 
       "search_radius1": 5,
       "expansion_factor": 1.1,
@@ -70,6 +72,7 @@
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
       "threat": 1.0,
+      "self_threat_threshold": 100,
 
       "search_radius1": 5,
       "expansion_factor": 1.1,
@@ -98,6 +101,7 @@
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
       "threat": 1.0,
+      "self_threat_threshold": 100,
 
       "search_radius1": 5,
       "expansion_factor": 1.1,
@@ -126,6 +130,7 @@
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
       "threat": 1.0,
+      "self_threat_threshold": 100,
 
       "search_radius1": 10.0,
       "expansion_factor": 1.1,
@@ -156,6 +161,7 @@
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
       "threat": 1.0,
+      "self_threat_threshold": 250,
 
       "search_radius1": 0,
       "expansion_factor": 1.1,
@@ -184,6 +190,7 @@
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
       "threat": 1.0,
+      "self_threat_threshold": 250,
 
       "search_radius1": 5,
       "expansion_factor": 1.1,
@@ -212,6 +219,7 @@
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
       "threat": 1.0,
+      "self_threat_threshold": 250,
 
       "search_radius1": 5,
       "expansion_factor": 1.1,
@@ -240,6 +248,7 @@
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
       "threat": 1.0,
+      "self_threat_threshold": 250,
 
       "search_radius1": 8,
       "expansion_factor": 1.0,
@@ -268,6 +277,7 @@
       "return_factor": 1.0,
       "expand_edge_cost": 2.0,
       "threat": 1.0,
+      "self_threat_threshold": 250,
 
       "search_radius1": 8,
       "expansion_factor": 1.1,

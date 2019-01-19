@@ -321,7 +321,7 @@ class DistanceCalculator:
         enemy_ships = [c.ship for c in cells if c.is_occupied and c.ship.owner != game.me.id]
         if enemy_ships:
             d = max(ship.halite_amount - s.halite_amount for s in enemy_ships)
-            if d > 250:
+            if d > param['self_threat_threshold']:
                 return self.threat_factor * 2.0 ** (d / 75.0)
         return 0.0
 
