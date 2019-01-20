@@ -1,7 +1,7 @@
 {
   "2": {
     "32": {
-      "lootfactor": 1.0,
+      "lootfactor": 0.1,
       "mean_halite": 75.0,
       "endgame": 100,
       "spawn_intercept": -944.8039547546,
@@ -30,7 +30,7 @@
       "attack_factor_threshold": 200.0
     },
     "40": {
-      "lootfactor": 1.0,
+      "lootfactor": 0.1,
       "mean_halite": 75.0,
       "endgame": 100,
       "spawn_intercept": -1367.2844853646,
@@ -59,7 +59,7 @@
       "attack_factor_threshold": 200.0
     },
     "48": {
-      "lootfactor": 1.0,
+      "lootfactor": 0.1,
       "mean_halite": 75.0,
       "endgame": 100,
       "spawn_intercept": -1427.326405122,
@@ -88,7 +88,7 @@
       "attack_factor_threshold": 200.0
     },
     "56": {
-      "lootfactor": 1.0,
+      "lootfactor": 0.1,
       "mean_halite": 75.0,
       "endgame": 100,
       "spawn_intercept": -1715.6234109409,
@@ -117,7 +117,7 @@
       "attack_factor_threshold": 200.0
     },
     "64": {
-      "lootfactor": 1.0,
+      "lootfactor": 0.1,
       "mean_halite": 75.0,
       "endgame": 100,
       "spawn_intercept": -2035.2167175879,
@@ -148,7 +148,7 @@
   },
   "4": {
     "32": {
-      "lootfactor": 1.0,
+      "lootfactor": 0.1,
       "mean_halite": 75.0,
       "endgame": 100,
       "spawn_intercept": -1239.9328029787,
@@ -177,7 +177,7 @@
       "attack_factor_threshold": 200.0
     },
     "40": {
-      "lootfactor": 1.0,
+      "lootfactor": 0.1,
       "mean_halite": 75.0,
       "endgame": 100,
       "spawn_intercept": -1472.5150708956,
@@ -206,7 +206,7 @@
       "attack_factor_threshold": 200.0
     },
     "48": {
-      "lootfactor": 1.0,
+      "lootfactor": 0.1,
       "mean_halite": 75.0,
       "endgame": 100,
       "spawn_intercept": -1266.3375697868,
@@ -235,7 +235,7 @@
       "attack_factor_threshold": 200.0
     },
     "56": {
-      "lootfactor": 1.0,
+      "lootfactor": 0.1,
       "mean_halite": 75.0,
       "endgame": 100,
       "spawn_intercept": -1418.5324810153,
@@ -264,7 +264,7 @@
       "attack_factor_threshold": 200.0
     },
     "64": {
-      "lootfactor": 1.0,
+      "lootfactor": 0.1,
       "mean_halite": 75.0,
       "endgame": 100,
       "spawn_intercept": -1460.8240216852,
