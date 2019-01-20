@@ -121,7 +121,8 @@ def nearby_ships(ship, ships, radius):
 class LinearSum:
     """Wrapper for linear_sum_assignment() from scipy to avoid timeouts."""
 
-    _time_saving_mode = False
+    _time_saving_mode1 = False
+    _time_saving_mode2 = False
 
     @classmethod
     def simple_assignment(cls, cost_matrix):
@@ -191,7 +192,7 @@ class LinearSum:
         for cluster in clusters:
             indices = np.array([ships.index(ship) for ship in cluster])
             partial_cost_matrix = cost_matrix[indices, :]
-            if len(cluster) > 50 and game_map.height == 64:
+            if len(cluster) > 50 and game_map.height == 64 and len(game.players) == 4:
                 row_ind, col_ind = cls.simple_assignment(partial_cost_matrix)
             else:
                 row_ind, col_ind = linear_sum_assignment(partial_cost_matrix)
@@ -202,17 +203,23 @@ class LinearSum:
     @classmethod
     def assignment(cls, cost_matrix, ships, cluster_mode=False):
         """Wraps linear_sum_assignment()."""
-        if cluster_mode:
+        if cluster_mode or cls._time_saving_mode2:
             return cls._efficient_assignment(cost_matrix, ships, cluster_mode)
-        elif cls._time_saving_mode:
-            return cls.simple_assignment(cost_matrix)
+        elif cls._time_saving_mode1:
+            start = time.time()
+            row_ind, col_ind = cls.simple_assignment(cost_matrix)
+            stop = time.time()
+            if stop - start > 0.25:
+                cls._time_saving_mode2 = True
+                logging.info("Switching to time saving mode 2.")
+            return row_ind, col_ind
         else:
             start = time.time()
             row_ind, col_ind = linear_sum_assignment(cost_matrix)
             stop = time.time()
             if stop - start > 0.25:
-                cls._time_saving_mode = True
-                logging.info("Switching to time saving mode.")
+                cls._time_saving_mode1 = True
+                logging.info("Switching to time saving mode 1.")
             return row_ind, col_ind
 
 
@@ -241,11 +248,17 @@ def simple_distances(index, indices):
     return np.minimum(dx, width - dx) + np.minimum(dy, height - dy)
 
 
+_all_simple_distance_cache = {}
+
 def all_simple_distances(index):
     """Get an array of the actual step distances to all cells."""
-    m = game_map.width * game_map.height
-    indices = np.arange(m)
-    return simple_distances(index, indices)
+    if index in _all_simple_distance_cache:
+        return _all_simple_distance_cache[index]
+    else:
+        indices = np.arange(game_map.width * game_map.height)
+        distances = simple_distances(index, indices)
+        _all_simple_distance_cache[index] = distances
+        return distances
 
 
 class DistanceCalculator:
@@ -253,28 +266,8 @@ class DistanceCalculator:
 
     _edge_data = None
     _dijkstra_radius = 15
-    _expanded_radius = 30
-
-    @classmethod
-    def reduce_radius(cls):
-        """Reduce shortest_path radius to reduce computation time."""
-        if cls._expanded_radius > cls._dijkstra_radius:
-            cls._expanded_radius = cls._dijkstra_radius
-        elif cls._dijkstra_radius > 10:
-            cls._dijkstra_radius -= 1
-            cls._expanded_radius -= 1
-        logging.info('Reduced radius: {},{}'.format(cls._expanded_radius, cls._dijkstra_radius))
-
-    @classmethod
-    def increase_radius(cls):
-        """Increase shortest_path radius."""
-        if cls._dijkstra_radius < 15:
-            cls._dijkstra_radius += 1
-            cls._expanded_radius += 1
-            logging.info('Increased radius: {},{}'.format(cls._expanded_radius, cls._dijkstra_radius))
-        elif cls._expanded_radius < 30:
-            cls._expanded_radius += 5
-            logging.info('Increased radius: {},{}'.format(cls._expanded_radius, cls._dijkstra_radius))
+    _expand_array_cache = {}
+    _next_precompute = 0
 
     @classmethod
     def _initialize_edge_data(cls):
@@ -283,6 +276,37 @@ class DistanceCalculator:
         col = np.array([j for i in range(m) for j in neighbours(i)])
         row = np.repeat(np.arange(m), 4)
         cls._edge_data = (row, col)
+
+    @classmethod
+    def needs_precompute(cls):
+        """Test if precomputation is finished."""
+        return cls._next_precompute < game_map.height * game_map.width
+
+    @classmethod
+    def precompute(cls):
+        """Fill the _expand_array_cache."""
+        cls._expand_arrays(cls._next_precompute)
+        cls._next_precompute += 1
+
+    @classmethod
+    def _compute_expand_arrays(cls, index):
+        """Compute arrays necessary to perform expansion."""
+        radius = cls._dijkstra_radius + 1
+        indices = np.flatnonzero(all_simple_distances(index) > radius)
+        boundary = np.array(circle(index, radius))
+        distances = np.array([simple_distances(i, indices) for i in boundary])
+        closest = boundary[distances.argmin(0)]
+        distance = 2.0 * distances.min(0)
+        return indices, closest, distance
+
+    @classmethod
+    def _expand_arrays(cls, ship_index):
+        """Arrays necessary to perform the expansion."""
+        if ship_index in cls._expand_array_cache:
+            return cls._expand_array_cache[ship_index]
+        arrays = cls._compute_expand_arrays(ship_index)
+        cls._expand_array_cache[ship_index] = arrays
+        return arrays
 
     def __init__(self, dropoffs, halite):
         if self._edge_data is None:
@@ -296,7 +320,6 @@ class DistanceCalculator:
         self._movement_costs = self._movement_edge_costs(halite)
         self.threat_factor = self._threat_factor()
         self._dist_tuples = self._shortest_path()
-
         self.ghost_distances = self._ghost_distances()
 
     def _simple_dropoff_distances(self, dropoffs):
@@ -437,59 +460,11 @@ class DistanceCalculator:
             edge_costs, row, col = self._nearby_edges(ship, edge_costs, row, col)
         return csr_matrix((edge_costs, (row, col)), shape=(m, m))
 
-    def _set_simple_distance(self, dist_matrix, indices, target_index):
-        """Update dist_matrix, set simple distances for target_index."""
-        for i, index in enumerate(indices):
-            distance = 999.9 + simple_distance(index, target_index)
-            dist_matrix[i][target_index] = distance
-
-    def _boundary_indices(self, ship_index):
-        """Boundary indices of the region that received costs by dijkstra."""
-        boundary_radius = self._dijkstra_radius + 1
-        return np.array(circle(ship_index, boundary_radius))
-
-    def _expand_indices(self, ship_index, dist_matrix):
-        """Indices that receive costs by expansion in postprocessing."""
-        h = game_map.height
-        w = game_map.width
-        x = ship_index % w
-        y = ship_index // w
-        boundary_radius = self._dijkstra_radius + 1
-        max_radius = self._expanded_radius
-        expand_indices = (
-            ((x + dx) % w) + (w * ((y + dy) % h))
-            for dx in range(-max_radius, max_radius + 1)
-            for dy in range(-max_radius + abs(dx), max_radius + 1 - abs(dx))
-            if abs(dx) + abs(dy) > boundary_radius
-        )
-        return np.array([
-            index for index in expand_indices
-            if dist_matrix[0][index] == np.inf
-        ])
-
-    def _expand(self, dist_matrix, indices):
+    def _expand(self, dist_matrix, ship_index):
         """Expand the region for which distances are set in dist_matrix."""
-        ship_index = indices[0]
-        boundary_indices = self._boundary_indices(ship_index)
-        expand_indices = self._expand_indices(ship_index, dist_matrix)
-        dists = np.array([
-            param['expand_edge_cost'] * simple_distances(index, expand_indices)
-            for index in boundary_indices
-        ])
-        for i in range(len(indices)):
-            boundary_dists = dist_matrix[i, boundary_indices]
-            distances = dists + boundary_dists[:, None]
-            dist_matrix[i, expand_indices] = np.min(distances, 0)
-
-    def _postprocess(self, dist_matrix, indices):
-        """Do some postprocessing on the result from dijkstra()."""
-        if self._expanded_radius > self._dijkstra_radius + 1:
-            self._expand(dist_matrix, indices)
-        for dropoff in self.dropoffs:
-            dropoff_index = to_index(dropoff)
-            if dist_matrix[0, dropoff_index] == np.inf:
-                self._set_simple_distance(dist_matrix, indices, dropoff_index)
-        dist_matrix[dist_matrix == np.inf] = 99999.9
+        indices, closest, distance = self._expand_arrays(ship_index)
+        for i in range(5):
+            dist_matrix[i, indices] = dist_matrix[i, closest] + distance
 
     def _indices(self, ship):
         """Shortest paths for the ship cell and its direct neighbours."""
@@ -501,8 +476,7 @@ class DistanceCalculator:
         graph = self._graph(ship)
         indices = self._indices(ship)
         dist_matrix = dijkstra(graph, indices=indices)
-        if game_map.width > 40:
-            self._postprocess(dist_matrix, indices)
+        self._expand(dist_matrix, indices[0])
         return dist_matrix, indices
 
     def _shortest_path(self):

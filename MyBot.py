@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging, time
+bot_start = time.time()
 import numpy as np
 
 from hlt import constants, Game
@@ -99,23 +100,26 @@ def log_profiling():
 game = Game()
 load_parameters(game)
 logging.info(param)
-game.ready("Schildpad")
 
 # Define some globals for convenience.
 me = game.me
 game_map = game.game_map
 
+MapData(game, None)
+while(time.time() - bot_start < 9.7 and DistanceCalculator.needs_precompute()):
+    DistanceCalculator.precompute()
+
 # Play the game.
+game.ready("Schildpad")
 while True:
     game.update_frame()
     start = time.time()
     command_queue = generate_commands()
-    time_taken = time.time() - start
+    # time_taken = time.time() - start
     # logging.info(time_taken)
-    if time_taken > 1.4:
+    # if time_taken > 1.4:
         # log_profiling()
-        DistanceCalculator.reduce_radius()
-    elif time_taken < 0.9:
-        DistanceCalculator.increase_radius()
 
+    while(time.time() - start < 1.7 and DistanceCalculator.needs_precompute()):
+        DistanceCalculator.precompute()
     game.end_turn(command_queue)
