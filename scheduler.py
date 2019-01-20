@@ -416,10 +416,9 @@ class GhostDropoff(entity.Entity):
 
     def search_area(self):
         """Indices at which to search for spawn position."""
-        r1 = 10 + param['search_radius1']
-        r2 = 10 + param['search_radius1'] + 10
+        r = 10 + param['search_radius']
         d = self.dropoff_distances
-        return np.flatnonzero(np.logical_and(d >= r1, d <= r2)).tolist()
+        return np.flatnonzero(np.logical_and(d >= r, d <= r + 10)).tolist()
 
     def best_position(self, positions):
         """Determine the best position.
