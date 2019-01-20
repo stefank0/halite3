@@ -38,7 +38,7 @@ class Scheduler:
         self.update_returning_to_dropoff()
         self.expected_halite = self._expected_halite()
 
-    def mining_profit(self, bonussed_halite):
+    def mining_profit(self, bonus_factor, halite):
         """Calculate the total profit after mining up to 5 turns.
 
         Args:
@@ -47,7 +47,7 @@ class Scheduler:
             list(np.array): [<profit after 1 turn>, <profit after 2 turns>, ..]
         """
         multipliers = (0.25, 0.4375, 0.578125, 0.68359375, 0.7626953125)
-        return [c * bonussed_halite for c in multipliers]
+        return [bonus_factor * np.ceil(c * halite) for c in multipliers]
 
     def move_cost(self, halite):
         """Calculate the cost of moving after mining up to 3 turns.
@@ -106,8 +106,7 @@ class Scheduler:
         """
         halite = self.map_data.halite
         bonus_factor = 1 + (1 + param['extra_bonus']) * (self.map_data.in_bonus_range > 1)
-        bonussed_halite = bonus_factor * halite
-        profit = self.mining_profit(bonussed_halite)
+        profit = self.mining_profit(bonus_factor, halite)
         move_cost = self.move_cost(halite)
         neighbour_profit = self._neighbour_profit(profit)
         return self._find_max(profit, move_cost, neighbour_profit)
