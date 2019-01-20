@@ -28,7 +28,7 @@ def to_cell(index):
     """Map a 1D index to a 2D MapCell."""
     x = index % game_map.width
     y = index // game_map.width
-    return game_map[Position(x, y)]
+    return game_map._cells[y][x]
 
 
 def can_move(ship):
@@ -124,6 +124,30 @@ class LinearSum:
     _time_saving_mode = False
 
     @classmethod
+    def simple_assignment(cls, cost_matrix):
+        """Simple heuristic/non-optimal/greedy assignment."""
+        if cost_matrix.size == 0:
+            return [], []
+        cost = cost_matrix - cost_matrix.max()
+        row_ind = []
+        col_ind = []
+        while True:
+            row, col = np.unravel_index(cost.argmin(), cost.shape)
+            if cost[row, col] < 0.0:
+                row_ind.append(row)
+                col_ind.append(col)
+                cost[row, :] = 0.0
+                cost[:, col] = 0.0
+            else:
+                break
+        for row in range(cost_matrix.shape[0]):
+            if not row in row_ind:
+                row_ind.append(row)
+                col = cost_matrix[row, :].argmin()
+                col_ind.append(col)
+        return row_ind, col_ind
+
+    @classmethod
     def _add_to_cluster(cls, cluster, ship, ships, radius=2):
         """Add ship to cluster and search other ships for the cluster."""
         cluster.append(ship)
@@ -148,9 +172,6 @@ class LinearSum:
                 continue
             cluster = []
             cls._add_to_cluster(cluster, ship, ships)
-            if not cluster_mode and len(cluster) > 30 and game_map.width > 32:
-                cluster = []
-                cls._add_to_cluster(cluster, ship, ships, radius=1)
             clusters.append(cluster)
         return clusters
 
@@ -170,7 +191,10 @@ class LinearSum:
         for cluster in clusters:
             indices = np.array([ships.index(ship) for ship in cluster])
             partial_cost_matrix = cost_matrix[indices, :]
-            row_ind, col_ind = linear_sum_assignment(partial_cost_matrix)
+            if len(cluster) > 50 and game_map.height == 64:
+                row_ind, col_ind = cls.simple_assignment(partial_cost_matrix)
+            else:
+                row_ind, col_ind = linear_sum_assignment(partial_cost_matrix)
             row_inds += [int(x) for x in indices[row_ind]]
             col_inds += [int(x) for x in col_ind]
         return row_inds, col_inds
@@ -178,8 +202,10 @@ class LinearSum:
     @classmethod
     def assignment(cls, cost_matrix, ships, cluster_mode=False):
         """Wraps linear_sum_assignment()."""
-        if cls._time_saving_mode or cluster_mode:
+        if cluster_mode:
             return cls._efficient_assignment(cost_matrix, ships, cluster_mode)
+        elif cls._time_saving_mode:
+            return cls.simple_assignment(cost_matrix)
         else:
             start = time.time()
             row_ind, col_ind = linear_sum_assignment(cost_matrix)
