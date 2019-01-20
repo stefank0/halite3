@@ -31,9 +31,8 @@ class Scheduler:
         self.turns_left = constants.MAX_TURNS - game.turn_number
         self.ships = self.me.get_ships()
         self.map_data = map_data
-        #if self.ghost:
-        #    self.ghost.map_data = map_data
-        #    self.ghost.calculator = map_data.calculator
+        if self.ghost:
+            self.ghost.map_data = map_data
         self.schedule = Schedule(game, map_data)
         self.ships_per_dropoff = len(self.ships) / len(map_data.dropoffs)
         self.update_returning_to_dropoff()
@@ -377,26 +376,26 @@ class GhostDropoff(entity.Entity):
 
     def __init__(self, map_data):
         self.map_data = map_data
-        self.calculator = map_data.calculator
+        self.dropoff_distances = map_data.calculator.simple_dropoff_distances
         self.position = self.spawn_position()
 
     def _disputed_factor(self, index):
         """Gain a strategic advantage by controlling disputed areas."""
-        d1 = self.calculator.enemy_dropoff_distances[index]
-        d2 = self.calculator.simple_dropoff_distances[index]
+        d1 = self.map_data.calculator.enemy_dropoff_distances[index]
+        d2 = self.dropoff_distances[index]
         df = (param['disputed_factor'] - 1.0) / 5.0
         return max(1.0, param['disputed_factor'] - df * abs(d1 - d2 - 2))
 
     def _expansion_factor(self, index):
         """Reward gradual expansion."""
-        d = self.calculator.simple_dropoff_distances[index]
+        d = self.dropoff_distances[index]
         df = (param['expansion_factor'] - 1.0) / 5.0
         return max(1.0, param['expansion_factor'] - df * abs(17.5 - d))
 
     def _turns(self, index):
         """Move turns uses Dijkstra distance of the second closest ship."""
         mine_turns = 10.0
-        move_turns = self.calculator.ghost_distances[index]
+        move_turns = self.map_data.calculator.ghost_distances[index]
         return mine_turns + min(30.0, max(15.0, move_turns))
 
     def cost(self, index):
@@ -406,8 +405,8 @@ class GhostDropoff(entity.Entity):
             Comparable to cost matrix of Scheduler, but with averages. This
             ensures that destinations of ships and dropoff placement match.
         """
-        if (self.calculator.simple_dropoff_distances[index] < 10 + param['search_radius1'] or
-                self.map_data.density_difference[index] < param['dropoff_density_difference'] or
+        if (self.dropoff_distances[index] < 10 + param['search_radius'] or
+                self.map_data.density_difference[index] < param['ship_density_threshold'] or
                 self.map_data.halite_density[index] < param['dropoff_halite_density1'] + self.map_data.turn_number / constants.MAX_TURNS * param['dropoff_halite_density2'] or
                 to_cell(index).has_structure):
             return 0.0
@@ -415,11 +414,11 @@ class GhostDropoff(entity.Entity):
         halite_density = self.map_data.halite_density[index]
         return -1.0 * modifier * halite_density / self._turns(index)
 
-    def spawn_positions(self):
+    def search_area(self):
         """Indices at which to search for spawn position."""
         r1 = 10 + param['search_radius1']
         r2 = 10 + param['search_radius1'] + 10
-        d = self.calculator.simple_dropoff_distances
+        d = self.dropoff_distances
         return np.flatnonzero(np.logical_and(d >= r1, d <= r2)).tolist()
 
     def best_position(self, positions):
@@ -429,14 +428,14 @@ class GhostDropoff(entity.Entity):
             Returns None if a good position was not found. If that is the case,
             the GhostDropoff should not be considered any further.
         """
-        spawn_index = min(positions, key=self.cost)
-        if self.cost(spawn_index) == 0.0:
+        best = min(positions, key=self.cost)
+        if self.cost(best) == 0.0:
             return None
-        return to_cell(spawn_index).position
+        return to_cell(best).position
 
     def spawn_position(self):
         """Determine a good position to 'spawn' the ghost dropoff."""
-        positions = self.spawn_positions()
+        positions = self.search_area()
         return self.best_position(positions) if positions else None
 
     def distance(self, ships):
