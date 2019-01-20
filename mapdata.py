@@ -21,14 +21,12 @@ from parameters import param
 
 def to_index(obj):
     """Map a 2D MapCell or Entity to a 1D index."""
-    return obj.position.x + game_map.width * obj.position.y
+    return obj.position.x + game_map_width * obj.position.y
 
 
 def to_cell(index):
     """Map a 1D index to a 2D MapCell."""
-    x = index % game_map.width
-    y = index // game_map.width
-    return game_map._cells[y][x]
+    return game_map._cells[index // game_map_width][index % game_map_width]
 
 
 def can_move(ship):
@@ -49,8 +47,8 @@ def target(origin, direction):
 
 def neighbours(index):
     """Get the indices of the neighbours of the cell belonging to index."""
-    h = game_map.height
-    w = game_map.width
+    h = game_map_height
+    w = game_map_width
     x = index % w
     y = index // w
     index_north = x + (w * ((y - 1) % h))
@@ -62,8 +60,8 @@ def neighbours(index):
 
 def neighbourhood(index, radius):
     """Generator for all indices around index within a radius."""
-    h = game_map.height
-    w = game_map.width
+    h = game_map_height
+    w = game_map_width
     x = index % w
     y = index // w
     return (
@@ -75,8 +73,8 @@ def neighbourhood(index, radius):
 
 def circle(index, radius):
     """Get indices at a circle around an index."""
-    h = game_map.height
-    w = game_map.width
+    h = game_map_height
+    w = game_map_width
     x = index % w
     y = index // w
     return [
@@ -91,8 +89,8 @@ def density(base_density, radius):
     base_density_sum = base_density.sum()
     if base_density_sum == 0.0:
         return base_density
-    base_density = base_density.reshape(game_map.height, game_map.width)
-    density = np.zeros((game_map.height, game_map.width))
+    base_density = base_density.reshape(game_map_height, game_map_width)
+    density = np.zeros((game_map_height, game_map_width))
     for dx in range(-radius, radius + 1):
         for dy in range(-radius + abs(dx), radius + 1 - abs(dx)):
             factor = 1.0 - (abs(dx) + abs(dy)) / (radius + 1.0)
@@ -103,7 +101,7 @@ def density(base_density, radius):
 
 def ship_density(ships, radius):
     """Transform a list of ships into a density on the game map."""
-    base_density = np.zeros(game_map.height * game_map.width)
+    base_density = np.zeros(game_map_height * game_map_width)
     ship_indices = [to_index(ship) for ship in ships]
     base_density[ship_indices] = 1.0
     return density(base_density, radius)
@@ -192,7 +190,7 @@ class LinearSum:
         for cluster in clusters:
             indices = np.array([ships.index(ship) for ship in cluster])
             partial_cost_matrix = cost_matrix[indices, :]
-            if len(cluster) > 50 and game_map.height == 64 and len(game.players) == 4:
+            if len(cluster) > 50 and game_map_height == 64 and len(game.players) == 4:
                 row_ind, col_ind = cls.simple_assignment(partial_cost_matrix)
             else:
                 row_ind, col_ind = linear_sum_assignment(partial_cost_matrix)
@@ -232,17 +230,13 @@ class LinearSum:
 
 def simple_distance(index_a, index_b):
     """"Get the actual step distance from one cell to another."""
-    height = game_map.height
-    width = game_map.width
-    dx = abs((index_b % width) - (index_a % width))
-    dy = abs((index_b // width) - (index_a // width))
-    return min(dx, width - dx) + min(dy, height - dy)
+    return all_simple_distances(index_a)[index_b]
 
 
 def simple_distances(index, indices):
     """Get an array of the actual step distances to specific cells."""
-    height = game_map.height
-    width = game_map.width
+    height = game_map_height
+    width = game_map_width
     dx = np.abs(indices % width - index % width)
     dy = np.abs(indices // width - index // width)
     return np.minimum(dx, width - dx) + np.minimum(dy, height - dy)
@@ -255,7 +249,7 @@ def all_simple_distances(index):
     if index in _all_simple_distance_cache:
         return _all_simple_distance_cache[index]
     else:
-        indices = np.arange(game_map.width * game_map.height)
+        indices = np.arange(game_map_width * game_map_height)
         distances = simple_distances(index, indices)
         _all_simple_distance_cache[index] = distances
         return distances
@@ -272,7 +266,7 @@ class DistanceCalculator:
     @classmethod
     def _initialize_edge_data(cls):
         """Store edge_data for create_graph() on the class for performance."""
-        m = game_map.height * game_map.width
+        m = game_map_height * game_map_width
         col = np.array([j for i in range(m) for j in neighbours(i)])
         row = np.repeat(np.arange(m), 4)
         cls._edge_data = (row, col)
@@ -280,7 +274,7 @@ class DistanceCalculator:
     @classmethod
     def needs_precompute(cls):
         """Test if precomputation is finished."""
-        return cls._next_precompute < game_map.height * game_map.width
+        return cls._next_precompute < game_map_height * game_map_width
 
     @classmethod
     def precompute(cls):
@@ -316,8 +310,9 @@ class DistanceCalculator:
         self.troll_indices = self._troll_indices()
         self.simple_dropoff_distances = self._simple_dropoff_distances(dropoffs)
         self.enemy_dropoff_distances = self._enemy_dropoff_distances()
-        self._traffic_costs = self._traffic_edge_costs()
-        self._movement_costs = self._movement_edge_costs(halite)
+        traffic_costs = self._traffic_edge_costs()
+        movement_costs = self._movement_edge_costs(halite)
+        self._base_costs = traffic_costs + movement_costs
         self.threat_factor = self._threat_factor()
         self._dist_tuples = self._shortest_path()
         self.ghost_distances = self._ghost_distances()
@@ -356,7 +351,7 @@ class DistanceCalculator:
     def _second_distances(self, distances):
         """Return the second closests distance values from distances."""
         if len(distances) <= 1:
-            return np.full(game_map.height * game_map.width, 999.9)
+            return np.full(game_map_height * game_map_width, 999.9)
         return np.partition(distances, 1, 0)[1]
 
     def _troll_indices(self):
@@ -392,7 +387,7 @@ class DistanceCalculator:
 
     def _threat_edge_costs(self, ship):
         """Edge costs describing avoiding enemies (fleeing)."""
-        threat = np.zeros(game_map.height * game_map.width)
+        threat = np.zeros(game_map_height * game_map_width)
         index = to_index(ship)
         for enemy_ship in enemy_ships():
             enemy_index = to_index(enemy_ship)
@@ -411,7 +406,7 @@ class DistanceCalculator:
 
     def _traffic_edge_costs(self):
         """Edge costs describing avoiding or waiting for traffic."""
-        m = game_map.height * game_map.width
+        m = game_map_height * game_map_width
         occupation = np.array([
             to_cell(j).is_occupied
             for i in range(m) for j in neighbours(i)
@@ -435,8 +430,7 @@ class DistanceCalculator:
 
     def _edge_costs(self, ship):
         """Edge costs for all edges in the graph."""
-        threat_costs = self._threat_edge_costs(ship)
-        return self._movement_costs + self._traffic_costs + threat_costs
+        return self._base_costs + self._threat_edge_costs(ship)
 
     def _nearby_edges(self, ship, edge_costs, row, col):
         """Keep only nearby edges to reduce computation time."""
@@ -453,10 +447,10 @@ class DistanceCalculator:
 
     def _graph(self, ship):
         """Create a sparse matrix representing the game map graph."""
-        m = game_map.height * game_map.width
+        m = game_map_height * game_map_width
         edge_costs = self._edge_costs(ship)
         row, col = self._edge_data
-        if game_map.width > 40:
+        if game_map_width > 40:
             edge_costs, row, col = self._nearby_edges(ship, edge_costs, row, col)
         return csr_matrix((edge_costs, (row, col)), shape=(m, m))
 
@@ -562,7 +556,7 @@ def enemies_in_bonus_range():
         for ship in enemy_ships()
         for index in _bonus_neighbourhood(ship)
     )
-    in_bonus_range = np.zeros(game_map.height * game_map.width)
+    in_bonus_range = np.zeros(game_map_height * game_map_width)
     for index, counted_number in counted.items():
         in_bonus_range[index] = counted_number
     return in_bonus_range
@@ -579,9 +573,11 @@ class MapData:
     """Analyzes the gamemap and provides useful data/statistics."""
 
     def __init__(self, _game, ghost_dropoff):
-        global game, game_map
+        global game, game_map, game_map_width, game_map_height
         game = _game
         game_map = game.game_map
+        game_map_width = game_map.width
+        game_map_height = game_map.height
         self.turn_number = game.turn_number
         self.halite = self._halite()
         self.dropoffs = [game.me.shipyard] + game.me.get_dropoffs()
@@ -597,7 +593,7 @@ class MapData:
 
     def _halite(self):
         """Get an array of available halite on the map."""
-        m = game_map.height * game_map.width
+        m = game_map_height * game_map_width
         halite = np.array([to_cell(i).halite_amount for i in range(m)])
         for i in range(m):
             cell = to_cell(i)
@@ -612,7 +608,7 @@ class MapData:
 
     def _ship_density(self, ships, radius):
         """Get density of ships."""
-        ship_density = np.zeros(game_map.height * game_map.width)
+        ship_density = np.zeros(game_map_height * game_map_width)
         ship_indices = [to_index(ship) for ship in ships]
         ship_density[ship_indices] = 1
         return density(ship_density, radius)
@@ -656,7 +652,7 @@ class MapData:
 
     def _base_loot(self):
         """Define a base loot to be used in loot()."""
-        base_loot = np.zeros(game_map.height * game_map.width)
+        base_loot = np.zeros(game_map_height * game_map_width)
         dropoff_dists = self.calculator.simple_dropoff_distances
         for enemy_ship in enemy_ships():
             enemy_index = to_index(enemy_ship)
@@ -679,5 +675,5 @@ class MapData:
         is_4player = len(game.players) == 4
         is_endgame = game.turn_number > 0.75 * constants.MAX_TURNS
         if is_4player and not is_endgame:
-            return np.zeros(game_map.height * game_map.width)
+            return np.zeros(game_map_height * game_map_width)
         return param['lootfactor'] * (self.base_loot - ship.halite_amount)
