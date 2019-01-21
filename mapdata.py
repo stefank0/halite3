@@ -190,7 +190,7 @@ class LinearSum:
         for cluster in clusters:
             indices = np.array([ships.index(ship) for ship in cluster])
             partial_cost_matrix = cost_matrix[indices, :]
-            if len(cluster) > 50 and game_map_height == 64 and len(game.players) == 4:
+            if len(cluster) > 50 and game_map_height == 64 and len(game.players) == 4 and not cluster_mode:
                 row_ind, col_ind = cls.simple_assignment(partial_cost_matrix)
             else:
                 row_ind, col_ind = linear_sum_assignment(partial_cost_matrix)
