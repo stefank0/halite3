@@ -1,0 +1,12 @@
+endgame: 100
+expand_edge_cost: 1.753659479002994
+extra_bonus: 0.75
+lootfactor: 0.25
+mean_halite: 75.0
+neighbour_profit_factor: 4.453331594068866
+return_distance_factor: 0.7653480052325414
+return_factor: 0.7180652173913042
+spawn_haliteremain: 0.0048457243
+spawn_intercept: -1715.6234109409
+spawn_turnremain: 11.7669185912
+traffic_factor: 0.8
