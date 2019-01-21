@@ -1,0 +1,182 @@
+2019-01-12 23:51:36 INFO     iter: 00
+2019-01-12 23:51:36 INFO     iter: 00 param: mean_halite
+2019-01-12 23:51:36 INFO     iter: 00 param: mean_halite default value: 75.0
+2019-01-12 23:51:36 INFO     iter: 00 param: mean_halite stepsize plus: 36.94029850746269
+2019-01-12 23:51:36 INFO     iter: 00 param: mean_halite stepsize minus: 24.75
+2019-01-12 23:51:36 INFO     iter: 00 param: mean_halite game: 1
+2019-01-12 23:55:53 INFO     iter: 00 param: mean_halite game: 2
+2019-01-12 23:59:53 INFO     iter: 00 param: mean_halite game: 3
+2019-01-13 00:02:57 INFO     iter: 00 param: mean_halite game: 4
+2019-01-13 00:08:11 INFO     iter: 00 param: mean_halite game: 5
+2019-01-13 00:12:35 INFO     iter: 00 param: mean_halite game: 6
+2019-01-13 00:16:55 INFO     iter: 00 param: mean_halite game: 7
+2019-01-13 00:21:03 INFO     iter: 00 param: mean_halite game: 8
+2019-01-13 00:25:52 INFO     iter: 00 param: mean_halite game: 9
+2019-01-13 00:29:19 INFO     iter: 00 param: mean_halite game: 10
+2019-01-13 00:34:03 INFO     iter: 00 param: mean_halite game: 11
+2019-01-13 00:38:01 INFO     iter: 00 param: mean_halite game: 12
+2019-01-13 00:43:35 INFO     iter: 00 param: mean_halite game: 13
+2019-01-13 00:46:14 INFO     iter: 00 param: mean_halite game: 14
+2019-01-13 00:51:38 INFO     iter: 00 param: mean_halite game: 15
+2019-01-13 00:55:59 INFO     iter: 00 param: mean_halite game: 16
+2019-01-13 00:59:34 INFO     iter: 00 param: mean_halite game: 17
+2019-01-13 01:03:45 INFO     iter: 00 param: mean_halite game: 18
+2019-01-13 01:06:55 INFO     iter: 00 param: mean_halite game: 19
+2019-01-13 01:12:58 INFO     iter: 00 param: mean_halite game: 20
+2019-01-13 01:18:10 INFO     iter: 00 param: mean_halite value: 50.25 result: 6508
+2019-01-13 01:18:10 INFO     iter: 00 param: mean_halite value: 111.94 result: 4408
+2019-01-13 01:18:10 INFO     iter: 01
+2019-01-13 01:18:10 INFO     iter: 01 param: mean_halite
+2019-01-13 01:18:10 INFO     iter: 01 param: mean_halite default value: 50.24999999999999
+2019-01-13 01:18:10 INFO     iter: 01 param: mean_halite stepsize plus: 18.02445652173913
+2019-01-13 01:18:10 INFO     iter: 01 param: mean_halite stepsize minus: 13.265999999999998
+2019-01-13 01:18:10 INFO     iter: 01 param: mean_halite game: 1
+2019-01-13 01:21:31 INFO     iter: 01 param: mean_halite game: 2
+2019-01-13 01:24:57 INFO     iter: 01 param: mean_halite game: 3
+2019-01-13 01:30:00 INFO     iter: 01 param: mean_halite game: 4
+2019-01-13 01:34:43 INFO     iter: 01 param: mean_halite game: 5
+2019-01-13 01:36:40 INFO     iter: 01 param: mean_halite game: 6
+2019-01-13 01:40:40 INFO     iter: 01 param: mean_halite game: 7
+2019-01-13 01:45:29 INFO     iter: 01 param: mean_halite game: 8
+2019-01-13 01:49:44 INFO     iter: 01 param: mean_halite game: 9
+2019-01-13 01:55:18 INFO     iter: 01 param: mean_halite game: 10
+2019-01-13 02:00:57 INFO     iter: 01 param: mean_halite game: 11
+2019-01-13 02:05:01 INFO     iter: 01 param: mean_halite game: 12
+2019-01-13 02:09:20 INFO     iter: 01 param: mean_halite game: 13
+2019-01-13 02:14:07 INFO     iter: 01 param: mean_halite game: 14
+2019-01-13 02:18:54 INFO     iter: 01 param: mean_halite game: 15
+2019-01-13 02:22:18 INFO     iter: 01 param: mean_halite game: 16
+2019-01-13 02:26:08 INFO     iter: 01 param: mean_halite game: 17
+2019-01-13 02:30:41 INFO     iter: 01 param: mean_halite game: 18
+2019-01-13 02:33:47 INFO     iter: 01 param: mean_halite game: 19
+2019-01-13 02:38:08 INFO     iter: 01 param: mean_halite game: 20
+2019-01-13 02:41:43 INFO     iter: 01 param: mean_halite value: 36.98 result: 5362
+2019-01-13 02:41:43 INFO     iter: 01 param: mean_halite value: 68.27 result: 6591
+2019-01-13 02:41:43 INFO     iter: 02
+2019-01-13 02:41:43 INFO     iter: 02 param: mean_halite
+2019-01-13 02:41:43 INFO     iter: 02 param: mean_halite default value: 68.27445652173913
+2019-01-13 02:41:43 INFO     iter: 02 param: mean_halite stepsize plus: 18.280381867889588
+2019-01-13 02:41:43 INFO     iter: 02 param: mean_halite stepsize minus: 14.419565217391305
+2019-01-13 02:41:43 INFO     iter: 02 param: mean_halite game: 1
+2019-01-13 02:46:24 INFO     iter: 02 param: mean_halite game: 2
+2019-01-13 02:50:17 INFO     iter: 02 param: mean_halite game: 3
+2019-01-13 02:55:02 INFO     iter: 02 param: mean_halite game: 4
+2019-01-13 03:00:08 INFO     iter: 02 param: mean_halite game: 5
+2019-01-13 03:04:32 INFO     iter: 02 param: mean_halite game: 6
+2019-01-13 03:08:47 INFO     iter: 02 param: mean_halite game: 7
+2019-01-13 03:12:37 INFO     iter: 02 param: mean_halite game: 8
+2019-01-13 03:17:39 INFO     iter: 02 param: mean_halite game: 9
+2019-01-13 03:20:34 INFO     iter: 02 param: mean_halite game: 10
+2019-01-13 03:24:28 INFO     iter: 02 param: mean_halite game: 11
+2019-01-13 03:29:08 INFO     iter: 02 param: mean_halite game: 12
+2019-01-13 03:32:47 INFO     iter: 02 param: mean_halite game: 13
+2019-01-13 03:37:06 INFO     iter: 02 param: mean_halite game: 14
+2019-01-13 03:41:49 INFO     iter: 02 param: mean_halite game: 15
+2019-01-13 03:45:45 INFO     iter: 02 param: mean_halite game: 16
+2019-01-13 03:50:56 INFO     iter: 02 param: mean_halite game: 17
+2019-01-13 03:54:05 INFO     iter: 02 param: mean_halite game: 18
+2019-01-13 03:58:11 INFO     iter: 02 param: mean_halite game: 19
+2019-01-13 04:02:25 INFO     iter: 02 param: mean_halite game: 20
+2019-01-13 04:07:34 INFO     iter: 02 param: mean_halite value: 53.85 result: 5722
+2019-01-13 04:07:34 INFO     iter: 02 param: mean_halite value: 86.55 result: 6149
+2019-01-13 04:07:34 INFO     iter: 03
+2019-01-13 04:07:34 INFO     iter: 03 param: mean_halite
+2019-01-13 04:07:34 INFO     iter: 03 param: mean_halite default value: 86.55483838962871
+2019-01-13 04:07:34 INFO     iter: 03 param: mean_halite stepsize plus: 17.59759517509587
+2019-01-13 04:07:34 INFO     iter: 03 param: mean_halite stepsize minus: 14.62430549431167
+2019-01-13 04:07:34 INFO     iter: 03 param: mean_halite game: 1
+2019-01-13 04:12:24 INFO     iter: 03 param: mean_halite game: 2
+2019-01-13 04:17:29 INFO     iter: 03 param: mean_halite game: 3
+2019-01-13 04:23:42 INFO     iter: 03 param: mean_halite game: 4
+2019-01-13 04:27:36 INFO     iter: 03 param: mean_halite game: 5
+2019-01-13 04:32:07 INFO     iter: 03 param: mean_halite game: 6
+2019-01-13 04:36:55 INFO     iter: 03 param: mean_halite game: 7
+2019-01-13 04:41:08 INFO     iter: 03 param: mean_halite game: 8
+2019-01-13 04:44:57 INFO     iter: 03 param: mean_halite game: 9
+2019-01-13 04:49:31 INFO     iter: 03 param: mean_halite game: 10
+2019-01-13 04:53:29 INFO     iter: 03 param: mean_halite game: 11
+2019-01-13 04:58:22 INFO     iter: 03 param: mean_halite game: 12
+2019-01-13 05:02:02 INFO     iter: 03 param: mean_halite game: 13
+2019-01-13 05:05:38 INFO     iter: 03 param: mean_halite game: 14
+2019-01-13 05:10:11 INFO     iter: 03 param: mean_halite game: 15
+2019-01-13 05:15:09 INFO     iter: 03 param: mean_halite game: 16
+2019-01-13 05:18:08 INFO     iter: 03 param: mean_halite game: 17
+2019-01-13 05:23:16 INFO     iter: 03 param: mean_halite game: 18
+2019-01-13 05:28:34 INFO     iter: 03 param: mean_halite game: 19
+2019-01-13 05:31:49 INFO     iter: 03 param: mean_halite game: 20
+2019-01-13 05:35:39 INFO     iter: 03 param: mean_halite value: 71.93 result: 5220
+2019-01-13 05:35:39 INFO     iter: 03 param: mean_halite value: 104.15 result: 6479
+2019-01-13 05:35:39 INFO     iter: 04
+2019-01-13 05:35:39 INFO     iter: 04 param: mean_halite
+2019-01-13 05:35:39 INFO     iter: 04 param: mean_halite default value: 104.15243356472459
+2019-01-13 05:35:39 INFO     iter: 04 param: mean_halite stepsize plus: 16.27839411594009
+2019-01-13 05:35:39 INFO     iter: 04 param: mean_halite stepsize minus: 14.078076140076698
+2019-01-13 05:35:39 INFO     iter: 04 param: mean_halite game: 1
+2019-01-13 05:40:34 INFO     iter: 04 param: mean_halite game: 2
+2019-01-13 05:44:29 INFO     iter: 04 param: mean_halite game: 3
+2019-01-13 05:49:21 INFO     iter: 04 param: mean_halite game: 4
+2019-01-13 05:55:03 INFO     iter: 04 param: mean_halite game: 5
+2019-01-13 05:59:03 INFO     iter: 04 param: mean_halite game: 6
+2019-01-13 06:03:05 INFO     iter: 04 param: mean_halite game: 7
+2019-01-13 06:08:25 INFO     iter: 04 param: mean_halite game: 8
+2019-01-13 06:12:11 INFO     iter: 04 param: mean_halite game: 9
+2019-01-13 06:16:11 INFO     iter: 04 param: mean_halite game: 10
+2019-01-13 06:21:19 INFO     iter: 04 param: mean_halite game: 11
+2019-01-13 06:26:24 INFO     iter: 04 param: mean_halite game: 12
+2019-01-13 06:31:40 INFO     iter: 04 param: mean_halite game: 13
+2019-01-13 06:35:53 INFO     iter: 04 param: mean_halite game: 14
+2019-01-13 06:40:24 INFO     iter: 04 param: mean_halite game: 15
+2019-01-13 06:44:09 INFO     iter: 04 param: mean_halite game: 16
+2019-01-13 06:49:47 INFO     iter: 04 param: mean_halite game: 17
+2019-01-13 06:53:24 INFO     iter: 04 param: mean_halite game: 18
+2019-01-13 06:58:41 INFO     iter: 04 param: mean_halite game: 19
+2019-01-13 07:04:01 INFO     iter: 04 param: mean_halite game: 20
+2019-01-13 07:08:47 INFO     iter: 04 param: mean_halite value: 90.07 result: 5449
+2019-01-13 07:08:47 INFO     iter: 04 param: mean_halite value: 120.43 result: 6212
+2019-01-13 07:08:47 INFO     iter: 05
+2019-01-13 07:08:47 INFO     iter: 05 param: mean_halite
+2019-01-13 07:08:47 INFO     iter: 05 param: mean_halite default value: 120.43082768066466
+2019-01-13 07:08:47 INFO     iter: 05 param: mean_halite stepsize plus: 14.601656676467924
+2019-01-13 07:08:47 INFO     iter: 05 param: mean_halite stepsize minus: 13.02271529275207
+2019-01-13 07:08:47 INFO     iter: 05 param: mean_halite game: 1
+2019-01-13 07:12:07 INFO     iter: 05 param: mean_halite game: 2
+2019-01-13 07:16:28 INFO     iter: 05 param: mean_halite game: 3
+2019-01-13 07:19:15 INFO     iter: 05 param: mean_halite game: 4
+2019-01-13 07:22:46 INFO     iter: 05 param: mean_halite game: 5
+2019-01-13 07:26:31 INFO     iter: 05 param: mean_halite game: 6
+2019-01-13 07:29:55 INFO     iter: 05 param: mean_halite game: 7
+2019-01-13 07:34:13 INFO     iter: 05 param: mean_halite game: 8
+2019-01-13 07:40:34 INFO     iter: 05 param: mean_halite game: 9
+2019-01-13 07:45:34 INFO     iter: 05 param: mean_halite game: 10
+2019-01-13 07:49:53 INFO     iter: 05 param: mean_halite game: 11
+2019-01-13 07:54:22 INFO     iter: 05 param: mean_halite game: 12
+2019-01-13 08:01:00 INFO     iter: 05 param: mean_halite game: 13
+2019-01-13 08:05:55 INFO     iter: 05 param: mean_halite game: 14
+2019-01-13 08:09:50 INFO     iter: 05 param: mean_halite game: 15
+2019-01-13 08:15:07 INFO     iter: 05 param: mean_halite game: 16
+2019-01-13 08:18:55 INFO     iter: 05 param: mean_halite game: 17
+2019-01-13 08:23:01 INFO     iter: 05 param: mean_halite game: 18
+2019-01-13 08:27:16 INFO     iter: 05 param: mean_halite game: 19
+2019-01-13 08:30:48 INFO     iter: 05 param: mean_halite game: 20
+2019-01-13 08:35:08 INFO     iter: 05 param: mean_halite value: 107.41 result: 5958
+2019-01-13 08:35:08 INFO     iter: 05 param: mean_halite value: 135.03 result: 6139
+2019-01-13 08:35:08 INFO     iter: 06
+2019-01-13 08:35:08 INFO     iter: 06 param: mean_halite
+2019-01-13 08:35:08 INFO     iter: 06 param: mean_halite default value: 135.03248435713257
+2019-01-13 08:35:08 INFO     iter: 06 param: mean_halite stepsize plus: 12.787544065140349
+2019-01-13 08:35:08 INFO     iter: 06 param: mean_halite stepsize minus: 11.681325341174338
+2019-01-13 08:35:08 INFO     iter: 06 param: mean_halite game: 1
+2019-01-13 08:39:48 INFO     iter: 06 param: mean_halite game: 2
+2019-01-13 08:44:32 INFO     iter: 06 param: mean_halite game: 3
+2019-01-13 08:48:47 INFO     iter: 06 param: mean_halite game: 4
+2019-01-13 08:52:17 INFO     iter: 06 param: mean_halite game: 5
+2019-01-13 08:57:09 INFO     iter: 06 param: mean_halite game: 6
+2019-01-13 09:02:59 INFO     iter: 06 param: mean_halite game: 7
+2019-01-13 09:07:17 INFO     iter: 06 param: mean_halite game: 8
+2019-01-13 09:11:38 INFO     iter: 06 param: mean_halite game: 9
+2019-01-13 09:14:32 INFO     iter: 06 param: mean_halite game: 10
+2019-01-13 09:19:34 INFO     iter: 06 param: mean_halite game: 11
+2019-01-13 09:23:03 INFO     iter: 06 param: mean_halite game: 12
+2019-01-13 09:28:48 INFO     iter: 06 param: mean_halite game: 13
+2019-01-13 09:31:54 INFO     iter: 06 param: mean_halite game: 14
+2019-01-13 09:37:26 INFO     iter: 06 param: mean_halite game: 15

@@ -1,0 +1,133 @@
+2019-01-16 10:46:17 INFO     iter: 00
+2019-01-16 10:46:17 INFO     iter: 00 param: draw_from_shipyard
+2019-01-16 10:46:17 INFO     iter: 00 param: draw_from_shipyard default value: 5
+2019-01-16 10:46:17 INFO     iter: 00 param: draw_from_shipyard stepsize plus: 15.0
+2019-01-16 10:46:17 INFO     iter: 00 param: draw_from_shipyard stepsize minus: 3.75
+2019-01-16 10:46:17 INFO     iter: 00 param: draw_from_shipyard game: 1
+2019-01-16 10:53:13 INFO     iter: 00 param: draw_from_shipyard game: 2
+2019-01-16 11:01:13 INFO     iter: 00 param: draw_from_shipyard game: 3
+2019-01-16 11:09:12 INFO     iter: 00 param: draw_from_shipyard game: 4
+2019-01-16 11:16:44 INFO     iter: 00 param: draw_from_shipyard game: 5
+2019-01-16 11:23:53 INFO     iter: 00 param: draw_from_shipyard game: 6
+2019-01-16 11:32:06 INFO     iter: 00 param: draw_from_shipyard game: 7
+2019-01-16 11:40:33 INFO     iter: 00 param: draw_from_shipyard game: 8
+2019-01-16 11:48:45 INFO     iter: 00 param: draw_from_shipyard game: 9
+2019-01-16 11:55:59 INFO     iter: 00 param: draw_from_shipyard game: 10
+2019-01-16 12:04:03 INFO     iter: 00 param: draw_from_shipyard game: 11
+2019-01-16 12:12:24 INFO     iter: 00 param: draw_from_shipyard game: 12
+2019-01-16 12:20:32 INFO     iter: 00 param: draw_from_shipyard game: 13
+2019-01-16 12:28:33 INFO     iter: 00 param: draw_from_shipyard game: 14
+2019-01-16 12:36:51 INFO     iter: 00 param: draw_from_shipyard game: 15
+2019-01-16 12:45:03 INFO     iter: 00 param: draw_from_shipyard game: 16
+2019-01-16 12:52:54 INFO     iter: 00 param: draw_from_shipyard game: 17
+2019-01-16 13:01:08 INFO     iter: 00 param: draw_from_shipyard game: 18
+2019-01-16 13:09:31 INFO     iter: 00 param: draw_from_shipyard game: 19
+2019-01-16 13:17:48 INFO     iter: 00 param: draw_from_shipyard game: 20
+2019-01-16 13:25:54 INFO     iter: 00 param: draw_from_shipyard value: 5.00 result: 3157
+2019-01-16 13:25:54 INFO     iter: 00 param: draw_from_shipyard value: 1.25 result: 4000
+2019-01-16 13:25:54 INFO     iter: 00 param: draw_from_shipyard value: 20.00 result: 1049
+2019-01-16 13:25:54 INFO     iter: 00 param: draw_from_shipyard value: 5.00 result: 3117
+2019-01-16 13:25:54 INFO     iter: 00 param: expansion_factor
+2019-01-16 13:25:54 INFO     iter: 00 param: expansion_factor default value: 1.1
+2019-01-16 13:25:54 INFO     iter: 00 param: expansion_factor stepsize plus: 3.3000000000000003
+2019-01-16 13:25:54 INFO     iter: 00 param: expansion_factor stepsize minus: 0.8250000000000001
+2019-01-16 13:25:54 INFO     iter: 00 param: expansion_factor game: 1
+2019-01-16 13:34:39 INFO     iter: 00 param: expansion_factor game: 2
+2019-01-16 13:43:07 INFO     iter: 00 param: expansion_factor game: 3
+2019-01-16 13:50:29 INFO     iter: 00 param: expansion_factor game: 4
+2019-01-16 13:57:37 INFO     iter: 00 param: expansion_factor game: 5
+2019-01-16 14:04:48 INFO     iter: 00 param: expansion_factor game: 6
+2019-01-16 14:12:11 INFO     iter: 00 param: expansion_factor game: 7
+2019-01-16 14:21:11 INFO     iter: 00 param: expansion_factor game: 8
+2019-01-16 14:30:06 INFO     iter: 00 param: expansion_factor game: 9
+2019-01-16 14:38:06 INFO     iter: 00 param: expansion_factor game: 10
+2019-01-16 14:45:50 INFO     iter: 00 param: expansion_factor game: 11
+2019-01-16 14:52:42 INFO     iter: 00 param: expansion_factor game: 12
+2019-01-16 14:59:18 INFO     iter: 00 param: expansion_factor game: 13
+2019-01-16 15:07:20 INFO     iter: 00 param: expansion_factor game: 14
+2019-01-16 15:14:37 INFO     iter: 00 param: expansion_factor game: 15
+2019-01-16 15:22:56 INFO     iter: 00 param: expansion_factor game: 16
+2019-01-16 15:30:45 INFO     iter: 00 param: expansion_factor game: 17
+2019-01-16 15:38:17 INFO     iter: 00 param: expansion_factor game: 18
+2019-01-16 15:47:00 INFO     iter: 00 param: expansion_factor game: 19
+2019-01-16 15:55:50 INFO     iter: 00 param: expansion_factor game: 20
+2019-01-16 16:03:06 INFO     iter: 00 param: expansion_factor value: 1.10 result: 2639
+2019-01-16 16:03:06 INFO     iter: 00 param: expansion_factor value: 0.28 result: 3260
+2019-01-16 16:03:06 INFO     iter: 00 param: expansion_factor value: 4.40 result: 3602
+2019-01-16 16:03:06 INFO     iter: 00 param: expansion_factor value: 1.10 result: 3216
+2019-01-16 16:03:06 INFO     iter: 00 param: dropoff_halite_density
+2019-01-16 16:03:06 INFO     iter: 00 param: dropoff_halite_density default value: 100
+2019-01-16 16:03:06 INFO     iter: 00 param: dropoff_halite_density stepsize plus: 300.0
+2019-01-16 16:03:06 INFO     iter: 00 param: dropoff_halite_density stepsize minus: 75.0
+2019-01-16 16:03:06 INFO     iter: 00 param: dropoff_halite_density game: 1
+2019-01-16 16:11:03 INFO     iter: 00 param: dropoff_halite_density game: 2
+2019-01-16 16:19:36 INFO     iter: 00 param: dropoff_halite_density game: 3
+2019-01-16 16:27:53 INFO     iter: 00 param: dropoff_halite_density game: 4
+2019-01-16 16:36:42 INFO     iter: 00 param: dropoff_halite_density game: 5
+2019-01-16 16:44:12 INFO     iter: 00 param: dropoff_halite_density game: 6
+2019-01-16 16:52:26 INFO     iter: 00 param: dropoff_halite_density game: 7
+2019-01-16 16:59:31 INFO     iter: 00 param: dropoff_halite_density game: 8
+2019-01-16 17:07:44 INFO     iter: 00 param: dropoff_halite_density game: 9
+2019-01-16 17:15:57 INFO     iter: 00 param: dropoff_halite_density game: 10
+2019-01-16 17:24:40 INFO     iter: 00 param: dropoff_halite_density game: 11
+2019-01-16 17:32:44 INFO     iter: 00 param: dropoff_halite_density game: 12
+2019-01-16 17:41:05 INFO     iter: 00 param: dropoff_halite_density game: 13
+2019-01-16 17:49:42 INFO     iter: 00 param: dropoff_halite_density game: 14
+2019-01-16 17:57:48 INFO     iter: 00 param: dropoff_halite_density game: 15
+2019-01-16 18:05:38 INFO     iter: 00 param: dropoff_halite_density game: 16
+2019-01-16 18:13:31 INFO     iter: 00 param: dropoff_halite_density game: 17
+2019-01-16 18:21:24 INFO     iter: 00 param: dropoff_halite_density game: 18
+2019-01-16 18:29:03 INFO     iter: 00 param: dropoff_halite_density game: 19
+2019-01-16 18:34:31 INFO     iter: 00 param: dropoff_halite_density game: 20
+2019-01-16 18:42:13 INFO     iter: 00 param: dropoff_halite_density value: 100.00 result: 4899
+2019-01-16 18:42:13 INFO     iter: 00 param: dropoff_halite_density value: 25.00 result: 1330
+2019-01-16 18:42:13 INFO     iter: 00 param: dropoff_halite_density value: 400.00 result: 1559
+2019-01-16 18:42:13 INFO     iter: 00 param: dropoff_halite_density value: 100.00 result: 3889
+2019-01-16 18:42:13 INFO     iter: 01
+2019-01-16 18:42:13 INFO     iter: 01 param: draw_from_shipyard
+2019-01-16 18:42:13 INFO     iter: 01 param: draw_from_shipyard default value: 2.9726807467743095
+2019-01-16 18:42:13 INFO     iter: 01 param: draw_from_shipyard stepsize plus: 4.459021120161466
+2019-01-16 18:42:13 INFO     iter: 01 param: draw_from_shipyard stepsize minus: 1.783608448064586
+2019-01-16 18:42:13 INFO     iter: 01 param: draw_from_shipyard game: 1
+2019-01-16 18:50:37 INFO     iter: 01 param: draw_from_shipyard game: 2
+2019-01-16 18:58:02 INFO     iter: 01 param: draw_from_shipyard game: 3
+2019-01-16 19:06:46 INFO     iter: 01 param: draw_from_shipyard game: 4
+2019-01-16 19:14:26 INFO     iter: 01 param: draw_from_shipyard game: 5
+2019-01-16 19:22:21 INFO     iter: 01 param: draw_from_shipyard game: 6
+2019-01-16 19:30:51 INFO     iter: 01 param: draw_from_shipyard game: 7
+2019-01-16 19:39:25 INFO     iter: 01 param: draw_from_shipyard game: 8
+2019-01-16 19:47:44 INFO     iter: 01 param: draw_from_shipyard game: 9
+2019-01-16 19:55:43 INFO     iter: 01 param: draw_from_shipyard game: 10
+2019-01-16 20:03:23 INFO     iter: 01 param: draw_from_shipyard game: 11
+2019-01-16 20:12:18 INFO     iter: 01 param: draw_from_shipyard game: 12
+2019-01-16 20:20:40 INFO     iter: 01 param: draw_from_shipyard game: 13
+2019-01-16 20:28:43 INFO     iter: 01 param: draw_from_shipyard game: 14
+2019-01-16 20:35:14 INFO     iter: 01 param: draw_from_shipyard game: 15
+2019-01-16 20:42:53 INFO     iter: 01 param: draw_from_shipyard game: 16
+2019-01-16 20:51:08 INFO     iter: 01 param: draw_from_shipyard game: 17
+2019-01-16 20:59:08 INFO     iter: 01 param: draw_from_shipyard game: 18
+2019-01-16 21:06:27 INFO     iter: 01 param: draw_from_shipyard game: 19
+2019-01-16 21:14:11 INFO     iter: 01 param: draw_from_shipyard game: 20
+2019-01-16 21:20:37 INFO     iter: 01 param: draw_from_shipyard value: 2.97 result: 3379
+2019-01-16 21:20:37 INFO     iter: 01 param: draw_from_shipyard value: 1.19 result: 3028
+2019-01-16 21:20:37 INFO     iter: 01 param: draw_from_shipyard value: 7.43 result: 3243
+2019-01-16 21:20:37 INFO     iter: 01 param: draw_from_shipyard value: 2.97 result: 3836
+2019-01-16 21:20:37 INFO     iter: 01 param: expansion_factor
+2019-01-16 21:20:37 INFO     iter: 01 param: expansion_factor default value: 2.0267384192392024
+2019-01-16 21:20:37 INFO     iter: 01 param: expansion_factor stepsize plus: 3.040107628858805
+2019-01-16 21:20:37 INFO     iter: 01 param: expansion_factor stepsize minus: 1.2160430515435217
+2019-01-16 21:20:37 INFO     iter: 01 param: expansion_factor game: 1
+2019-01-16 21:29:11 INFO     iter: 01 param: expansion_factor game: 2
+2019-01-16 21:37:12 INFO     iter: 01 param: expansion_factor game: 3
+2019-01-16 21:45:05 INFO     iter: 01 param: expansion_factor game: 4
+2019-01-16 21:53:09 INFO     iter: 01 param: expansion_factor game: 5
+2019-01-16 21:59:21 INFO     iter: 01 param: expansion_factor game: 6
+2019-01-16 22:07:38 INFO     iter: 01 param: expansion_factor game: 7
+2019-01-16 22:13:23 INFO     iter: 01 param: expansion_factor game: 8
+2019-01-16 22:19:20 INFO     iter: 01 param: expansion_factor game: 9
+2019-01-16 22:27:56 INFO     iter: 01 param: expansion_factor game: 10
+2019-01-16 22:36:13 INFO     iter: 01 param: expansion_factor game: 11
+2019-01-16 22:44:34 INFO     iter: 01 param: expansion_factor game: 12
+2019-01-16 22:53:12 INFO     iter: 01 param: expansion_factor game: 13
+2019-01-16 23:01:35 INFO     iter: 01 param: expansion_factor game: 14
+2019-01-16 23:09:31 INFO     iter: 01 param: expansion_factor game: 15
