@@ -1,0 +1,270 @@
+2019-01-13 22:23:39 INFO     iter: 00
+2019-01-13 22:23:39 INFO     iter: 00 param: traffic_factor
+2019-01-13 22:23:39 INFO     iter: 00 param: traffic_factor default value: 0.8
+2019-01-13 22:23:39 INFO     iter: 00 param: traffic_factor stepsize plus: 0.39402985074626873
+2019-01-13 22:23:39 INFO     iter: 00 param: traffic_factor stepsize minus: 0.264
+2019-01-13 22:23:39 INFO     iter: 00 param: traffic_factor game: 1
+2019-01-13 22:24:46 INFO     iter: 00 param: traffic_factor game: 2
+2019-01-13 22:26:28 INFO     iter: 00 param: traffic_factor game: 3
+2019-01-13 22:27:29 INFO     iter: 00 param: traffic_factor game: 4
+2019-01-13 22:28:31 INFO     iter: 00 param: traffic_factor game: 5
+2019-01-13 22:29:34 INFO     iter: 00 param: traffic_factor game: 6
+2019-01-13 22:30:42 INFO     iter: 00 param: traffic_factor game: 7
+2019-01-13 22:32:13 INFO     iter: 00 param: traffic_factor game: 8
+2019-01-13 22:33:31 INFO     iter: 00 param: traffic_factor game: 9
+2019-01-13 22:34:58 INFO     iter: 00 param: traffic_factor game: 10
+2019-01-13 22:36:07 INFO     iter: 00 param: traffic_factor game: 11
+2019-01-13 22:37:44 INFO     iter: 00 param: traffic_factor game: 12
+2019-01-13 22:39:16 INFO     iter: 00 param: traffic_factor game: 13
+2019-01-13 22:40:52 INFO     iter: 00 param: traffic_factor game: 14
+2019-01-13 22:42:06 INFO     iter: 00 param: traffic_factor game: 15
+2019-01-13 22:43:40 INFO     iter: 00 param: traffic_factor game: 16
+2019-01-13 22:44:49 INFO     iter: 00 param: traffic_factor game: 17
+2019-01-13 22:46:06 INFO     iter: 00 param: traffic_factor game: 18
+2019-01-13 22:47:10 INFO     iter: 00 param: traffic_factor game: 19
+2019-01-13 22:48:10 INFO     iter: 00 param: traffic_factor game: 20
+2019-01-13 22:49:28 INFO     iter: 00 param: traffic_factor value: 0.54 result: 6225
+2019-01-13 22:49:28 INFO     iter: 00 param: traffic_factor value: 1.19 result: 5716
+2019-01-13 22:49:28 INFO     iter: 01
+2019-01-13 22:49:28 INFO     iter: 01 param: traffic_factor
+2019-01-13 22:49:28 INFO     iter: 01 param: traffic_factor default value: 0.536
+2019-01-13 22:49:28 INFO     iter: 01 param: traffic_factor stepsize plus: 0.19226086956521743
+2019-01-13 22:49:28 INFO     iter: 01 param: traffic_factor stepsize minus: 0.14150400000000002
+2019-01-13 22:49:28 INFO     iter: 01 param: traffic_factor game: 1
+2019-01-13 22:50:22 INFO     iter: 01 param: traffic_factor game: 2
+2019-01-13 22:51:22 INFO     iter: 01 param: traffic_factor game: 3
+2019-01-13 22:52:15 INFO     iter: 01 param: traffic_factor game: 4
+2019-01-13 22:53:35 INFO     iter: 01 param: traffic_factor game: 5
+2019-01-13 22:54:41 INFO     iter: 01 param: traffic_factor game: 6
+2019-01-13 22:55:52 INFO     iter: 01 param: traffic_factor game: 7
+2019-01-13 22:57:26 INFO     iter: 01 param: traffic_factor game: 8
+2019-01-13 22:58:28 INFO     iter: 01 param: traffic_factor game: 9
+2019-01-13 22:59:48 INFO     iter: 01 param: traffic_factor game: 10
+2019-01-13 23:00:39 INFO     iter: 01 param: traffic_factor game: 11
+2019-01-13 23:01:33 INFO     iter: 01 param: traffic_factor game: 12
+2019-01-13 23:02:43 INFO     iter: 01 param: traffic_factor game: 13
+2019-01-13 23:03:45 INFO     iter: 01 param: traffic_factor game: 14
+2019-01-13 23:05:21 INFO     iter: 01 param: traffic_factor game: 15
+2019-01-13 23:06:47 INFO     iter: 01 param: traffic_factor game: 16
+2019-01-13 23:08:03 INFO     iter: 01 param: traffic_factor game: 17
+2019-01-13 23:08:56 INFO     iter: 01 param: traffic_factor game: 18
+2019-01-13 23:10:12 INFO     iter: 01 param: traffic_factor game: 19
+2019-01-13 23:11:34 INFO     iter: 01 param: traffic_factor game: 20
+2019-01-13 23:12:44 INFO     iter: 01 param: traffic_factor value: 0.39 result: 5565
+2019-01-13 23:12:44 INFO     iter: 01 param: traffic_factor value: 0.73 result: 5433
+2019-01-13 23:12:44 INFO     iter: 02
+2019-01-13 23:12:44 INFO     iter: 02 param: traffic_factor
+2019-01-13 23:12:44 INFO     iter: 02 param: traffic_factor default value: 0.394496
+2019-01-13 23:12:44 INFO     iter: 02 param: traffic_factor stepsize plus: 0.10562570385395541
+2019-01-13 23:12:44 INFO     iter: 02 param: traffic_factor stepsize minus: 0.08331755520000002
+2019-01-13 23:12:44 INFO     iter: 02 param: traffic_factor game: 1
+2019-01-13 23:13:24 INFO     iter: 02 param: traffic_factor game: 2
+2019-01-13 23:14:29 INFO     iter: 02 param: traffic_factor game: 3
+2019-01-13 23:15:40 INFO     iter: 02 param: traffic_factor game: 4
+2019-01-13 23:17:04 INFO     iter: 02 param: traffic_factor game: 5
+2019-01-13 23:18:11 INFO     iter: 02 param: traffic_factor game: 6
+2019-01-13 23:19:00 INFO     iter: 02 param: traffic_factor game: 7
+2019-01-13 23:20:04 INFO     iter: 02 param: traffic_factor game: 8
+2019-01-13 23:20:50 INFO     iter: 02 param: traffic_factor game: 9
+2019-01-13 23:22:05 INFO     iter: 02 param: traffic_factor game: 10
+2019-01-13 23:23:15 INFO     iter: 02 param: traffic_factor game: 11
+2019-01-13 23:24:38 INFO     iter: 02 param: traffic_factor game: 12
+2019-01-13 23:25:35 INFO     iter: 02 param: traffic_factor game: 13
+2019-01-13 23:26:14 INFO     iter: 02 param: traffic_factor game: 14
+2019-01-13 23:27:20 INFO     iter: 02 param: traffic_factor game: 15
+2019-01-13 23:28:12 INFO     iter: 02 param: traffic_factor game: 16
+2019-01-13 23:29:10 INFO     iter: 02 param: traffic_factor game: 17
+2019-01-13 23:30:27 INFO     iter: 02 param: traffic_factor game: 18
+2019-01-13 23:31:16 INFO     iter: 02 param: traffic_factor game: 19
+2019-01-13 23:32:25 INFO     iter: 02 param: traffic_factor game: 20
+2019-01-13 23:33:33 INFO     iter: 02 param: traffic_factor value: 0.31 result: 4781
+2019-01-13 23:33:33 INFO     iter: 02 param: traffic_factor value: 0.50 result: 7104
+2019-01-13 23:33:33 INFO     iter: 03
+2019-01-13 23:33:33 INFO     iter: 03 param: traffic_factor
+2019-01-13 23:33:33 INFO     iter: 03 param: traffic_factor default value: 0.5001217038539554
+2019-01-13 23:33:33 INFO     iter: 03 param: traffic_factor stepsize plus: 0.10168050043699979
+2019-01-13 23:33:33 INFO     iter: 03 param: traffic_factor stepsize minus: 0.08450056308316431
+2019-01-13 23:33:33 INFO     iter: 03 param: traffic_factor game: 1
+2019-01-13 23:35:09 INFO     iter: 03 param: traffic_factor game: 2
+2019-01-13 23:36:05 INFO     iter: 03 param: traffic_factor game: 3
+2019-01-13 23:37:14 INFO     iter: 03 param: traffic_factor game: 4
+2019-01-13 23:38:15 INFO     iter: 03 param: traffic_factor game: 5
+2019-01-13 23:39:47 INFO     iter: 03 param: traffic_factor game: 6
+2019-01-13 23:41:17 INFO     iter: 03 param: traffic_factor game: 7
+2019-01-13 23:42:45 INFO     iter: 03 param: traffic_factor game: 8
+2019-01-13 23:43:43 INFO     iter: 03 param: traffic_factor game: 9
+2019-01-13 23:44:28 INFO     iter: 03 param: traffic_factor game: 10
+2019-01-13 23:46:02 INFO     iter: 03 param: traffic_factor game: 11
+2019-01-13 23:47:16 INFO     iter: 03 param: traffic_factor game: 12
+2019-01-13 23:48:55 INFO     iter: 03 param: traffic_factor game: 13
+2019-01-13 23:50:36 INFO     iter: 03 param: traffic_factor game: 14
+2019-01-13 23:52:17 INFO     iter: 03 param: traffic_factor game: 15
+2019-01-13 23:53:28 INFO     iter: 03 param: traffic_factor game: 16
+2019-01-13 23:54:35 INFO     iter: 03 param: traffic_factor game: 17
+2019-01-13 23:56:08 INFO     iter: 03 param: traffic_factor game: 18
+2019-01-13 23:57:33 INFO     iter: 03 param: traffic_factor game: 19
+2019-01-13 23:58:35 INFO     iter: 03 param: traffic_factor game: 20
+2019-01-13 23:59:16 INFO     iter: 03 param: traffic_factor value: 0.42 result: 6996
+2019-01-13 23:59:16 INFO     iter: 03 param: traffic_factor value: 0.60 result: 7263
+2019-01-13 23:59:16 INFO     iter: 04
+2019-01-13 23:59:16 INFO     iter: 04 param: traffic_factor
+2019-01-13 23:59:16 INFO     iter: 04 param: traffic_factor default value: 0.6018022042909552
+2019-01-13 23:59:16 INFO     iter: 04 param: traffic_factor stepsize plus: 0.094058037109635
+2019-01-13 23:59:16 INFO     iter: 04 param: traffic_factor stepsize minus: 0.08134440034959986
+2019-01-13 23:59:16 INFO     iter: 04 param: traffic_factor game: 1
+2019-01-14 00:00:27 INFO     iter: 04 param: traffic_factor game: 2
+2019-01-14 00:01:57 INFO     iter: 04 param: traffic_factor game: 3
+2019-01-14 00:03:04 INFO     iter: 04 param: traffic_factor game: 4
+2019-01-14 00:04:28 INFO     iter: 04 param: traffic_factor game: 5
+2019-01-14 00:05:54 INFO     iter: 04 param: traffic_factor game: 6
+2019-01-14 00:06:22 INFO     iter: 04 param: traffic_factor game: 7
+2019-01-14 00:07:21 INFO     iter: 04 param: traffic_factor game: 8
+2019-01-14 00:08:22 INFO     iter: 04 param: traffic_factor game: 9
+2019-01-14 00:09:11 INFO     iter: 04 param: traffic_factor game: 10
+2019-01-14 00:10:26 INFO     iter: 04 param: traffic_factor game: 11
+2019-01-14 00:11:42 INFO     iter: 04 param: traffic_factor game: 12
+2019-01-14 00:12:54 INFO     iter: 04 param: traffic_factor game: 13
+2019-01-14 00:14:04 INFO     iter: 04 param: traffic_factor game: 14
+2019-01-14 00:14:52 INFO     iter: 04 param: traffic_factor game: 15
+2019-01-14 00:16:19 INFO     iter: 04 param: traffic_factor game: 16
+2019-01-14 00:17:32 INFO     iter: 04 param: traffic_factor game: 17
+2019-01-14 00:18:38 INFO     iter: 04 param: traffic_factor game: 18
+2019-01-14 00:20:11 INFO     iter: 04 param: traffic_factor game: 19
+2019-01-14 00:21:47 INFO     iter: 04 param: traffic_factor game: 20
+2019-01-14 00:23:05 INFO     iter: 04 param: traffic_factor value: 0.52 result: 8550
+2019-01-14 00:23:05 INFO     iter: 04 param: traffic_factor value: 0.70 result: 4595
+2019-01-14 00:23:05 INFO     iter: 05
+2019-01-14 00:23:05 INFO     iter: 05 param: traffic_factor
+2019-01-14 00:23:05 INFO     iter: 05 param: traffic_factor default value: 0.5204578039413553
+2019-01-14 00:23:05 INFO     iter: 05 param: traffic_factor stepsize plus: 0.06310299708220175
+2019-01-14 00:23:05 INFO     iter: 05 param: traffic_factor stepsize minus: 0.05627939235451611
+2019-01-14 00:23:05 INFO     iter: 05 param: traffic_factor game: 1
+2019-01-14 00:24:40 INFO     iter: 05 param: traffic_factor game: 2
+2019-01-14 00:25:31 INFO     iter: 05 param: traffic_factor game: 3
+2019-01-14 00:26:39 INFO     iter: 05 param: traffic_factor game: 4
+2019-01-14 00:27:27 INFO     iter: 05 param: traffic_factor game: 5
+2019-01-14 00:28:44 INFO     iter: 05 param: traffic_factor game: 6
+2019-01-14 00:29:30 INFO     iter: 05 param: traffic_factor game: 7
+2019-01-14 00:30:42 INFO     iter: 05 param: traffic_factor game: 8
+2019-01-14 00:32:04 INFO     iter: 05 param: traffic_factor game: 9
+2019-01-14 00:32:56 INFO     iter: 05 param: traffic_factor game: 10
+2019-01-14 00:34:25 INFO     iter: 05 param: traffic_factor game: 11
+2019-01-14 00:35:09 INFO     iter: 05 param: traffic_factor game: 12
+2019-01-14 00:36:36 INFO     iter: 05 param: traffic_factor game: 13
+2019-01-14 00:38:14 INFO     iter: 05 param: traffic_factor game: 14
+2019-01-14 00:39:43 INFO     iter: 05 param: traffic_factor game: 15
+2019-01-14 00:40:23 INFO     iter: 05 param: traffic_factor game: 16
+2019-01-14 00:41:16 INFO     iter: 05 param: traffic_factor game: 17
+2019-01-14 00:42:23 INFO     iter: 05 param: traffic_factor game: 18
+2019-01-14 00:43:55 INFO     iter: 05 param: traffic_factor game: 19
+2019-01-14 00:45:31 INFO     iter: 05 param: traffic_factor game: 20
+2019-01-14 00:46:49 INFO     iter: 05 param: traffic_factor value: 0.46 result: 6868
+2019-01-14 00:46:49 INFO     iter: 05 param: traffic_factor value: 0.58 result: 4427
+2019-01-14 00:46:49 INFO     iter: 06
+2019-01-14 00:46:49 INFO     iter: 06 param: traffic_factor
+2019-01-14 00:46:49 INFO     iter: 06 param: traffic_factor default value: 0.4641784115868392
+2019-01-14 00:46:49 INFO     iter: 06 param: traffic_factor stepsize plus: 0.04395758487679805
+2019-01-14 00:46:49 INFO     iter: 06 param: traffic_factor stepsize minus: 0.04015492322391674
+2019-01-14 00:46:49 INFO     iter: 06 param: traffic_factor game: 1
+2019-01-14 00:48:10 INFO     iter: 06 param: traffic_factor game: 2
+2019-01-14 00:49:18 INFO     iter: 06 param: traffic_factor game: 3
+2019-01-14 00:50:29 INFO     iter: 06 param: traffic_factor game: 4
+2019-01-14 00:51:36 INFO     iter: 06 param: traffic_factor game: 5
+2019-01-14 00:52:54 INFO     iter: 06 param: traffic_factor game: 6
+2019-01-14 00:53:59 INFO     iter: 06 param: traffic_factor game: 7
+2019-01-14 00:55:07 INFO     iter: 06 param: traffic_factor game: 8
+2019-01-14 00:56:16 INFO     iter: 06 param: traffic_factor game: 9
+2019-01-14 00:57:15 INFO     iter: 06 param: traffic_factor game: 10
+2019-01-14 00:58:28 INFO     iter: 06 param: traffic_factor game: 11
+2019-01-14 00:59:27 INFO     iter: 06 param: traffic_factor game: 12
+2019-01-14 01:00:20 INFO     iter: 06 param: traffic_factor game: 13
+2019-01-14 01:01:39 INFO     iter: 06 param: traffic_factor game: 14
+2019-01-14 01:03:07 INFO     iter: 06 param: traffic_factor game: 15
+2019-01-14 01:03:52 INFO     iter: 06 param: traffic_factor game: 16
+2019-01-14 01:05:16 INFO     iter: 06 param: traffic_factor game: 17
+2019-01-14 01:05:59 INFO     iter: 06 param: traffic_factor game: 18
+2019-01-14 01:06:56 INFO     iter: 06 param: traffic_factor game: 19
+2019-01-14 01:07:53 INFO     iter: 06 param: traffic_factor game: 20
+2019-01-14 01:08:56 INFO     iter: 06 param: traffic_factor value: 0.42 result: 6559
+2019-01-14 01:08:56 INFO     iter: 06 param: traffic_factor value: 0.51 result: 3923
+2019-01-14 01:08:56 INFO     iter: 07
+2019-01-14 01:08:56 INFO     iter: 07 param: traffic_factor
+2019-01-14 01:08:56 INFO     iter: 07 param: traffic_factor default value: 0.4240234883629225
+2019-01-14 01:08:56 INFO     iter: 07 param: traffic_factor stepsize plus: 0.031526822072821044
+2019-01-14 01:08:56 INFO     iter: 07 param: traffic_factor stepsize minus: 0.029344976320020238
+2019-01-14 01:08:56 INFO     iter: 07 param: traffic_factor game: 1
+2019-01-14 01:09:43 INFO     iter: 07 param: traffic_factor game: 2
+2019-01-14 01:11:09 INFO     iter: 07 param: traffic_factor game: 3
+2019-01-14 01:12:14 INFO     iter: 07 param: traffic_factor game: 4
+2019-01-14 01:13:10 INFO     iter: 07 param: traffic_factor game: 5
+2019-01-14 01:13:59 INFO     iter: 07 param: traffic_factor game: 6
+2019-01-14 01:14:50 INFO     iter: 07 param: traffic_factor game: 7
+2019-01-14 01:15:58 INFO     iter: 07 param: traffic_factor game: 8
+2019-01-14 01:16:56 INFO     iter: 07 param: traffic_factor game: 9
+2019-01-14 01:18:12 INFO     iter: 07 param: traffic_factor game: 10
+2019-01-14 01:19:18 INFO     iter: 07 param: traffic_factor game: 11
+2019-01-14 01:20:08 INFO     iter: 07 param: traffic_factor game: 12
+2019-01-14 01:21:17 INFO     iter: 07 param: traffic_factor game: 13
+2019-01-14 01:22:41 INFO     iter: 07 param: traffic_factor game: 14
+2019-01-14 01:23:35 INFO     iter: 07 param: traffic_factor game: 15
+2019-01-14 01:24:38 INFO     iter: 07 param: traffic_factor game: 16
+2019-01-14 01:25:53 INFO     iter: 07 param: traffic_factor game: 17
+2019-01-14 01:26:35 INFO     iter: 07 param: traffic_factor game: 18
+2019-01-14 01:27:39 INFO     iter: 07 param: traffic_factor game: 19
+2019-01-14 01:28:45 INFO     iter: 07 param: traffic_factor game: 20
+2019-01-14 01:29:54 INFO     iter: 07 param: traffic_factor value: 0.39 result: 5556
+2019-01-14 01:29:54 INFO     iter: 07 param: traffic_factor value: 0.46 result: 6547
+2019-01-14 01:29:54 INFO     iter: 08
+2019-01-14 01:29:54 INFO     iter: 08 param: traffic_factor
+2019-01-14 01:29:54 INFO     iter: 08 param: traffic_factor default value: 0.4555503104357435
+2019-01-14 01:29:54 INFO     iter: 08 param: traffic_factor stepsize plus: 0.026699680469257074
+2019-01-14 01:29:54 INFO     iter: 08 param: traffic_factor stepsize minus: 0.025221457658256837
+2019-01-14 01:29:54 INFO     iter: 08 param: traffic_factor game: 1
+2019-01-14 01:30:58 INFO     iter: 08 param: traffic_factor game: 2
+2019-01-14 01:32:41 INFO     iter: 08 param: traffic_factor game: 3
+2019-01-14 01:34:11 INFO     iter: 08 param: traffic_factor game: 4
+2019-01-14 01:35:22 INFO     iter: 08 param: traffic_factor game: 5
+2019-01-14 01:36:13 INFO     iter: 08 param: traffic_factor game: 6
+2019-01-14 01:36:57 INFO     iter: 08 param: traffic_factor game: 7
+2019-01-14 01:37:58 INFO     iter: 08 param: traffic_factor game: 8
+2019-01-14 01:38:59 INFO     iter: 08 param: traffic_factor game: 9
+2019-01-14 01:39:49 INFO     iter: 08 param: traffic_factor game: 10
+2019-01-14 01:41:24 INFO     iter: 08 param: traffic_factor game: 11
+2019-01-14 01:42:41 INFO     iter: 08 param: traffic_factor game: 12
+2019-01-14 01:43:32 INFO     iter: 08 param: traffic_factor game: 13
+2019-01-14 01:44:41 INFO     iter: 08 param: traffic_factor game: 14
+2019-01-14 01:45:41 INFO     iter: 08 param: traffic_factor game: 15
+2019-01-14 01:46:50 INFO     iter: 08 param: traffic_factor game: 16
+2019-01-14 01:48:12 INFO     iter: 08 param: traffic_factor game: 17
+2019-01-14 01:49:26 INFO     iter: 08 param: traffic_factor game: 18
+2019-01-14 01:50:38 INFO     iter: 08 param: traffic_factor game: 19
+2019-01-14 01:51:37 INFO     iter: 08 param: traffic_factor game: 20
+2019-01-14 01:53:06 INFO     iter: 08 param: traffic_factor value: 0.43 result: 3919
+2019-01-14 01:53:06 INFO     iter: 08 param: traffic_factor value: 0.48 result: 7711
+2019-01-14 01:53:06 INFO     iter: 09
+2019-01-14 01:53:06 INFO     iter: 09 param: traffic_factor
+2019-01-14 01:53:06 INFO     iter: 09 param: traffic_factor default value: 0.4822499909050006
+2019-01-14 01:53:06 INFO     iter: 09 param: traffic_factor stepsize plus: 0.0223496518061184
+2019-01-14 01:53:06 INFO     iter: 09 param: traffic_factor stepsize minus: 0.021359744375405658
+2019-01-14 01:53:06 INFO     iter: 09 param: traffic_factor game: 1
+2019-01-14 01:54:04 INFO     iter: 09 param: traffic_factor game: 2
+2019-01-14 01:54:24 INFO     iter: 09 param: traffic_factor game: 3
+2019-01-14 01:55:40 INFO     iter: 09 param: traffic_factor game: 4
+2019-01-14 01:56:43 INFO     iter: 09 param: traffic_factor game: 5
+2019-01-14 01:58:08 INFO     iter: 09 param: traffic_factor game: 6
+2019-01-14 01:59:13 INFO     iter: 09 param: traffic_factor game: 7
+2019-01-14 02:00:29 INFO     iter: 09 param: traffic_factor game: 8
+2019-01-14 02:01:44 INFO     iter: 09 param: traffic_factor game: 9
+2019-01-14 02:02:42 INFO     iter: 09 param: traffic_factor game: 10
+2019-01-14 02:03:51 INFO     iter: 09 param: traffic_factor game: 11
+2019-01-14 02:05:05 INFO     iter: 09 param: traffic_factor game: 12
+2019-01-14 02:06:04 INFO     iter: 09 param: traffic_factor game: 13
+2019-01-14 02:07:19 INFO     iter: 09 param: traffic_factor game: 14
+2019-01-14 02:08:41 INFO     iter: 09 param: traffic_factor game: 15
+2019-01-14 02:10:14 INFO     iter: 09 param: traffic_factor game: 16
+2019-01-14 02:11:05 INFO     iter: 09 param: traffic_factor game: 17
+2019-01-14 02:12:01 INFO     iter: 09 param: traffic_factor game: 18
+2019-01-14 02:13:28 INFO     iter: 09 param: traffic_factor game: 19
+2019-01-14 02:14:17 INFO     iter: 09 param: traffic_factor game: 20
+2019-01-14 02:15:21 INFO     iter: 09 param: traffic_factor value: 0.46 result: 7178
+2019-01-14 02:15:21 INFO     iter: 09 param: traffic_factor value: 0.50 result: 6018

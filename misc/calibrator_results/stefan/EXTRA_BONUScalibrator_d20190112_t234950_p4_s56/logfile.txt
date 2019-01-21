@@ -1,0 +1,272 @@
+2019-01-12 23:49:50 INFO     iter: 00
+2019-01-12 23:49:50 INFO     iter: 00 param: extra_bonus
+2019-01-12 23:49:50 INFO     iter: 00 param: extra_bonus default value: 1.0
+2019-01-12 23:49:50 INFO     iter: 00 param: extra_bonus stepsize plus: 3.0
+2019-01-12 23:49:50 INFO     iter: 00 param: extra_bonus stepsize minus: 0.75
+2019-01-12 23:49:50 INFO     iter: 00 param: extra_bonus game: 1
+2019-01-12 23:57:03 INFO     iter: 00 param: extra_bonus game: 2
+2019-01-13 00:04:47 INFO     iter: 00 param: extra_bonus game: 3
+2019-01-13 00:12:41 INFO     iter: 00 param: extra_bonus game: 4
+2019-01-13 00:21:09 INFO     iter: 00 param: extra_bonus game: 5
+2019-01-13 00:28:38 INFO     iter: 00 param: extra_bonus game: 6
+2019-01-13 00:36:33 INFO     iter: 00 param: extra_bonus game: 7
+2019-01-13 00:43:42 INFO     iter: 00 param: extra_bonus game: 8
+2019-01-13 00:51:02 INFO     iter: 00 param: extra_bonus game: 9
+2019-01-13 00:58:41 INFO     iter: 00 param: extra_bonus game: 10
+2019-01-13 01:05:21 INFO     iter: 00 param: extra_bonus game: 11
+2019-01-13 01:13:15 INFO     iter: 00 param: extra_bonus game: 12
+2019-01-13 01:18:05 INFO     iter: 00 param: extra_bonus game: 13
+2019-01-13 01:25:48 INFO     iter: 00 param: extra_bonus game: 14
+2019-01-13 01:32:39 INFO     iter: 00 param: extra_bonus game: 15
+2019-01-13 01:39:01 INFO     iter: 00 param: extra_bonus game: 16
+2019-01-13 01:45:21 INFO     iter: 00 param: extra_bonus game: 17
+2019-01-13 01:51:49 INFO     iter: 00 param: extra_bonus game: 18
+2019-01-13 01:56:51 INFO     iter: 00 param: extra_bonus game: 19
+2019-01-13 02:04:01 INFO     iter: 00 param: extra_bonus game: 20
+2019-01-13 02:10:49 INFO     iter: 00 param: extra_bonus value: 1.00 result: 2503
+2019-01-13 02:10:49 INFO     iter: 00 param: extra_bonus value: 0.25 result: 3033
+2019-01-13 02:10:49 INFO     iter: 00 param: extra_bonus value: 4.00 result: 3500
+2019-01-13 02:10:49 INFO     iter: 00 param: extra_bonus value: 1.00 result: 3823
+2019-01-13 02:10:49 INFO     iter: 01
+2019-01-13 02:10:49 INFO     iter: 01 param: extra_bonus
+2019-01-13 02:10:49 INFO     iter: 01 param: extra_bonus default value: 1.0
+2019-01-13 02:10:49 INFO     iter: 01 param: extra_bonus stepsize plus: 1.5000000000000007
+2019-01-13 02:10:49 INFO     iter: 01 param: extra_bonus stepsize minus: 0.6000000000000001
+2019-01-13 02:10:49 INFO     iter: 01 param: extra_bonus game: 1
+2019-01-13 02:17:32 INFO     iter: 01 param: extra_bonus game: 2
+2019-01-13 02:25:23 INFO     iter: 01 param: extra_bonus game: 3
+2019-01-13 02:32:35 INFO     iter: 01 param: extra_bonus game: 4
+2019-01-13 02:40:52 INFO     iter: 01 param: extra_bonus game: 5
+2019-01-13 02:48:51 INFO     iter: 01 param: extra_bonus game: 6
+2019-01-13 02:56:47 INFO     iter: 01 param: extra_bonus game: 7
+2019-01-13 03:05:10 INFO     iter: 01 param: extra_bonus game: 8
+2019-01-13 03:12:54 INFO     iter: 01 param: extra_bonus game: 9
+2019-01-13 03:19:23 INFO     iter: 01 param: extra_bonus game: 10
+2019-01-13 03:25:55 INFO     iter: 01 param: extra_bonus game: 11
+2019-01-13 03:32:48 INFO     iter: 01 param: extra_bonus game: 12
+2019-01-13 03:38:59 INFO     iter: 01 param: extra_bonus game: 13
+2019-01-13 03:46:47 INFO     iter: 01 param: extra_bonus game: 14
+2019-01-13 03:53:34 INFO     iter: 01 param: extra_bonus game: 15
+2019-01-13 03:59:45 INFO     iter: 01 param: extra_bonus game: 16
+2019-01-13 04:06:30 INFO     iter: 01 param: extra_bonus game: 17
+2019-01-13 04:12:24 INFO     iter: 01 param: extra_bonus game: 18
+2019-01-13 04:20:34 INFO     iter: 01 param: extra_bonus game: 19
+2019-01-13 04:27:27 INFO     iter: 01 param: extra_bonus game: 20
+2019-01-13 04:33:50 INFO     iter: 01 param: extra_bonus value: 1.00 result: 2978
+2019-01-13 04:33:50 INFO     iter: 01 param: extra_bonus value: 0.40 result: 5498
+2019-01-13 04:33:50 INFO     iter: 01 param: extra_bonus value: 2.50 result: 2149
+2019-01-13 04:33:50 INFO     iter: 01 param: extra_bonus value: 1.00 result: 2454
+2019-01-13 04:33:50 INFO     iter: 02
+2019-01-13 04:33:50 INFO     iter: 02 param: extra_bonus
+2019-01-13 04:33:50 INFO     iter: 02 param: extra_bonus default value: 0.3999999999999999
+2019-01-13 04:33:50 INFO     iter: 02 param: extra_bonus stepsize plus: 0.3692307692307693
+2019-01-13 04:33:50 INFO     iter: 02 param: extra_bonus stepsize minus: 0.192
+2019-01-13 04:33:50 INFO     iter: 02 param: extra_bonus game: 1
+2019-01-13 04:39:50 INFO     iter: 02 param: extra_bonus game: 2
+2019-01-13 04:46:18 INFO     iter: 02 param: extra_bonus game: 3
+2019-01-13 04:54:05 INFO     iter: 02 param: extra_bonus game: 4
+2019-01-13 05:01:07 INFO     iter: 02 param: extra_bonus game: 5
+2019-01-13 05:08:14 INFO     iter: 02 param: extra_bonus game: 6
+2019-01-13 05:14:20 INFO     iter: 02 param: extra_bonus game: 7
+2019-01-13 05:21:07 INFO     iter: 02 param: extra_bonus game: 8
+2019-01-13 05:27:14 INFO     iter: 02 param: extra_bonus game: 9
+2019-01-13 05:35:25 INFO     iter: 02 param: extra_bonus game: 10
+2019-01-13 05:41:54 INFO     iter: 02 param: extra_bonus game: 11
+2019-01-13 05:49:58 INFO     iter: 02 param: extra_bonus game: 12
+2019-01-13 05:57:01 INFO     iter: 02 param: extra_bonus game: 13
+2019-01-13 06:03:08 INFO     iter: 02 param: extra_bonus game: 14
+2019-01-13 06:09:14 INFO     iter: 02 param: extra_bonus game: 15
+2019-01-13 06:16:36 INFO     iter: 02 param: extra_bonus game: 16
+2019-01-13 06:23:06 INFO     iter: 02 param: extra_bonus game: 17
+2019-01-13 06:29:55 INFO     iter: 02 param: extra_bonus game: 18
+2019-01-13 06:37:27 INFO     iter: 02 param: extra_bonus game: 19
+2019-01-13 06:44:57 INFO     iter: 02 param: extra_bonus game: 20
+2019-01-13 06:52:21 INFO     iter: 02 param: extra_bonus value: 0.40 result: 5130
+2019-01-13 06:52:21 INFO     iter: 02 param: extra_bonus value: 0.21 result: 2220
+2019-01-13 06:52:21 INFO     iter: 02 param: extra_bonus value: 0.77 result: 2007
+2019-01-13 06:52:21 INFO     iter: 02 param: extra_bonus value: 0.40 result: 2188
+2019-01-13 06:52:21 INFO     iter: 03
+2019-01-13 06:52:21 INFO     iter: 03 param: extra_bonus
+2019-01-13 06:52:21 INFO     iter: 03 param: extra_bonus default value: 0.3999999999999999
+2019-01-13 06:52:21 INFO     iter: 03 param: extra_bonus stepsize plus: 0.24935064935064943
+2019-01-13 06:52:21 INFO     iter: 03 param: extra_bonus stepsize minus: 0.15360000000000001
+2019-01-13 06:52:22 INFO     iter: 03 param: extra_bonus game: 1
+2019-01-13 06:58:17 INFO     iter: 03 param: extra_bonus game: 2
+2019-01-13 07:04:00 INFO     iter: 03 param: extra_bonus game: 3
+2019-01-13 07:10:47 INFO     iter: 03 param: extra_bonus game: 4
+2019-01-13 07:17:54 INFO     iter: 03 param: extra_bonus game: 5
+2019-01-13 07:24:43 INFO     iter: 03 param: extra_bonus game: 6
+2019-01-13 07:31:42 INFO     iter: 03 param: extra_bonus game: 7
+2019-01-13 07:38:12 INFO     iter: 03 param: extra_bonus game: 8
+2019-01-13 07:44:33 INFO     iter: 03 param: extra_bonus game: 9
+2019-01-13 07:52:50 INFO     iter: 03 param: extra_bonus game: 10
+2019-01-13 08:00:13 INFO     iter: 03 param: extra_bonus game: 11
+2019-01-13 08:07:16 INFO     iter: 03 param: extra_bonus game: 12
+2019-01-13 08:13:41 INFO     iter: 03 param: extra_bonus game: 13
+2019-01-13 08:21:53 INFO     iter: 03 param: extra_bonus game: 14
+2019-01-13 08:29:10 INFO     iter: 03 param: extra_bonus game: 15
+2019-01-13 08:35:18 INFO     iter: 03 param: extra_bonus game: 16
+2019-01-13 08:41:18 INFO     iter: 03 param: extra_bonus game: 17
+2019-01-13 08:47:17 INFO     iter: 03 param: extra_bonus game: 18
+2019-01-13 08:54:50 INFO     iter: 03 param: extra_bonus game: 19
+2019-01-13 09:02:00 INFO     iter: 03 param: extra_bonus game: 20
+2019-01-13 09:08:36 INFO     iter: 03 param: extra_bonus value: 0.40 result: 4003
+2019-01-13 09:08:36 INFO     iter: 03 param: extra_bonus value: 0.25 result: 3802
+2019-01-13 09:08:36 INFO     iter: 03 param: extra_bonus value: 0.65 result: 1157
+2019-01-13 09:08:36 INFO     iter: 03 param: extra_bonus value: 0.40 result: 4526
+2019-01-13 09:08:36 INFO     iter: 04
+2019-01-13 09:08:36 INFO     iter: 04 param: extra_bonus
+2019-01-13 09:08:36 INFO     iter: 04 param: extra_bonus default value: 0.3999999999999999
+2019-01-13 09:08:36 INFO     iter: 04 param: extra_bonus stepsize plus: 0.17736720554272525
+2019-01-13 09:08:36 INFO     iter: 04 param: extra_bonus stepsize minus: 0.12288000000000003
+2019-01-13 09:08:36 INFO     iter: 04 param: extra_bonus game: 1
+2019-01-13 09:15:58 INFO     iter: 04 param: extra_bonus game: 2
+2019-01-13 09:23:06 INFO     iter: 04 param: extra_bonus game: 3
+2019-01-13 09:32:01 INFO     iter: 04 param: extra_bonus game: 4
+2019-01-13 09:38:52 INFO     iter: 04 param: extra_bonus game: 5
+2019-01-13 09:46:53 INFO     iter: 04 param: extra_bonus game: 6
+2019-01-13 09:54:29 INFO     iter: 04 param: extra_bonus game: 7
+2019-01-13 10:02:01 INFO     iter: 04 param: extra_bonus game: 8
+2019-01-13 10:10:06 INFO     iter: 04 param: extra_bonus game: 9
+2019-01-13 10:17:40 INFO     iter: 04 param: extra_bonus game: 10
+2019-01-13 10:24:58 INFO     iter: 04 param: extra_bonus game: 11
+2019-01-13 10:31:50 INFO     iter: 04 param: extra_bonus game: 12
+2019-01-13 10:38:50 INFO     iter: 04 param: extra_bonus game: 13
+2019-01-13 10:46:49 INFO     iter: 04 param: extra_bonus game: 14
+2019-01-13 10:53:56 INFO     iter: 04 param: extra_bonus game: 15
+2019-01-13 11:00:21 INFO     iter: 04 param: extra_bonus game: 16
+2019-01-13 11:06:57 INFO     iter: 04 param: extra_bonus game: 17
+2019-01-13 11:13:13 INFO     iter: 04 param: extra_bonus game: 18
+2019-01-13 11:20:25 INFO     iter: 04 param: extra_bonus game: 19
+2019-01-13 11:27:16 INFO     iter: 04 param: extra_bonus game: 20
+2019-01-13 11:34:58 INFO     iter: 04 param: extra_bonus value: 0.40 result: 3432
+2019-01-13 11:34:58 INFO     iter: 04 param: extra_bonus value: 0.28 result: 3086
+2019-01-13 11:34:58 INFO     iter: 04 param: extra_bonus value: 0.58 result: 4142
+2019-01-13 11:34:58 INFO     iter: 04 param: extra_bonus value: 0.40 result: 3495
+2019-01-13 11:34:58 INFO     iter: 05
+2019-01-13 11:34:58 INFO     iter: 05 param: extra_bonus
+2019-01-13 11:34:58 INFO     iter: 05 param: extra_bonus default value: 0.5773672055427251
+2019-01-13 11:34:58 INFO     iter: 05 param: extra_bonus stepsize plus: 0.1881281348565181
+2019-01-13 11:34:58 INFO     iter: 05 param: extra_bonus stepsize minus: 0.1418937644341802
+2019-01-13 11:34:58 INFO     iter: 05 param: extra_bonus game: 1
+2019-01-13 11:40:55 INFO     iter: 05 param: extra_bonus game: 2
+2019-01-13 11:47:39 INFO     iter: 05 param: extra_bonus game: 3
+2019-01-13 11:54:37 INFO     iter: 05 param: extra_bonus game: 4
+2019-01-13 12:00:53 INFO     iter: 05 param: extra_bonus game: 5
+2019-01-13 12:07:54 INFO     iter: 05 param: extra_bonus game: 6
+2019-01-13 12:15:34 INFO     iter: 05 param: extra_bonus game: 7
+2019-01-13 12:21:40 INFO     iter: 05 param: extra_bonus game: 8
+2019-01-13 12:28:39 INFO     iter: 05 param: extra_bonus game: 9
+2019-01-13 12:36:24 INFO     iter: 05 param: extra_bonus game: 10
+2019-01-13 12:43:26 INFO     iter: 05 param: extra_bonus game: 11
+2019-01-13 12:51:49 INFO     iter: 05 param: extra_bonus game: 12
+2019-01-13 12:58:17 INFO     iter: 05 param: extra_bonus game: 13
+2019-01-13 13:06:20 INFO     iter: 05 param: extra_bonus game: 14
+2019-01-13 13:14:06 INFO     iter: 05 param: extra_bonus game: 15
+2019-01-13 13:22:42 INFO     iter: 05 param: extra_bonus game: 16
+2019-01-13 13:29:28 INFO     iter: 05 param: extra_bonus game: 17
+2019-01-13 13:36:45 INFO     iter: 05 param: extra_bonus game: 18
+2019-01-13 13:44:03 INFO     iter: 05 param: extra_bonus game: 19
+2019-01-13 13:50:06 INFO     iter: 05 param: extra_bonus game: 20
+2019-01-13 13:56:47 INFO     iter: 05 param: extra_bonus value: 0.58 result: 3500
+2019-01-13 13:56:47 INFO     iter: 05 param: extra_bonus value: 0.44 result: 2359
+2019-01-13 13:56:47 INFO     iter: 05 param: extra_bonus value: 0.77 result: 2176
+2019-01-13 13:56:47 INFO     iter: 05 param: extra_bonus value: 0.58 result: 3506
+2019-01-13 13:56:47 INFO     iter: 06
+2019-01-13 13:56:47 INFO     iter: 06 param: extra_bonus
+2019-01-13 13:56:47 INFO     iter: 06 param: extra_bonus default value: 0.577367205542725
+2019-01-13 13:56:47 INFO     iter: 06 param: extra_bonus stepsize plus: 0.14129467501212878
+2019-01-13 13:56:47 INFO     iter: 06 param: extra_bonus stepsize minus: 0.11351501154734416
+2019-01-13 13:56:47 INFO     iter: 06 param: extra_bonus game: 1
+2019-01-13 14:05:27 INFO     iter: 06 param: extra_bonus game: 2
+2019-01-13 14:10:51 INFO     iter: 06 param: extra_bonus game: 3
+2019-01-13 14:18:14 INFO     iter: 06 param: extra_bonus game: 4
+2019-01-13 14:25:19 INFO     iter: 06 param: extra_bonus game: 5
+2019-01-13 14:32:58 INFO     iter: 06 param: extra_bonus game: 6
+2019-01-13 14:40:50 INFO     iter: 06 param: extra_bonus game: 7
+2019-01-13 14:47:17 INFO     iter: 06 param: extra_bonus game: 8
+2019-01-13 14:53:38 INFO     iter: 06 param: extra_bonus game: 9
+2019-01-13 15:01:05 INFO     iter: 06 param: extra_bonus game: 10
+2019-01-13 15:07:49 INFO     iter: 06 param: extra_bonus game: 11
+2019-01-13 15:13:19 INFO     iter: 06 param: extra_bonus game: 12
+2019-01-13 15:20:47 INFO     iter: 06 param: extra_bonus game: 13
+2019-01-13 15:28:03 INFO     iter: 06 param: extra_bonus game: 14
+2019-01-13 15:35:25 INFO     iter: 06 param: extra_bonus game: 15
+2019-01-13 15:43:13 INFO     iter: 06 param: extra_bonus game: 16
+2019-01-13 15:49:32 INFO     iter: 06 param: extra_bonus game: 17
+2019-01-13 15:56:46 INFO     iter: 06 param: extra_bonus game: 18
+2019-01-13 16:03:47 INFO     iter: 06 param: extra_bonus game: 19
+2019-01-13 16:09:54 INFO     iter: 06 param: extra_bonus game: 20
+2019-01-13 16:17:02 INFO     iter: 06 param: extra_bonus value: 0.58 result: 3064
+2019-01-13 16:17:02 INFO     iter: 06 param: extra_bonus value: 0.46 result: 2284
+2019-01-13 16:17:02 INFO     iter: 06 param: extra_bonus value: 0.72 result: 3516
+2019-01-13 16:17:02 INFO     iter: 06 param: extra_bonus value: 0.58 result: 3846
+2019-01-13 16:17:02 INFO     iter: 07
+2019-01-13 16:17:02 INFO     iter: 07 param: extra_bonus
+2019-01-13 16:17:02 INFO     iter: 07 param: extra_bonus default value: 0.5773672055427249
+2019-01-13 16:17:02 INFO     iter: 07 param: extra_bonus stepsize plus: 0.10776141412441345
+2019-01-13 16:17:02 INFO     iter: 07 param: extra_bonus stepsize minus: 0.0908120092378753
+2019-01-13 16:17:02 INFO     iter: 07 param: extra_bonus game: 1
+2019-01-13 16:22:58 INFO     iter: 07 param: extra_bonus game: 2
+2019-01-13 16:30:05 INFO     iter: 07 param: extra_bonus game: 3
+2019-01-13 16:36:28 INFO     iter: 07 param: extra_bonus game: 4
+2019-01-13 16:43:21 INFO     iter: 07 param: extra_bonus game: 5
+2019-01-13 16:49:43 INFO     iter: 07 param: extra_bonus game: 6
+2019-01-13 16:57:30 INFO     iter: 07 param: extra_bonus game: 7
+2019-01-13 17:04:55 INFO     iter: 07 param: extra_bonus game: 8
+2019-01-13 17:11:42 INFO     iter: 07 param: extra_bonus game: 9
+2019-01-13 17:18:41 INFO     iter: 07 param: extra_bonus game: 10
+2019-01-13 17:24:37 INFO     iter: 07 param: extra_bonus game: 11
+2019-01-13 17:32:03 INFO     iter: 07 param: extra_bonus game: 12
+2019-01-13 17:38:34 INFO     iter: 07 param: extra_bonus game: 13
+2019-01-13 17:46:05 INFO     iter: 07 param: extra_bonus game: 14
+2019-01-13 17:54:20 INFO     iter: 07 param: extra_bonus game: 15
+2019-01-13 18:00:28 INFO     iter: 07 param: extra_bonus game: 16
+2019-01-13 18:06:51 INFO     iter: 07 param: extra_bonus game: 17
+2019-01-13 18:13:31 INFO     iter: 07 param: extra_bonus game: 18
+2019-01-13 18:20:28 INFO     iter: 07 param: extra_bonus game: 19
+2019-01-13 18:27:04 INFO     iter: 07 param: extra_bonus game: 20
+2019-01-13 18:35:08 INFO     iter: 07 param: extra_bonus value: 0.58 result: 1013
+2019-01-13 18:35:08 INFO     iter: 07 param: extra_bonus value: 0.49 result: 5015
+2019-01-13 18:35:08 INFO     iter: 07 param: extra_bonus value: 0.69 result: 2730
+2019-01-13 18:35:08 INFO     iter: 07 param: extra_bonus value: 0.58 result: 3130
+2019-01-13 18:35:08 INFO     iter: 08
+2019-01-13 18:35:08 INFO     iter: 08 param: extra_bonus
+2019-01-13 18:35:08 INFO     iter: 08 param: extra_bonus default value: 0.48655519630484956
+2019-01-13 18:35:08 INFO     iter: 08 param: extra_bonus stepsize plus: 0.07003529124931104
+2019-01-13 18:35:08 INFO     iter: 08 param: extra_bonus stepsize minus: 0.06122281218246652
+2019-01-13 18:35:08 INFO     iter: 08 param: extra_bonus game: 1
+2019-01-13 18:42:30 INFO     iter: 08 param: extra_bonus game: 2
+2019-01-13 18:50:30 INFO     iter: 08 param: extra_bonus game: 3
+2019-01-13 18:56:33 INFO     iter: 08 param: extra_bonus game: 4
+2019-01-13 19:03:30 INFO     iter: 08 param: extra_bonus game: 5
+2019-01-13 19:12:01 INFO     iter: 08 param: extra_bonus game: 6
+2019-01-13 19:17:27 INFO     iter: 08 param: extra_bonus game: 7
+2019-01-13 19:25:19 INFO     iter: 08 param: extra_bonus game: 8
+2019-01-13 19:32:39 INFO     iter: 08 param: extra_bonus game: 9
+2019-01-13 19:38:25 INFO     iter: 08 param: extra_bonus game: 10
+2019-01-13 19:45:36 INFO     iter: 08 param: extra_bonus game: 11
+2019-01-13 19:51:38 INFO     iter: 08 param: extra_bonus game: 12
+2019-01-13 19:58:29 INFO     iter: 08 param: extra_bonus game: 13
+2019-01-13 20:04:18 INFO     iter: 08 param: extra_bonus game: 14
+2019-01-13 20:12:05 INFO     iter: 08 param: extra_bonus game: 15
+2019-01-13 20:18:39 INFO     iter: 08 param: extra_bonus game: 16
+2019-01-13 20:25:07 INFO     iter: 08 param: extra_bonus game: 17
+2019-01-13 20:33:34 INFO     iter: 08 param: extra_bonus game: 18
+2019-01-13 20:42:16 INFO     iter: 08 param: extra_bonus game: 19
+2019-01-13 20:49:12 INFO     iter: 08 param: extra_bonus game: 20
+2019-01-13 20:56:10 INFO     iter: 08 param: extra_bonus value: 0.49 result: 3957
+2019-01-13 20:56:10 INFO     iter: 08 param: extra_bonus value: 0.43 result: 3003
+2019-01-13 20:56:10 INFO     iter: 08 param: extra_bonus value: 0.56 result: 2000
+2019-01-13 20:56:10 INFO     iter: 08 param: extra_bonus value: 0.49 result: 3118
+2019-01-13 20:56:10 INFO     iter: 09
+2019-01-13 20:56:10 INFO     iter: 09 param: extra_bonus
+2019-01-13 20:56:10 INFO     iter: 09 param: extra_bonus default value: 0.4865551963048495
+2019-01-13 20:56:10 INFO     iter: 09 param: extra_bonus stepsize plus: 0.05446041457902426
+2019-01-13 20:56:10 INFO     iter: 09 param: extra_bonus stepsize minus: 0.048978249745973215
+2019-01-13 20:56:10 INFO     iter: 09 param: extra_bonus game: 1
+2019-01-13 21:01:46 INFO     iter: 09 param: extra_bonus game: 2
+2019-01-13 21:08:55 INFO     iter: 09 param: extra_bonus game: 3
+2019-01-13 21:16:14 INFO     iter: 09 param: extra_bonus game: 4
+2019-01-13 21:23:05 INFO     iter: 09 param: extra_bonus game: 5
+2019-01-13 21:29:41 INFO     iter: 09 param: extra_bonus game: 6

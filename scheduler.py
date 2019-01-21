@@ -382,8 +382,8 @@ class GhostDropoff(entity.Entity):
         """Gain a strategic advantage by controlling disputed areas."""
         d1 = self.map_data.calculator.enemy_dropoff_distances[index]
         d2 = self.dropoff_distances[index]
-        df = (param['disputed_factor'] - 1.0) / 5.0
-        return max(1.0, param['disputed_factor'] - df * abs(d1 - d2 - 2))
+        df = param['disputed_factor'] / 5.0
+        return max(1.0, 1.0 + param['disputed_factor'] - df * abs(d1 - d2 - 2))
 
     def _expansion_factor(self, index):
         """Reward gradual expansion."""
