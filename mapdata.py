@@ -660,8 +660,10 @@ class MapData:
             if self.calculator.collision_area[enemy_index]:
                 base_loot[enemy_index] = max(base_loot[enemy_index], loot)
                 for index in neighbours(enemy_index):
-                    if dropoff_dists[index] > dropoff_dists[enemy_index]:
+                    k = 0
+                    if dropoff_dists[index] > dropoff_dists[enemy_index] and k < 3:
                         base_loot[index] = max(base_loot[index], loot)
+                        k += 1
         return base_loot
 
     def loot(self, ship):
