@@ -1,14 +1,12 @@
 # Schildpad
 
 ## TODO
-- Train parameters (parameters.txt)
-- Reimplement dropoff_time()
-- Reimplement/reparameterize attack/flee
+- Train parameters (in final day: 5, 2 in allow_dropoff_collisions/update_returning_to_dropoff and 100, 200 in valuable())
 - Check lost games and see what goes wrong (check mlomb for timeouts)
 
 ## NOT TODO
-- Performance improvements (linear_sum_assignment in Cython)(simpler/faster shortest path algorithm)(PyCUDA GPU)(avoid calculations: not can_move() implies stay_still(), so no neighbour index shortest path necessary)(reuse calculations: attempt for simple_distances was probably slow because it made a slice, make python list of 1D arrays instead)(smaller clusters for linear_sum_assignment, ships in the smaller cluster cannot use all moves to avoid collisions in Schedule).
-- Improve attack and enemy_threat (Tit-for-tat, keep track of attacks on stationary ships as indication of aggressiveness)(distinction 2player and 4player: for example, attack more aggressively when you have more ships than the opponent in 2player games)(loop over enemy ships and find good targets, taking into consideration our ships and their dropoffs, pick attacking ships based on their distance/best_average_halite/ship.halite_amount and make sure there is a ship to pick up the loot)(increase aggressiveness in endgame)(find a balance with threat_edge_costs, so that it correctly supports both attacking and fleeing)
+- Performance improvements (linear_sum_assignment in Cython)(simpler/faster shortest path algorithm)(PyCUDA GPU).
+- Improve attack and enemy_threat (Tit-for-tat, keep track of attacks on stationary ships as indication of aggressiveness)
 - Predict what enemy ship will do (based on cell/ship halite, ships nearby, distance to dropoff, can_move)(use ML, possibly even predict against whom we are playing)(make a cost array like for our own ships to predict next move).
 - Better manage tanking turns for ships with very low cargo.
 - Make sure you never end up with slightly less than 1000 halite when you need 1000 to create a ship.

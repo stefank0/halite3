@@ -99,14 +99,6 @@ def density(base_density, radius):
     return density * (base_density_sum / density.sum())
 
 
-def ship_density(ships, radius):
-    """Transform a list of ships into a density on the game map."""
-    base_density = np.zeros(game_map_height * game_map_width)
-    ship_indices = [to_index(ship) for ship in ships]
-    base_density[ship_indices] = 1.0
-    return density(base_density, radius)
-
-
 def nearby_ships(ship, ships, radius):
     """Return a list of nearby ships out of ships."""
     return [
@@ -315,7 +307,6 @@ class DistanceCalculator:
         self._base_costs = traffic_costs + movement_costs
         self.threat_factor = self._threat_factor()
         self._dist_tuples = self._shortest_path()
-        self.ghost_distances = self._ghost_distances()
 
     def _simple_dropoff_distances(self, dropoffs):
         """Simple step distances from all cells to the nearest dropoff."""
@@ -329,11 +320,6 @@ class DistanceCalculator:
         """Step distances from all cells to the nearest enemy dropoff."""
         dropoffs = list(enemy_dropoffs()) + list(enemy_shipyards())
         return self._simple_dropoff_distances(dropoffs)
-
-    def _ghost_distances(self):
-        """Calculate distances used in GhostDropoff, uses the second ship."""
-        distances = [self.get_distances(ship) for ship in game.me.get_ships()]
-        return self._second_distances(distances)
 
     def _collision_area(self):
         """Determine area in which collisions are OK."""
@@ -586,9 +572,6 @@ class MapData:
         self.calculator = DistanceCalculator(self.all_dropoffs, self.halite)
         self.halite_density = self._halite_density()
         self.density_difference = self._ship_density_difference()
-        hostile_density3 = ship_density(enemy_ships(), 3)
-        friendly_density3 = ship_density(game.me.get_ships(), 3)
-        self.density_difference3 = friendly_density3 - hostile_density3
         self.base_loot = self._base_loot()
 
     def _halite(self):
@@ -599,7 +582,8 @@ class MapData:
             cell = to_cell(i)
             if cell.is_occupied and cell.ship.owner != game.me.id:
                 # Halite is already gathered by enemy.
-                halite[i] = max(halite[i] - param['halite_subtract'], 0)
+                gathered = min(param['halite_subtract'], 1000 - cell.ship.halite_amount)
+                halite[i] = max(halite[i] - gathered, 0)
         return halite
 
     def _halite_density(self):
@@ -610,14 +594,14 @@ class MapData:
         """Get density of ships."""
         ship_density = np.zeros(game_map_height * game_map_width)
         ship_indices = [to_index(ship) for ship in ships]
-        ship_density[ship_indices] = 1
+        ship_density[ship_indices] = 1.0
         return density(ship_density, radius)
 
     def _ship_density_difference(self):
         """Get density of friendly - hostile ships"""
         friendly_density = self._ship_density(game.me.get_ships(), 8)
-        self.hostile_density = self._ship_density(enemy_ships(), 8)
-        return friendly_density - self.hostile_density
+        hostile_density = self._ship_density(enemy_ships(), 8)
+        return friendly_density - hostile_density
 
     def _perturbed_dropoff_distance(self, ship, dropoff):
         """Higher Shipyard distance to encourage moving to dropoffs."""
@@ -660,8 +644,10 @@ class MapData:
             if self.calculator.collision_area[enemy_index]:
                 base_loot[enemy_index] = max(base_loot[enemy_index], loot)
                 for index in neighbours(enemy_index):
-                    if dropoff_dists[index] > dropoff_dists[enemy_index]:
+                    k = 0
+                    if dropoff_dists[index] > dropoff_dists[enemy_index] and k < 3:
                         base_loot[index] = max(base_loot[index], loot)
+                        k += 1
         return base_loot
 
     def loot(self, ship):

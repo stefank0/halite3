@@ -65,13 +65,13 @@
       "threat": 1.0,
       "self_threat_threshold": 100,
 
-      "search_radius": 5,
+      "search_radius": 8,
       "expansion_factor": 1.1,
       "disputed_factor": 0.1,
       "dropoff_halite_density1": 90.0,
       "dropoff_halite_density2": 50.0,
       "ship_density_threshold": 0.0,
-      "draw_from_shipyard": 10.0,
+      "draw_from_shipyard": 8.0,
       "is_dropoff_time": 15.0,
       "halite_subtract": 500
     },
@@ -90,7 +90,7 @@
       "threat": 1.0,
       "self_threat_threshold": 100,
 
-      "search_radius": 5,
+      "search_radius": 8,
       "expansion_factor": 1.1,
       "disputed_factor": 0.1,
       "dropoff_halite_density1": 90.0,
@@ -144,7 +144,7 @@
 
       "search_radius": 0,
       "expansion_factor": 1.1,
-      "disputed_factor": 0.1,
+      "disputed_factor": 0.5,
       "dropoff_halite_density1": 90.0,
       "dropoff_halite_density2": 50.0,
       "ship_density_threshold": 0.0,
