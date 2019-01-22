@@ -37,6 +37,7 @@ class Scheduler:
         self.ships_per_dropoff = len(self.ships) / len(map_data.dropoffs)
         self.update_returning_to_dropoff()
         self.expected_halite = self._expected_halite()
+        self.ghost_droppers = []
 
     def mining_profit(self, bonus_factor, halite):
         """Calculate the total profit after mining up to 5 turns.
@@ -264,6 +265,8 @@ class Scheduler:
         """Assign this ship to return to closest dropoff."""
         returning_to_dropoff.add(ship.id)
         destination = self.map_data.get_closest_dropoff(ship)
+        if isinstance(destination, GhostDropoff):
+            self.ghost_droppers.append(ship)
         self.schedule.assign(ship, destination)
 
     def is_returning(self, ship):
@@ -287,6 +290,7 @@ class Scheduler:
         self.dropoff_planning(remaining_ships)
         self.preprocess(remaining_ships)
         self.assignment(remaining_ships)
+        self.schedule.deadlock = self.deadlock()
         return self.schedule
 
     def dropoff_planning(self, remaining_ships):
@@ -368,6 +372,21 @@ class Scheduler:
             return min(self.expected_halite - self.dropoff_cost(ship), halite)
         else:
             return halite
+
+    def deadlock(self):
+        """Check for deadlock situation.
+
+        Note:
+            Can occur when every ship is returning to the ghost dropoff, but
+            the ghost dropoff cannot be constructed. Probably lost the game
+            already, so it does not really matter what we do.
+        """
+        if len(self.ghost_droppers) == len(self.ships):
+            for ship in self.ships:
+                if ship.position == self.ghost.position:
+                    if self.me.halite_amount < self.dropoff_cost(ship):
+                        return True
+        return False
 
 
 class GhostDropoff(entity.Entity):

@@ -52,6 +52,7 @@ class Schedule:
         self.dropoff_assignments = []
         self.map_data = map_data
         self.calculator = map_data.calculator
+        self.deadlock = False
 
     def assign(self, ship, destination):
         """Assign a ship to a destination."""
@@ -177,4 +178,4 @@ class Schedule:
         ship_dropoff_ratio = len(me.get_ships()) / len(self.map_data.dropoffs)
         required_turns = math.ceil(ship_dropoff_ratio / 4.0) + 5
         turns_left = constants.MAX_TURNS - game.turn_number
-        return turns_left <= required_turns
+        return turns_left <= required_turns or self.deadlock
