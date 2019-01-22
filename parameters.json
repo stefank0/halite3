@@ -142,9 +142,9 @@
       "threat": 1.0,
       "self_threat_threshold": 250,
 
-      "search_radius": 0,
+      "search_radius": 5,
       "expansion_factor": 1.1,
-      "disputed_factor": 0.5,
+      "disputed_factor": 0.1,
       "dropoff_halite_density1": 90.0,
       "dropoff_halite_density2": 50.0,
       "ship_density_threshold": 0.0,
