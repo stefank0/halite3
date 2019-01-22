@@ -1,7 +1,7 @@
 import logging, math, time
 from hlt import constants, entity
 import numpy as np
-from mapdata import to_cell, to_index, can_move, LinearSum, neighbours, simple_distance, enemy_ships
+from mapdata import to_cell, to_index, can_move, LinearSum, neighbours, simple_distance, enemy_ships, all_simple_distances
 from schedule import Schedule
 from parameters import param
 
@@ -391,50 +391,42 @@ class GhostDropoff(entity.Entity):
         df = (param['expansion_factor'] - 1.0) / 5.0
         return max(1.0, param['expansion_factor'] - df * abs(17.5 - d))
 
-    def _turns(self, index):
-        """Move turns uses Dijkstra distance of the second closest ship."""
-        mine_turns = 10.0
-        move_turns = self.map_data.calculator.ghost_distances[index]
-        return mine_turns + min(30.0, max(15.0, move_turns))
-
     def cost(self, index):
-        """Cost representing the quality of the index as a dropoff location.
-
-        Note:
-            Comparable to cost matrix of Scheduler, but with averages. This
-            ensures that destinations of ships and dropoff placement match.
-        """
-        if (self.dropoff_distances[index] < 10 + param['search_radius'] or
-                self.map_data.density_difference[index] < param['ship_density_threshold'] or
-                self.map_data.halite_density[index] < param['dropoff_halite_density1'] + self.map_data.turn_number / constants.MAX_TURNS * param['dropoff_halite_density2'] or
-                to_cell(index).has_structure):
+        """Cost representing the quality of the index as a dropoff location."""
+        if to_cell(index).has_structure:
             return 0.0
         modifier = self._disputed_factor(index) * self._expansion_factor(index)
-        halite_density = self.map_data.halite_density[index]
-        return -1.0 * modifier * halite_density / self._turns(index)
+        return -1.0 * modifier * self.map_data.halite_density[index]
 
     def search_area(self):
         """Indices at which to search for spawn position."""
-        r = 10 + param['search_radius']
-        d = self.dropoff_distances
-        return np.flatnonzero(np.logical_and(d >= r, d <= r + 10)).tolist()
+        nships_dropoff = np.zeros(self.dropoff_distances.size)
+        for d in Schedule.destinations:
+            nships_dropoff += all_simple_distances(d) < self.dropoff_distances[d]
+        c0 = nships_dropoff > 2
+        c1 = self.dropoff_distances >= 10 + param['search_radius']
+        c2 = self.map_data.density_difference >= param['ship_density_threshold']
+        c3 = self.map_data.halite_density >= param['dropoff_halite_density1'] + self.map_data.turn_number / constants.MAX_TURNS * param['dropoff_halite_density2']
+        return np.flatnonzero(np.logical_and.reduce([c0, c1, c2, c3])).tolist()
 
-    def best_position(self, positions):
+    def best_position(self, indices):
         """Determine the best position.
 
         Note:
             Returns None if a good position was not found. If that is the case,
             the GhostDropoff should not be considered any further.
         """
-        best = min(positions, key=self.cost)
-        if self.cost(best) == 0.0:
+        if not indices:
             return None
-        return to_cell(best).position
+        best_index = min(indices, key=self.cost)
+        if self.cost(best_index) == 0.0:
+            return None
+        return to_cell(best_index).position
 
     def spawn_position(self):
         """Determine a good position to 'spawn' the ghost dropoff."""
-        positions = self.search_area()
-        return self.best_position(positions) if positions else None
+        indices = self.search_area()
+        return self.best_position(indices)
 
     def distance(self, ships):
         """Simple distance of the current position to the nearest ship."""
@@ -445,4 +437,6 @@ class GhostDropoff(entity.Entity):
         """Move this ghost dropoff to a more optimal nearby location."""
         index = to_index(self)
         positions = (index,) + neighbours(index)
+        search_area = self.search_area()
+        positions = [p for p in positions if p in search_area]
         self.position = self.best_position(positions)

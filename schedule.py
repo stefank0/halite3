@@ -28,6 +28,21 @@ class Assignment:
 class Schedule:
     """Keeps track of Assignments and translates them into a command list."""
 
+    destinations = []
+
+    @classmethod
+    def destination(cls, assignment):
+        """Destination or current location of a ship."""
+        cell = game_map[assignment.destination]
+        if cell.has_structure and cell.structure.owner == me.id:
+            cell = game_map[assignment.ship]
+        return to_index(cell)
+
+    @classmethod
+    def save_destinations(cls, assignments):
+        """Save destinations for next turn Ghost.search_area()."""
+        cls.destinations = [cls.destination(a) for a in assignments]
+
     def __init__(self, _game, map_data):
         global game, game_map, me
         game = _game
@@ -118,6 +133,7 @@ class Schedule:
 
     def to_commands(self):
         """Translate the assignments of ships to commands."""
+        self.save_destinations(self.assignments)
         commands = []
 
         # Dropoff collisions.

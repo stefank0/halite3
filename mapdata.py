@@ -307,7 +307,6 @@ class DistanceCalculator:
         self._base_costs = traffic_costs + movement_costs
         self.threat_factor = self._threat_factor()
         self._dist_tuples = self._shortest_path()
-        self.ghost_distances = self._ghost_distances()
 
     def _simple_dropoff_distances(self, dropoffs):
         """Simple step distances from all cells to the nearest dropoff."""
@@ -321,11 +320,6 @@ class DistanceCalculator:
         """Step distances from all cells to the nearest enemy dropoff."""
         dropoffs = list(enemy_dropoffs()) + list(enemy_shipyards())
         return self._simple_dropoff_distances(dropoffs)
-
-    def _ghost_distances(self):
-        """Calculate distances used in GhostDropoff, uses the second ship."""
-        distances = [self.get_distances(ship) for ship in game.me.get_ships()]
-        return self._second_distances(distances)
 
     def _collision_area(self):
         """Determine area in which collisions are OK."""
