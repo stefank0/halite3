@@ -110,7 +110,7 @@ while(time.time() - bot_start < 9.7 and DistanceCalculator.needs_precompute()):
     DistanceCalculator.precompute()
 
 # Play the game.
-game.ready("Schildpad")
+game.ready("TeamSchildpad")
 while True:
     game.update_frame()
     start = time.time()

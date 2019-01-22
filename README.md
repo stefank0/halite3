@@ -1,7 +1,6 @@
-# Schildpad
+# TeamSchildpad
 
 ## TODO
-- Train parameters (in final day: 5, 2 in allow_dropoff_collisions/update_returning_to_dropoff and 100, 200 in valuable())
 - Check lost games and see what goes wrong (check mlomb for timeouts)
 
 ## NOT TODO
@@ -23,11 +22,11 @@ General information from Halite III adjusted to our project.
 ## Halite III components
 * /docs, contains API of the game of Halite 
 * /hlt, contains modifiable helper functions for your bot
-* /misc, contains command scripts and executables to run and example game (.bat for windows) (.sh for MacOS, Linux)
+* /misc, contains command scripts and executables to run an example game (.bat for windows) (.sh for MacOS, Linux)
 * /replays, contains replays and error files
-* MyBot.py, schildpad bot
-* scheduler.py, module to assign ships to destinations (distance is 0 to mapsize)
-* schedule.py, module to make next step schedule (distance is 0 or 1)
+* MyBot.py, TeamSchildpad bot
+* scheduler.py, module to assign ships to destinations
+* schedule.py, module to generate commands from assignments
 * mapdata.py, module with useful general functions and MapData
 
 ## Testing your bot locally
