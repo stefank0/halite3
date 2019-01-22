@@ -166,7 +166,7 @@ class Schedule:
         remaining_assignments = []
         for assignment in self.assignments:
             ship = assignment.ship
-            if self.near_dropoff(ship) and can_move(ship):
+            if self.near_dropoff(ship) and can_move(ship) and not (commands and self.deadlock):
                 dropoff = self.map_data.get_closest_dropoff(ship)
                 commands.append(assignment.to_command(game_map[dropoff]))
             else:
