@@ -1,4 +1,5 @@
 # TeamSchildpad
+This project contains a bot for the international AI competition Halite 3 (https://halite.io/), where it finished in 4th place.
 
 ## Summary
 
